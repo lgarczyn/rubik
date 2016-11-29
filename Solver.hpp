@@ -36,8 +36,6 @@ class Solver {
 		State* get_smallest_state();
 		~Solver();
 
-		void	set_candidates(State* from);
-
 	private:
 		set* _opened[MAX_SOLUTION_LENGTH];
 		State* _candidates[18];

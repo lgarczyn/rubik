@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <string>
 #include <list>
 #include <vector>
 #include <array>
@@ -22,23 +21,22 @@
 
 class State;
 
-using indexer = score (*)(const State*);
+using indexer = score (*)(const State&);
 
 class State {
 	public:
-		static State solution;
+		static const Data solution;
 		static int stateCount;
-		static const int size = 3;
 		static score initial_score;
 		static indexer	get_index;
 
 		enum Indexes {
 			Index_Up = 0,
-			Index_Right = 1,
-			Index_Down = 2,
-			Index_Left = 3,
-			Index_Front = 4,
-			Index_Back = 5,
+			Index_Front = 1,
+			Index_Right = 2,
+			Index_Back = 3,
+			Index_Left = 4,
+			Index_Down = 5,
 		};
 
 		enum Movement {
@@ -52,13 +50,29 @@ class State {
 			Mask = 15,
 			Reversed = 16,
 			Halfturn = 32,
+
+			R_None = Reversed | None,
+			R_Up = Reversed | Up,
+			R_Right = Reversed | Right,
+			R_Down = Reversed | Down,
+			R_Left = Reversed | Left,
+			R_Front = Reversed | Front,
+			R_Back = Reversed | Back,
+
+			H_None = Halfturn | None,
+			H_Up = Halfturn | Up,
+			H_Right = Halfturn | Right,
+			H_Down = Halfturn | Down,
+			H_Left = Halfturn | Left,
+			H_Front = Halfturn | Front,
+			H_Back = Halfturn | Back,
 		};
 
-		State(const std::string& scramble);
+		State(const string& scramble = "");
 		State(State* parent, const Movement direction);
 		~State();
 
-		void							applyScramble(const std::string& scramble);
+		void							applyScramble(const string& scramble);
 		void							applyMovement(Movement m);
 		std::vector<State::Movement>	*get_movements() const;
 		Movement						get_movement() const;
@@ -71,15 +85,15 @@ class State {
 		State*							get_parent(void) const;
 		Data&							get_data();
 		const Data&						get_data() const;
-		void							get_candidates(State** candidates, State* root);
+		void							get_candidates(State** candidates);
 
-		static void						init();
-		static score					indexer_astar(const State *);
-		static score					indexer_uniform(const State *);
-		static score					indexer_greedy(const State *);
+		static score					indexer_astar(const State&);
+		static score					indexer_uniform(const State&);
+		static score					indexer_greedy(const State&);
 
 	private:
-		std::string		_data;
+		Data			_data;
+		string			_id;
 		score			_weight;
 		int 			_distance;
 		Movement 		_movement;

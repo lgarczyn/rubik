@@ -12,15 +12,14 @@
 
 #include <iostream>
 
-#include "Parser.hpp"
 #include "CliOptParser.hpp"
-#include "Generator.hpp"
 #include "Solver.hpp"
-#include "tools.h"
+#include "tools.hpp"
 #include <unistd.h>
 #include <termcap.h>
 #include <unistd.h>
 
+/*
 int		display_help(const char* path = "npuzzle")
 {
 	std::cout << "Usage: " << path << " [-h] " << std::endl
@@ -222,4 +221,57 @@ int		main(int ac, char **av)
 				break;
 		}
 	}
+} */
+
+#include "Types.hpp"
+
+Solver::Result	solve_loop(State *initial)//, Parser::ParseResult& parseResult)
+{
+	Solver			puzzle(initial, false);//parseResult.forget);
+	Solver::Result	solverResult(0, 0);
+	size_t 			it;
+
+	it = 0;
+	//do {
+		while (!(solverResult = puzzle.step()).finished)
+		{
+			if (it % 100000 == 0)
+			{
+				//std::cout << tgetstr((char*)"cl", NULL);
+				print_map(solverResult.actual_state->get_data(), State::solution);
+				std::cout << "Iteration count: " << it << std::endl;
+				std::cout << "Solution [score: " << solverResult.actual_state->get_weight() << "]" << std::endl;
+			}
+			++it;
+		}
+		//std::cout << tgetstr((char*)"cl", NULL);
+		print_map(solverResult.actual_state->get_data(), State::solution);
+		std::cout << "Iteration count: " << it << std::endl;
+		std::cout << "Move count: " << solverResult.movements->size() << std::endl;
+	//} while ((0 && solverResult.movements->size() > parseResult.search_step));
+
+	return (solverResult);
+}
+
+int main(int argc, char const *argv[]) {
+
+	//if (argc != 2)
+	//	return (0);
+
+	//string scramble = string(argv[1]);
+	//State initial = State(scramble);
+
+	(void)argc;
+	(void)argv;
+
+	while (1) {
+		string line;
+
+		std::cin >> line;
+
+		State s = State(line);
+		print_map(s.get_data(), s.get_data());
+	}
+
+	return 0;
 }

@@ -4,12 +4,12 @@
 
 #include <set>
 #include "Solver.hpp"
-#include "tools.h"
+#include "tools.hpp"
 
 
 set*	Solver::get_opened_set(State *state)
 {
-	int index = State::get_index(state);
+	int index = State::get_index(*state);
 
 	if (index >= MAX_SOLUTION_LENGTH)
 		throw std::logic_error("State index too big: check get_index function.");
@@ -36,15 +36,17 @@ State**	Solver::get_universe_position(State *state)
 	void** 				node = &_universe;
 	const Data& 		data = state->get_data();
 
-	for (int i = 0; i < State::size - 1; i++)
-	{
-		if (*node == nullptr)
-		{
-			*node = new void*[State::size]();
-		}
-		unsigned char index = data[i];
-		node = &(static_cast<void**>(*node)[index]);
-	}
+	for (int s = 0; s < 6; s++)
+		for (int x = 0; x < 6; x++)
+			for (int y = 0; y < 6; y++)
+			{
+				if (*node == nullptr)
+				{
+					*node = new void*[colorsCount]();
+				}
+				unsigned char index = (uchar)data[s][x][y];
+				node = &(static_cast<void**>(*node)[index]);
+			}
 	return (reinterpret_cast<State**>(node));
 }
 
@@ -84,42 +86,39 @@ Solver::Result Solver::step()
 
 			_openCount--;
 
-			set_candidates(e);
+			e->get_candidates(_candidates);
 
 			if (State::stateCount > _sizeComplexity)
 				_sizeComplexity = State::stateCount;
-			for (int i = 0; i < 4; i++)
+			for (int i = 0; _candidates[i] != nullptr; i++)
 			{
 				auto s = _candidates[i];
-				if (s) {
+				if (!_forget)
+				{
+					State** position = get_universe_position(s);
 
-					if (!_forget)
+					if (*position != nullptr)
 					{
-						State** position = get_universe_position(s);
-
-						if (*position != nullptr)
+						State* previous = *position;
+						if (State::get_index(*s) < State::get_index(*previous))
 						{
-							State* previous = *position;
-							if (State::get_index(s) < State::get_index(previous))
-							{
-								get_opened_set(previous)->erase(previous);
-								_openCount--;
-								delete previous;
-							}
-							else
-							{
-								delete s;
-								continue;
-							}
+							get_opened_set(previous)->erase(previous);
+							_openCount--;
+							delete previous;
 						}
-
-						*position = s;
+						else
+						{
+							delete s;
+							continue;
+						}
 					}
 
-					get_opened_set(s)->insert(s);
-					_openCount++;
-					_timeComplexity++;
+					*position = s;
 				}
+
+				get_opened_set(s)->insert(s);
+				_openCount++;
+				_timeComplexity++;
 			}
 		}
 	}

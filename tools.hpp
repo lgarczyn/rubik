@@ -10,13 +10,12 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
-
 #include <string>
 #include <vector>
+#include "Types.hpp"
 
 void 	split(const std::string& str,
 		std::vector<std::string>& tokens,
 		const std::string& delimiters = " ");
 bool 	is_number(const std::string& s);
-void	print_map(const std::string& data, const std::string& solution);
+void	print_map(const Data& data, const Data& solution);

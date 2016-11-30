@@ -15,10 +15,63 @@
 #include <sstream>
 
 int					State::stateCount = 0;
-score				State::initial_score = 0;
+Score				State::initial_score = 0;
 indexer				State::get_index = indexer_astar;
 
-Data				State::_get_solution() {
+const Data			State::solution = _calculate_solution();
+const Finder		State::solution_finder = _calculate_finder(solution);
+
+State::State(const std::string& scramble){
+	_data = solution;
+	_finder = solution_finder;
+
+	applyScramble(scramble);
+
+	_finder = _calculate_finder(_data);
+	_weight = Heuristics::HeuristicFunction(_data, _finder);
+	_distance = 0;
+	_movement = None;
+	_parent = nullptr;
+	stateCount++;
+}
+
+State::State(State* parent, State::Movement m) {
+	_data = parent->_data;
+	_parent = parent;
+	_distance = parent->_distance + 1;
+	_movement = m;
+
+	applyMovement(m);
+
+	_finder = _calculate_finder(_data);
+	_weight = Heuristics::HeuristicFunction(_data, _finder);
+	stateCount++;
+}
+
+State::~State()
+{
+	stateCount--;
+}
+
+void	State::get_candidates(State** candidates)
+{
+	int i = 0;
+
+	Movement m = _movement;
+
+	for (Movement n = Up; n <= Down; n = (Movement)((int)n + 1)) {
+		Movement nr = (Movement)(n | Reversed);
+		Movement nh = (Movement)(n | Halfturn);
+
+		if (m != n) candidates[i++] = new State(this, n);
+		if (m != nr) candidates[i++] = new State(this, nr);
+		if (m != nh) candidates[i++] = new State(this, nh);
+	}
+
+	candidates[i] = nullptr;
+}
+
+Data				State::_calculate_solution() {
 	Data			data;
 
 	int uid = 0;
@@ -75,53 +128,17 @@ Data				State::_get_solution() {
 	return data;
 }
 
-const Data			State::solution = _get_solution();
+Finder				State::_calculate_finder(const Data &data) {
+	Finder			finder;
 
-State::State(const std::string& scramble){
-	_data = solution;
-
-	applyScramble(scramble);
-
-	_weight = Heuristics::HeuristicFunction(_data);
-	_distance = 0;
-	_movement = None;
-	_parent = nullptr;
-	stateCount++;
-}
-
-State::State(State* parent, State::Movement m) {
-	_data = parent->_data;
-	_parent = parent;
-	_distance = parent->_distance + 1;
-	_movement = m;
-
-	applyMovement(m);
-
-	_weight = Heuristics::HeuristicFunction(_data);
-	stateCount++;
-}
-
-State::~State()
-{
-	stateCount--;
-}
-
-void	State::get_candidates(State** candidates)
-{
-	int i = 0;
-
-	Movement m = _movement;
-
-	for (Movement n = Up; n <= Down; n = (Movement)((int)n + 1)) {
-		Movement nr = (Movement)(n | Reversed);
-		Movement nh = (Movement)(n | Halfturn);
-
-		if (m != n) candidates[i++] = new State(this, n);
-		if (m != nr) candidates[i++] = new State(this, nr);
-		if (m != nh) candidates[i++] = new State(this, nh);
-	}
-
-	candidates[i] = nullptr;
+	for (int s = Index_Start; s < Index_Len; s++)
+		for (int x = 0; x < size; x++)
+			for (int y = 0; y < size; y++) {
+				Coord co = (Coord){s, x, y};
+				int id = data[s][x][y].face_id;
+				finder[id] = co;
+			}
+	return finder;
 }
 
 void State::applyScramble(const string& scramble) {
@@ -259,6 +276,11 @@ Data&	State::get_data(void)
 	return (this->_data);
 }
 
+const Finder&	State::get_finder(void) const
+{
+	return (this->_finder);
+}
+
 const Data&	State::get_data(void) const
 {
 	return (this->_data);
@@ -295,12 +317,12 @@ void 			State::set_distance(int d)
 	this->_distance = d;
 }
 
-score 			State::get_weight(void) const
+Score 			State::get_weight(void) const
 {
 	return (this->_weight);
 }
 
-void 			State::set_weight(score s)
+void 			State::set_weight(Score s)
 {
 	this->_weight = s;
 }
@@ -316,7 +338,7 @@ size_t custom_hash::operator()(const State* x) const noexcept {
     for (int s = 0; s < 6; s++)
 		for (int x = 0; x < size; x++)
 			for (int y = 0; y < size; y++)
-				if (x != center && y != center)
+				if (x != 2 && y != 2)
 					h = h * 31 + data[s][x][y].face_id;
 	return (h);
 }
@@ -326,17 +348,17 @@ bool custom_equal_to::operator()(const State* a, const State* b) const noexcept
 	return (a->get_data() == b->get_data());
 }
 
-score State::indexer_astar(const State& state)
+Score State::indexer_astar(const State& state)
 {
 	return state.get_weight() + state.get_distance();
 }
 
-score State::indexer_greedy(const State& state)
+Score State::indexer_greedy(const State& state)
 {
 	return state.get_weight();
 }
 
-score State::indexer_uniform(const State& state)
+Score State::indexer_uniform(const State& state)
 {
 	return state.get_distance();
 }

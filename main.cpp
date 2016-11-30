@@ -126,7 +126,7 @@ Solver::Result	solve_loop(State *initial, Parser::ParseResult&parseResult)
 				std::cout << tgetstr((char*)"cl", NULL);
 				print_map(solverResult.actual_state->get_data(), State::solution);
 				std::cout << "Iteration count: " << it << std::endl;
-				std::cout << "Solution [score: " << solverResult.actual_state->get_weight() << "]" << std::endl;
+				std::cout << "Solution [Score: " << solverResult.actual_state->get_weight() << "]" << std::endl;
 			}
 			++it;
 		}
@@ -224,6 +224,8 @@ int		main(int ac, char **av)
 } */
 
 #include "Types.hpp"
+#include "Heuristics.hpp"
+#include <random>
 
 Solver::Result	solve_loop(State *initial)//, Parser::ParseResult& parseResult)
 {
@@ -238,14 +240,14 @@ Solver::Result	solve_loop(State *initial)//, Parser::ParseResult& parseResult)
 			if (it % 100000 == 0)
 			{
 				//std::cout << tgetstr((char*)"cl", NULL);
-				print_map(solverResult.actual_state->get_data(), State::solution);
+				print_map(*solverResult.actual_state);
 				std::cout << "Iteration count: " << it << std::endl;
-				std::cout << "Solution [score: " << solverResult.actual_state->get_weight() << "]" << std::endl;
+				std::cout << "Solution [Score: " << solverResult.actual_state->get_weight() << "]" << std::endl;
 			}
 			++it;
 		}
 		//std::cout << tgetstr((char*)"cl", NULL);
-		print_map(solverResult.actual_state->get_data(), State::solution);
+		print_map(*solverResult.actual_state);
 		std::cout << "Iteration count: " << it << std::endl;
 		std::cout << "Move count: " << solverResult.movements->size() << std::endl;
 	//} while ((0 && solverResult.movements->size() > parseResult.search_step));
@@ -253,28 +255,71 @@ Solver::Result	solve_loop(State *initial)//, Parser::ParseResult& parseResult)
 	return (solverResult);
 }
 
+State *get_random_state(int scramble_count) {
+	std::random_device rd;     // only used once to initialise (seed) engine
+	std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
+	std::uniform_int_distribution<int> uni(0,6); // guaranteed unbiased
+	std::uniform_int_distribution<int> bo(0,2);
+
+	State *s = new State();
+
+	for (int i = 0; i < scramble_count; i++) {
+		State::Movement m = (State::Movement)uni(rng);
+		int c = bo(rng);
+		if (c == 1)
+			m = (State::Movement)(m | State::Reversed);
+		else if (c == 2)
+			m = (State::Movement)(m | State::Halfturn);
+
+		s->applyMovement(m);
+	}
+	return s;
+}
+
 int main(int argc, char const *argv[]) {
 
-	//if (argc != 2)
-	//	return (0);
+	if (argc != 2)
+		return (0);
 
-	//string scramble = string(argv[1]);
-	//State initial = State(scramble);
+	string scramble = string(argv[1]);
+	State initial = State(scramble);
+	solve_loop(&initial);
+
 
 	(void)argc;
 	(void)argv;
 
-	State s = State();
+	//State s;
 
-	while (1) {
+	/*while (1) {
 		string line;
 
 		std::cin >> line;
 
 		s.applyScramble(line);
 
-		print_map(s.get_data(), State::solution);
-	}
+		print_map(s);
+	}*/
+
+	//Test heuristic validity/quality
+	/*std::random_device rd;     // only used once to initialise (seed) engine
+	std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
+	std::uniform_int_distribution<int> uni(0,20); // guaranteed unbiased
+
+
+	for (int i = 0; i < 100000; i++) {
+
+		if (i % 1000 == 0)
+			std::cout << i << std::endl;
+		int s_count = uni(rng);
+
+		State *s = get_random_state(s_count);
+		int r = Heuristics::HeuristicFunction(s->get_data(), s->get_finder());
+
+		if (r > s_count)
+			std::cout << "Error, heuristic result is bigger than solution" << std::endl;
+
+	}*/
 
 	return 0;
 }

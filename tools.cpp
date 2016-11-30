@@ -12,9 +12,10 @@
 
 #include "tools.hpp"
 #include "State.hpp"
+#include "Heuristics.hpp"
 #include <iomanip>
 
-void display_square(Square c, bool correct) {
+void display_square(Square c, int dist, bool correct) {
 
     string background;
     string foreground;
@@ -34,36 +35,41 @@ void display_square(Square c, bool correct) {
     else
         foreground = "\e[30m";
 
-    std::cout << foreground << background << " " << std::setw(2) << c.cube_id << " \e[0m";
+    std::cout << foreground << background << " " << dist << " " << std::setw(2) << c.cube_id << " \e[0m";
 }
 
-void print_line(const Data& data, const Data& solution, int s, int x) {
+void print_line(const Data& data, const Data& solution, const Finder& finder, int s, int x) {
     for (int y = 0; y < size; y++)
     {
         Square c = data[s][x][y];
+        int dist = Heuristics::SquareDistance((Coord){s, x, y}, finder[c.face_id]);
         bool correct = solution[s][x][y] == c;
 
-        display_square(c, correct);
+        display_square(c, dist, correct);
     }
 }
 
-void	print_map(const Data& data, const Data& solution)
+void	print_map(const State& state)
 {
+    const Data& solution = State::solution;
+    const Data& data = state.get_data();
+    const Finder& finder = state.get_finder();
+
     for (int x = 0; x < size; x++) {
-        std::cout << " __ " << " __ " << " __ ";
-        print_line(data, solution, 0, x);
+        std::cout << " _ __ " << " _ __ " << " _ __ ";
+        print_line(data, solution, finder, 0, x);
         std::cout << std::endl;
     }
     for (int x = 0; x < size; x++) {
-        print_line(data, solution, 4, x);
-        print_line(data, solution, 1, x);
-        print_line(data, solution, 2, x);
-        print_line(data, solution, 3, x);
+        print_line(data, solution, finder, 4, x);
+        print_line(data, solution, finder, 1, x);
+        print_line(data, solution, finder, 2, x);
+        print_line(data, solution, finder, 3, x);
         std::cout << std::endl;
     }
     for (int x = 0; x < size; x++) {
-        std::cout << " __ " << " __ " << " __ ";
-        print_line(data, solution, 5, x);
+        std::cout << " _ __ " << " _ __ " << " _ __ ";
+        print_line(data, solution, finder, 5, x);
         std::cout << std::endl;
     }
 }

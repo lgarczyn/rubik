@@ -42,7 +42,7 @@ State**	Solver::get_universe_position(State *state)
 			{
 				if (*node == nullptr)
 				{
-					*node = new void*[colorsCount]();
+					*node = new void*[Index_Len]();
 				}
 				unsigned char index = (uchar)data[s][x][y].color;
 				node = &(static_cast<void**>(*node)[index]);

@@ -11,7 +11,8 @@
 class Heuristics
 {
 public:
-    static score	Distance(const Data& data);
+    static Score	Distance(const Data& data, const Finder& finder);
+    static int  	SquareDistance(Coord a, Coord b);
 
 	static weighter	HeuristicFunction;
 };

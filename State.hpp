@@ -20,25 +20,15 @@
 
 class State;
 
-using indexer = score (*)(const State&);
+using indexer = Score (*)(const State&);
 
 class State {
 	public:
 		static const Data solution;
+		static const Finder solution_finder;
 		static int stateCount;
-		static score initial_score;
+		static Score initial_score;
 		static indexer	get_index;
-
-		enum Indexes {
-			Index_Up = 0,
-			Index_Front = 1,
-			Index_Right = 2,
-			Index_Back = 3,
-			Index_Left = 4,
-			Index_Down = 5,
-			Index_Start = 0,
-			Index_Len = 6,
-		};
 
 		enum Movement {
 			None = 0,
@@ -78,26 +68,29 @@ class State {
 		std::vector<State::Movement>	*get_movements() const;
 		Movement						get_movement() const;
 		int 							get_distance() const;
-		score 							get_weight() const;
-		void 							set_weight(score s);
+		Score 							get_weight() const;
+		void 							set_weight(Score s);
 		void 							set_distance(int d);
 		bool 							is_final() const;
 		void							set_parent(State* p);
 		State*							get_parent(void) const;
 		Data&							get_data();
 		const Data&						get_data() const;
+		const Finder&					get_finder() const;
 		void							get_candidates(State** candidates);
 
-		static score					indexer_astar(const State&);
-		static score					indexer_uniform(const State&);
-		static score					indexer_greedy(const State&);
+		static Score					indexer_astar(const State&);
+		static Score					indexer_uniform(const State&);
+		static Score					indexer_greedy(const State&);
 
 	private:
-		static Data		_get_solution();
+		static Data		_calculate_solution();
+		static Finder	_calculate_finder(const Data& data);
 
 		Data			_data;
+		Finder			_finder;
 		string			_id;
-		score			_weight;
+		Score			_weight;
 		int 			_distance;
 		Movement 		_movement;
 		State*			_parent;

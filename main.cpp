@@ -264,13 +264,16 @@ int main(int argc, char const *argv[]) {
 	(void)argc;
 	(void)argv;
 
+	State s = State();
+
 	while (1) {
 		string line;
 
 		std::cin >> line;
 
-		State s = State(line);
-		print_map(s.get_data(), s.get_data());
+		s.applyScramble(line);
+
+		print_map(s.get_data(), State::solution);
 	}
 
 	return 0;

@@ -12,7 +12,6 @@
 
 #pragma once
 
-#include <list>
 #include <vector>
 #include <array>
 #include <functional>
@@ -37,6 +36,8 @@ class State {
 			Index_Back = 3,
 			Index_Left = 4,
 			Index_Down = 5,
+			Index_Start = 0,
+			Index_Len = 6,
 		};
 
 		enum Movement {
@@ -92,6 +93,8 @@ class State {
 		static score					indexer_greedy(const State&);
 
 	private:
+		static Data		_get_solution();
+
 		Data			_data;
 		string			_id;
 		score			_weight;

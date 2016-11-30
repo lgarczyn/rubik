@@ -12,42 +12,45 @@
 
 #include "tools.hpp"
 #include "State.hpp"
+#include <iomanip>
 
-string get_char(Color c, bool correct) {
+void display_square(Square c, bool correct) {
 
-    string output;
+    string background;
+    string foreground;
+
+    switch (c.color) {
+        case White: background = "\e[107m"; break;
+        case Red: background = "\e[41m"; break;
+        case Blue: background = "\e[44m"; break;
+        case Orange: background = "\e[43m"; break;
+        case Green: background = "\e[42m"; break;
+        case Yellow: background = "\e[103m"; break;
+        default: std::cout << "\e[32mERR\e[0m"; return;
+    }
 
     if (correct)
-        output = "\e[32m";
+        foreground = "\e[35m";
     else
-        output = "\e[31m";
+        foreground = "\e[30m";
 
-    switch (c) {
-        case White: return output + "\e[107m  \e[0m";
-        case Red: return output + "\e[41m  \e[0m";
-        case Blue: return output + "\e[44m  \e[0m";
-        case Orange: return output + "\e[7;49;33m  \e[0m";
-        case Green: return output + "\e[42m  \e[0m";
-        case Yellow: return output + "\e[103m  \e[0m";
-    }
-    return "\e[32mE\e[0m";
+    std::cout << foreground << background << " " << std::setw(2) << c.cube_id << " \e[0m";
 }
 
 void print_line(const Data& data, const Data& solution, int s, int x) {
     for (int y = 0; y < size; y++)
     {
-        Color c = data[s][x][y];
-        Color cs = solution[s][x][y];
-        bool correct = c == cs;
+        Square c = data[s][x][y];
+        bool correct = solution[s][x][y] == c;
 
-        std::cout << get_char(c, correct);
+        display_square(c, correct);
     }
 }
 
 void	print_map(const Data& data, const Data& solution)
 {
     for (int x = 0; x < size; x++) {
-        std::cout << std::string(6, ' ');
+        std::cout << " __ " << " __ " << " __ ";
         print_line(data, solution, 0, x);
         std::cout << std::endl;
     }
@@ -59,7 +62,7 @@ void	print_map(const Data& data, const Data& solution)
         std::cout << std::endl;
     }
     for (int x = 0; x < size; x++) {
-        std::cout << std::string(6, ' ');
+        std::cout << " __ " << " __ " << " __ ";
         print_line(data, solution, 5, x);
         std::cout << std::endl;
     }

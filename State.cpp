@@ -18,23 +18,64 @@ int					State::stateCount = 0;
 score				State::initial_score = 0;
 indexer				State::get_index = indexer_astar;
 
-enum Indexes {
-	Index_Up = 0,
-	Index_Front = 1,
-	Index_Right = 2,
-	Index_Back = 3,
-	Index_Left = 4,
-	Index_Down = 5,
-};
+Data				State::_get_solution() {
+	Data			data;
 
-const Data			State::solution = {{
-	{{ {{White, White, White}}, {{White, White, White}}, {{White, White, White}} }},
-	{{ {{Green, Green, Green}}, {{Green, Green, Green}}, {{Green, Green, Green}} }},
-	{{ {{Red, Red, Red}}, {{Red, Red, Red}}, {{Red, Red, Red}} }},
-	{{ {{Blue, Blue, Blue}}, {{Blue, Blue, Blue}}, {{Blue, Blue, Blue}} }},
-	{{ {{Orange, Orange, Orange}}, {{Orange, Orange, Orange}}, {{Orange, Orange, Orange}} }},
-	{{ {{Yellow, Yellow, Yellow}}, {{Yellow, Yellow, Yellow}}, {{Yellow, Yellow, Yellow}} }}
-}};
+	int uid = 0;
+	for (int x = 0; x < size; x++)
+		for (int y = 0; y < size; y++) {
+			data[Index_Up][x][y].color = White;
+			data[Index_Front][x][y].color = Green;
+			data[Index_Right][x][y].color = Red;
+			data[Index_Back][x][y].color = Blue;
+			data[Index_Left][x][y].color = Orange;
+			data[Index_Down][x][y].color = Yellow;
+		}
+
+	for (int s = Index_Start; s < Index_Len; s++)
+		for (int x = 0; x < size; x++)
+			for (int y = 0; y < size; y++)
+				data[s][x][y].face_id = uid++;
+
+	//Adding corners ID
+	data[Index_Up][0][0].cube_id = data[Index_Left][0][0].cube_id = data[Index_Back][0][2].cube_id = 1;
+	data[Index_Up][2][0].cube_id = data[Index_Left][0][2].cube_id = data[Index_Front][0][0].cube_id = 2;
+	data[Index_Up][0][2].cube_id = data[Index_Right][0][2].cube_id = data[Index_Back][0][0].cube_id = 3;
+	data[Index_Up][2][2].cube_id = data[Index_Right][0][0].cube_id = data[Index_Front][0][2].cube_id = 4;
+
+	data[Index_Down][0][0].cube_id = data[Index_Left][2][2].cube_id = data[Index_Front][2][0].cube_id = 5;
+	data[Index_Down][2][0].cube_id = data[Index_Left][2][0].cube_id = data[Index_Back][2][2].cube_id = 6;
+	data[Index_Down][0][2].cube_id = data[Index_Right][2][0].cube_id = data[Index_Front][2][2].cube_id = 7;
+	data[Index_Down][2][2].cube_id = data[Index_Right][2][2].cube_id = data[Index_Back][2][0].cube_id = 8;
+
+	//Adding borders ID
+	data[Index_Up][0][1].cube_id = data[Index_Back][0][1].cube_id = 9;
+	data[Index_Up][1][0].cube_id = data[Index_Left][0][1].cube_id = 10;
+	data[Index_Up][2][1].cube_id = data[Index_Front][0][1].cube_id = 11;
+	data[Index_Up][1][2].cube_id = data[Index_Right][0][1].cube_id = 12;
+
+	data[Index_Down][0][1].cube_id = data[Index_Front][2][1].cube_id = 13;
+	data[Index_Down][1][0].cube_id = data[Index_Left][2][1].cube_id = 14;
+	data[Index_Down][2][1].cube_id = data[Index_Back][2][1].cube_id = 15;
+	data[Index_Down][1][2].cube_id = data[Index_Right][2][1].cube_id = 16;
+
+	data[Index_Front][1][2].cube_id = data[Index_Right][1][0].cube_id = 17;
+	data[Index_Right][1][2].cube_id = data[Index_Back][1][0].cube_id = 18;
+	data[Index_Back][1][2].cube_id = data[Index_Left][1][0].cube_id = 19;
+	data[Index_Left][1][2].cube_id = data[Index_Front][1][0].cube_id = 20;
+
+	//Adding center ID
+	data[Index_Up][1][1].cube_id = 0;
+	data[Index_Down][1][1].cube_id = 0;
+	data[Index_Back][1][1].cube_id = 0;
+	data[Index_Left][1][1].cube_id = 0;
+	data[Index_Front][1][1].cube_id = 0;
+	data[Index_Right][1][1].cube_id = 0;
+
+	return data;
+}
+
+const Data			State::solution = _get_solution();
 
 State::State(const std::string& scramble){
 	_data = solution;
@@ -111,7 +152,7 @@ void State::applyScramble(const string& scramble) {
 
 void rotate_face(Face& face, int turns) {
 	for (int i = 0; i < turns; i++) {
-		Color tl =  face[0][0];
+		Square tl =  face[0][0];
 		face[0][0] = face[2][0];
 		face[2][0] = face[2][2];
 		face[2][2] = face[0][2];
@@ -125,9 +166,9 @@ void rotate_face(Face& face, int turns) {
 	}
 }
 
-void swap_s(Color& a, Color& b, Color& c, Color& d, int turns) {
+void swap_s(Square& a, Square& b, Square& c, Square& d, int turns) {
 	for (int i = 0; i < turns; i++) {
-		Color t;
+		Square t;
 		t = d;
 		d = c;
 		c = b;
@@ -268,10 +309,7 @@ State::Movement		State::get_movement() const {
 	return (this->_movement);
 }
 
-size_t custom_hash::operator()(const State* x) const noexcept
-{
-	//TODO IGNORE CENTERS
-
+size_t custom_hash::operator()(const State* x) const noexcept {
 	const Data& data = x->get_data();
 	size_t h = 13;
 
@@ -279,7 +317,7 @@ size_t custom_hash::operator()(const State* x) const noexcept
 		for (int x = 0; x < size; x++)
 			for (int y = 0; y < size; y++)
 				if (x != center && y != center)
-					h = h * 31 + data[s][x][y];
+					h = h * 31 + data[s][x][y].face_id;
 	return (h);
 }
 

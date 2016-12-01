@@ -235,21 +235,25 @@ Solver::Result	solve_loop(State *initial)//, Parser::ParseResult& parseResult)
 
 	it = 0;
 	//do {
-		while (!(solverResult = puzzle.step()).finished)
+	while (1)
+	{
+		solverResult = puzzle.step();
+		if (solverResult.finished)
+			break;
+
+		if (it % 100000 == 0)
 		{
-			if (it % 100000 == 0)
-			{
-				//std::cout << tgetstr((char*)"cl", NULL);
-				print_map(*solverResult.actual_state);
-				std::cout << "Iteration count: " << it << std::endl;
-				std::cout << "Solution [Score: " << solverResult.actual_state->get_weight() << "]" << std::endl;
-			}
-			++it;
+			//std::cout << tgetstr((char*)"cl", NULL);
+			print_map(*solverResult.actual_state);
+			std::cout << "Iteration count: " << it << std::endl;
+			std::cout << "Solution [Score: " << solverResult.actual_state->get_weight() << "]" << std::endl;
 		}
-		//std::cout << tgetstr((char*)"cl", NULL);
-		print_map(*solverResult.actual_state);
-		std::cout << "Iteration count: " << it << std::endl;
-		std::cout << "Move count: " << solverResult.movements->size() << std::endl;
+		++it;
+	}
+	//std::cout << tgetstr((char*)"cl", NULL);
+	print_map(*solverResult.actual_state);
+	std::cout << "Iteration count: " << it << std::endl;
+	std::cout << "Move count: " << solverResult.movements->size() << std::endl;
 	//} while ((0 && solverResult.movements->size() > parseResult.search_step));
 
 	return (solverResult);
@@ -265,15 +269,15 @@ void check_movement(string scramble) {
 
 int main(int argc, char const *argv[]) {
 
-	/*if (argc != 2)
-		return (0);
+	if (argc != 2)
+		return (1);
 
 	string scramble = string(argv[1]);
 	State initial = State(scramble);
 	solve_loop(&initial);
-	*/
 
-	(void)argc;
+
+	/*(void)argc;
 	(void)argv;
 
 	State s;
@@ -286,7 +290,7 @@ int main(int argc, char const *argv[]) {
 		s.applyScramble(line);
 
 		print_map(s);
-	}
+	}*/
 
 	//Test heuristic validity/quality
 	/*std::random_device rd;     // only used once to initialise (seed) engine

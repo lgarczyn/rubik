@@ -25,11 +25,11 @@ int Heuristics::SquareDistance(Coord a, Coord b) {
     bool isborder_a = (a.c == 1 || a.l == 1);
     bool isborder_b = (b.c == 1 || b.l == 1);
     if (isborder_a != isborder_b)
-        return 0;
+        return 9;
     bool iscenter_a = (a.c == 1 && a.l == 1);
     bool iscenter_b = (b.c == 1 && b.l == 1);
     if (iscenter_a || iscenter_b)
-        return 0;
+        return 9;
     if (a.f == b.f) {
         if (a.c == b.c && a.l == b.l)
             return 0;
@@ -85,20 +85,20 @@ int Heuristics::SquareDistance(Coord a, Coord b) {
         return 2;
 }
 
-Score Heuristics::Distance(const Data& data, const Finder& finder)
+Score Heuristics::Distance(const Data& data)
 {
     Score score = 0;
 
     for (int s = Index_Start; s < Index_Len; s++)
 		for (int x = 0; x < size; x++)
-			for (int y = 0; y < size; y++) {
-                int id = data[s][x][y].face_id;
-                //if ((uint)id >= finder.size()) throw std::logic_error("fucka");
-                //if ((uint)s >= data.size()) throw std::logic_error("fuckb" + std::to_string(data.size()));
-                //if ((uint)x >= data[s].size()) throw std::logic_error("fuckc");
-                //if ((uint)y >= data[s][x].size()) throw std::logic_error("fuckd");
-                score += SquareDistance((Coord){s, x, y}, finder[id]);
-            }
-
-    return score / 20;
+			for (int y = 0; y < size; y++)
+                if (x != 1 || y != 1) {
+                    int id = data[s][x][y].face_id;
+                    //Coord p = (Coord){s, x, y};
+                    int dist = SquareDistance((Coord){s, x, y}, State::solution_finder[id]);
+                    score += dist;
+                    //std::cout << p << finder[id] << std::endl;
+                }
+    //if (State::compare(data, State::solution) != 0)
+    return (score + 19) / 20;
 }

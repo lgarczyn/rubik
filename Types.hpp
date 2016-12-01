@@ -37,6 +37,7 @@ struct Coord {
 
 bool operator==(const Square& sa, const Square& sb);
 bool operator==(const Coord& ca, const Coord& cb);
+std::ostream& operator<<(std::ostream& s, const Coord& cb);
 
  //SI CHANGE
  // CHANGER DE IMPAIRE A PAIRE CASSE TOUT
@@ -49,7 +50,7 @@ using Data = std::array<Face, 6>;
 using Finder = std::array<Coord, size * size * 6>;
 
 using Score = long int;
-using weighter = Score (*)(const Data& data, const Finder& finder);
+using weighter = Score (*)(const Data& data);
 using uchar = unsigned char;
 
 #include <string>

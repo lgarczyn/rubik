@@ -33,21 +33,29 @@ State*	Solver::get_smallest_state()
 
 State**	Solver::get_universe_position(State *state)
 {
-	void** 				node = &_universe;
-	const Data& 		data = state->get_data();
+	Node* node = _universe;
 
-	for (int s = 0; s < 6; s++)
-		for (int x = 0; x < 6; x++)
-			for (int y = 0; y < 6; y++)
-			{
-				if (*node == nullptr)
-				{
-					*node = new void*[Index_Len]();
-				}
-				unsigned char index = (uchar)data[s][x][y].color;
-				node = &(static_cast<void**>(*node)[index]);
-			}
-	return (reinterpret_cast<State**>(node));
+	//While no empty or equivalent node has been found
+	while (1) {
+
+		//If the curent node is empty, return ptr
+		if (node->value == nullptr)
+			return &(node->value);
+		//Get the difference
+		int d = State::compare(state->get_data(), node->value->get_data());
+		//If equal, return ptr
+		if (d == 0)
+			return &(node->value);
+		else if (d == 1) {
+			if (node->right == nullptr)
+				node->right = new Node();
+			node = node->right;
+		} else {
+			if (node->left == nullptr)
+				node->left = new Node();
+			node = node->left;
+		}
+	}
 }
 
 Solver::Solver(State* root, bool forget) : _opened(), _forget(forget)
@@ -57,7 +65,7 @@ Solver::Solver(State* root, bool forget) : _opened(), _forget(forget)
 	get_opened_set(root)->insert(root);
 
 	/*universe*/
-	_universe = nullptr;
+	_universe = new Node();
 	if (!_forget)
 		*get_universe_position(root) = root;
 

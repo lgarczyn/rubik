@@ -22,36 +22,72 @@ indexer				State::get_index = indexer_astar;
 const Data			State::solution = _calculate_solution();
 const Finder		State::solution_finder = _calculate_finder(solution);
 
-State::State(const std::string& scramble){
+State::State() {
 	_data = solution;
 	_finder = solution_finder;
-
-	applyScramble(scramble);
-
-	_finder = _calculate_finder(_data);
-	_weight = Heuristics::HeuristicFunction(_data, _finder);
+	_weight = 0;
 	_distance = 0;
 	_movement = None;
 	_parent = nullptr;
 	stateCount++;
 }
 
-State::State(State* parent, State::Movement m) {
+State::State(const std::string& scramble):State(){
+	applyScramble(scramble);
+	update();
+}
+
+State::State(State* parent, State::Movement m):State() {
+
 	_data = parent->_data;
 	_parent = parent;
 	_distance = parent->_distance + 1;
 	_movement = m;
 
 	applyMovement(m);
+	update();
+}
 
+State::State(int scramble_count):State(){
+	std::random_device rd;
+	std::mt19937 rng(rd());
+	std::uniform_int_distribution<int> uni(0,6);
+	std::uniform_int_distribution<int> bo(0,2);
+
+	for (int i = 0; i < scramble_count; i++) {
+		Movement m = (Movement)uni(rng);
+		int c = bo(rng);
+		if (c == 1)
+			m = (Movement)(m | Reversed);
+		else if (c == 2)
+			m = (Movement)(m | Halfturn);
+
+		applyMovement(m);
+	}
+	update();
+}
+
+void State::update() {
 	_finder = _calculate_finder(_data);
-	_weight = Heuristics::HeuristicFunction(_data, _finder);
-	stateCount++;
+	_weight = Heuristics::HeuristicFunction(_data);
 }
 
 State::~State()
 {
 	stateCount--;
+}
+
+int State::compare(const Data& a, const Data& b) {
+	for (int s = 0; s < 6; s++)
+		for (int x = 0; x < 6; x++)
+			for (int y = 0; y < 6; y++)
+				if (x != 1 || y != 1) {
+					if (a[s][x][y].color < b[s][x][y].color)
+						return -1;
+					else if (a[s][x][y].color > b[s][x][y].color)
+						return 1;
+				}
+	return 0;
 }
 
 void	State::get_candidates(State** candidates)
@@ -246,24 +282,6 @@ void State::applyMovement(State::Movement m) {
 			swap_s(_data[Index_Front][2][2], _data[Index_Right][2][2], _data[Index_Back][2][2], _data[Index_Left][2][2], turns);
 			break;
 		default: break;
-	}
-}
-
-State::State(int scramble_count):State(){
-	std::random_device rd;
-	std::mt19937 rng(rd());
-	std::uniform_int_distribution<int> uni(0,6);
-	std::uniform_int_distribution<int> bo(0,2);
-
-	for (int i = 0; i < scramble_count; i++) {
-		Movement m = (Movement)uni(rng);
-		int c = bo(rng);
-		if (c == 1)
-			m = (Movement)(m | Reversed);
-		else if (c == 2)
-			m = (Movement)(m | Halfturn);
-
-		applyMovement(m);
 	}
 }
 

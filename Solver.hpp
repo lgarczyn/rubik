@@ -28,6 +28,13 @@ class Solver {
 				Result(int timeComplexity, int sizeComplexity);
 		};
 
+		struct Node
+		{
+			State* value;
+			Node* left;
+			Node* right;
+		};
+
 		Solver(State* root, bool forget);
 		Result step();
 		set* get_opened_set(State* state);
@@ -44,5 +51,5 @@ class Solver {
 		int _openCount;
 		bool _forget;
 
-		void* _universe;
+		Node* _universe;
 };

@@ -59,10 +59,14 @@ class State {
 			H_Back = Halfturn | Back,
 		};
 
-		State(const string& scramble = "");
+		State();
+		State(const string& scramble);
 		State(State* parent, const Movement direction);
 		State(int scramble_count);
 		~State();
+		void							update();
+
+		bool							operator<(const State& ra) const;
 
 		void							applyScramble(const string& scramble);
 		void							applyMovement(Movement m);
@@ -84,6 +88,8 @@ class State {
 		static Score					indexer_uniform(const State&);
 		static Score					indexer_greedy(const State&);
 
+		static int						compare(const Data& a, const Data& b);
+
 		bool							check_continuity() const;
 
 	private:
@@ -92,7 +98,6 @@ class State {
 
 		Data			_data;
 		Finder			_finder;
-		string			_id;
 		Score			_weight;
 		int 			_distance;
 		Movement 		_movement;

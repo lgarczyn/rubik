@@ -100,5 +100,5 @@ Score Heuristics::Distance(const Data& data)
                     //std::cout << p << finder[id] << std::endl;
                 }
     //if (State::compare(data, State::solution) != 0)
-    return (score + 19) / 20;
+    return score;
 }

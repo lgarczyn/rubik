@@ -101,7 +101,7 @@ Solver::Result Solver::step()
 			for (int i = 0; _candidates[i] != nullptr; i++)
 			{
 				auto s = _candidates[i];
-				if (!_forget)
+				if (!_forget && false)
 				{
 					State** position = get_universe_position(s);
 

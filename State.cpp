@@ -446,7 +446,7 @@ bool custom_equal_to::operator()(const State* a, const State* b) const noexcept
 
 Score State::indexer_astar(const State& state)
 {
-	return state.get_weight() + state.get_distance();
+	return state.get_weight() + state.get_distance() * 20;
 }
 
 Score State::indexer_greedy(const State& state)

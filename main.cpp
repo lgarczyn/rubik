@@ -255,43 +255,30 @@ Solver::Result	solve_loop(State *initial)//, Parser::ParseResult& parseResult)
 	return (solverResult);
 }
 
-State *get_random_state(int scramble_count) {
-	std::random_device rd;     // only used once to initialise (seed) engine
-	std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
-	std::uniform_int_distribution<int> uni(0,6); // guaranteed unbiased
-	std::uniform_int_distribution<int> bo(0,2);
-
-	State *s = new State();
-
-	for (int i = 0; i < scramble_count; i++) {
-		State::Movement m = (State::Movement)uni(rng);
-		int c = bo(rng);
-		if (c == 1)
-			m = (State::Movement)(m | State::Reversed);
-		else if (c == 2)
-			m = (State::Movement)(m | State::Halfturn);
-
-		s->applyMovement(m);
-	}
-	return s;
+void check_movement(string scramble) {
+	State s = State(scramble);
+	if (!s.check_continuity())
+		std::cout << "error: " << scramble << std::endl;
+	else
+		std::cout << "success: " << scramble << std::endl;
 }
 
 int main(int argc, char const *argv[]) {
 
-	if (argc != 2)
+	/*if (argc != 2)
 		return (0);
 
 	string scramble = string(argv[1]);
 	State initial = State(scramble);
 	solve_loop(&initial);
-
+	*/
 
 	(void)argc;
 	(void)argv;
 
-	//State s;
+	State s;
 
-	/*while (1) {
+	while (1) {
 		string line;
 
 		std::cin >> line;
@@ -299,13 +286,12 @@ int main(int argc, char const *argv[]) {
 		s.applyScramble(line);
 
 		print_map(s);
-	}*/
+	}
 
 	//Test heuristic validity/quality
 	/*std::random_device rd;     // only used once to initialise (seed) engine
 	std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
 	std::uniform_int_distribution<int> uni(0,20); // guaranteed unbiased
-
 
 	for (int i = 0; i < 100000; i++) {
 
@@ -320,6 +306,41 @@ int main(int argc, char const *argv[]) {
 			std::cout << "Error, heuristic result is bigger than solution" << std::endl;
 
 	}*/
+
+	//Test every Movement
+	/*check_movement("");
+	check_movement("U");
+	check_movement("D");
+	check_movement("R");
+	check_movement("L");
+	check_movement("F");
+	check_movement("B");
+	check_movement("U'");
+	check_movement("D'");
+	check_movement("R'");
+	check_movement("L'");
+	check_movement("F'");
+	check_movement("B'");
+	check_movement("U2");
+	check_movement("D2");
+	check_movement("R2");
+	check_movement("L2");
+	check_movement("F2");
+	check_movement("B2");*/
+
+	//isplay distance for entry position and every other
+	/*while (1) {
+		int f;
+		int l;
+		int c;
+
+		std::cin >> f;
+		std::cin >> l;
+		std::cin >> c;
+
+		print_dist((Coord){f, l, c});
+	}*/
+
 
 	return 0;
 }

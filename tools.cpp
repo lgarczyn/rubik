@@ -73,3 +73,49 @@ void	print_map(const State& state)
         std::cout << std::endl;
     }
 }
+
+void print_line_dist(Coord pos, int s, int x) {
+    for (int y = 0; y < size; y++)
+    {
+        Coord p = (Coord){s, x, y};
+        int dist = Heuristics::SquareDistance(pos, p);
+        int rdist = Heuristics::SquareDistance(p, pos);
+
+        if (rdist != dist)
+             std::cout << "\e[35m";
+        if (dist == 0)
+            if (p == pos)
+                std::cout << " \e[44m0\e[0m";
+            else
+                std::cout << " _";
+        else if (dist == 1)
+            std::cout << " \e[46;30m1\e[0m";
+        else if (dist == 2)
+            std::cout << " \e[45;30m2\e[0m";
+        else
+            std::cout << dist << dist;
+        if (rdist != dist)
+             std::cout << "\e[0m";
+    }
+}
+
+void	print_dist(Coord pos)
+{
+    for (int x = 0; x < size; x++) {
+        std::cout << "  " << "  " << "  ";
+        print_line_dist(pos, 0, x);
+        std::cout << std::endl;
+    }
+    for (int x = 0; x < size; x++) {
+        print_line_dist(pos, 4, x);
+        print_line_dist(pos, 1, x);
+        print_line_dist(pos, 2, x);
+        print_line_dist(pos, 3, x);
+        std::cout << std::endl;
+    }
+    for (int x = 0; x < size; x++) {
+        std::cout << "  " << "  " << "  ";
+        print_line_dist(pos, 5, x);
+        std::cout << std::endl;
+    }
+}

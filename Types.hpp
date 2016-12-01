@@ -36,6 +36,7 @@ struct Coord {
 };
 
 bool operator==(const Square& sa, const Square& sb);
+bool operator==(const Coord& ca, const Coord& cb);
 
  //SI CHANGE
  // CHANGER DE IMPAIRE A PAIRE CASSE TOUT

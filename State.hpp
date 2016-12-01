@@ -61,6 +61,7 @@ class State {
 
 		State(const string& scramble = "");
 		State(State* parent, const Movement direction);
+		State(int scramble_count);
 		~State();
 
 		void							applyScramble(const string& scramble);
@@ -82,6 +83,8 @@ class State {
 		static Score					indexer_astar(const State&);
 		static Score					indexer_uniform(const State&);
 		static Score					indexer_greedy(const State&);
+
+		bool							check_continuity() const;
 
 	private:
 		static Data		_calculate_solution();

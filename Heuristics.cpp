@@ -21,6 +21,15 @@ inline int _get_opposite(int a) {
 //{UP, 0, 0} {RIGHT, 0, 2}
 //{5, 0, 0} {1, 2, 0}
 int Heuristics::SquareDistance(Coord a, Coord b) {
+
+    bool isborder_a = (a.c == 1 || a.l == 1);
+    bool isborder_b = (b.c == 1 || b.l == 1);
+    if (isborder_a != isborder_b)
+        return 0;
+    bool iscenter_a = (a.c == 1 && a.l == 1);
+    bool iscenter_b = (b.c == 1 && b.l == 1);
+    if (iscenter_a || iscenter_b)
+        return 0;
     if (a.f == b.f) {
         if (a.c == b.c && a.l == b.l)
             return 0;
@@ -36,48 +45,44 @@ int Heuristics::SquareDistance(Coord a, Coord b) {
         return 2;
     }
 
-
     //If no one is on top or bottom
     if (a.f != Index_Up && a.f != Index_Down && b.f != Index_Up && b.f != Index_Down) {
         if (a.c == b.c && a.l == b.l)
             return 1;
         return 2;
     }
-    //If b is on top or bottom, make it so a is anyway
-    if (b.f == Index_Up || b.f == Index_Down)
-        std::swap(a, b);
 
-    //If the second point is front, turning from bottom or top won't change coord
-    if (b.f == Index_Front) {
+    //If the one point is front and the other on top or bottom, no coord change
+    if (a.f == Index_Front || b.f == Index_Front) {
         if (a.c == b.c && a.l == b.l)
             return 1;
         return 2;
     }
-    //If the second point is back, turning from bottom or top inverts coordinates
-    if (b.f == Index_Back) {
+
+    //If the one point is back, turning from bottom or top inverts coordinates
+    if (a.f == Index_Back || b.f == Index_Back) {
         if (a.c == 2 - b.c && a.l == 2 - b.l)
             return 1;
         return 2;
     }
-    return 1;
 
-    //If the from left to up, or right to down
-    if ((a.f == Index_Up && b.f == Index_Left) || (a.f == Index_Down && b.f == Index_Right)) {
-        if (a.l == b.c && a.c == 2 - b.l)
-            return 1;
-        return 2;
+    bool clockwise = true;
+    switch (a.f) {
+        case Index_Up: if (b.f == Index_Left) clockwise = false; break;
+        case Index_Right: if (b.f == Index_Up) clockwise = false; break;
+        case Index_Down: if (b.f == Index_Right) clockwise = false; break;
+        case Index_Left: if (b.f == Index_Down) clockwise = false; break;
     }
 
-    //if (a.f == Index_Up && b.f == Index_Right)
-    //    std::cout << "{"<<a.l<<","<<a.c<<"}{"<<b.l<<","<<b.c<<"}";
-    //if () {
-
-    if (a.l == 2 - b.c && a.c == b.l)
+    if (clockwise)
+        if (a.l == 2 - b.c && a.c == b.l)
+            return 1;
+        else
+            return 2;
+    else if (a.l == b.c && a.c == 2 - b.l)
         return 1;
-    return 2;
-    //}
-    //return 1;*/
-    //TODO Take into account movements from UP or Down to Right or Left
+    else
+        return 2;
 }
 
 Score Heuristics::Distance(const Data& data, const Finder& finder)

@@ -13,6 +13,7 @@
 #include "State.hpp"
 #include "Heuristics.hpp"
 #include <sstream>
+#include <random>
 
 int					State::stateCount = 0;
 Score				State::initial_score = 0;
@@ -219,23 +220,23 @@ void State::applyMovement(State::Movement m) {
 		case Right :
 			rotate_face(_data[Index_Right], turns);
 			 //Crown is up, back, down, front
-			swap_s(_data[Index_Up][2][2], _data[Index_Back][0][0], _data[Index_Down][0][2], _data[Index_Front][2][2], turns);
+			swap_s(_data[Index_Up][2][2], _data[Index_Back][0][0], _data[Index_Down][2][2], _data[Index_Front][2][2], turns);
 			swap_s(_data[Index_Up][1][2], _data[Index_Back][1][0], _data[Index_Down][1][2], _data[Index_Front][1][2], turns);
-			swap_s(_data[Index_Up][0][2], _data[Index_Back][2][0], _data[Index_Down][2][2], _data[Index_Front][0][2], turns);
+			swap_s(_data[Index_Up][0][2], _data[Index_Back][2][0], _data[Index_Down][0][2], _data[Index_Front][0][2], turns);
 			break;
 		case Back :
 			rotate_face(_data[Index_Back], turns);
 			 //Crown is up, left, down, right
-			swap_s(_data[Index_Up][0][0], _data[Index_Left][0][0], _data[Index_Down][2][2], _data[Index_Right][2][2], turns);
+			swap_s(_data[Index_Up][0][0], _data[Index_Left][2][0], _data[Index_Down][2][2], _data[Index_Right][0][2], turns);
 			swap_s(_data[Index_Up][0][1], _data[Index_Left][1][0], _data[Index_Down][2][1], _data[Index_Right][1][2], turns);
-			swap_s(_data[Index_Up][0][2], _data[Index_Left][2][0], _data[Index_Down][2][0], _data[Index_Right][0][2], turns);
+			swap_s(_data[Index_Up][0][2], _data[Index_Left][0][0], _data[Index_Down][2][0], _data[Index_Right][2][2], turns);
 			break;
 		case Left :
 			rotate_face(_data[Index_Left], turns);
 			 //Crown is up, front, down, back
-			swap_s(_data[Index_Up][0][0], _data[Index_Front][0][0], _data[Index_Down][2][0], _data[Index_Back][2][2], turns);
+			swap_s(_data[Index_Up][0][0], _data[Index_Front][0][0], _data[Index_Down][0][0], _data[Index_Back][2][2], turns);
 			swap_s(_data[Index_Up][1][0], _data[Index_Front][1][0], _data[Index_Down][1][0], _data[Index_Back][1][2], turns);
-			swap_s(_data[Index_Up][2][0], _data[Index_Front][2][0], _data[Index_Down][0][0], _data[Index_Back][0][2], turns);
+			swap_s(_data[Index_Up][2][0], _data[Index_Front][2][0], _data[Index_Down][2][0], _data[Index_Back][0][2], turns);
 			break;
 		case Down :
 			rotate_face(_data[Index_Down], turns);
@@ -246,6 +247,83 @@ void State::applyMovement(State::Movement m) {
 			break;
 		default: break;
 	}
+}
+
+State::State(int scramble_count):State(){
+	std::random_device rd;
+	std::mt19937 rng(rd());
+	std::uniform_int_distribution<int> uni(0,6);
+	std::uniform_int_distribution<int> bo(0,2);
+
+	for (int i = 0; i < scramble_count; i++) {
+		Movement m = (Movement)uni(rng);
+		int c = bo(rng);
+		if (c == 1)
+			m = (Movement)(m | Reversed);
+		else if (c == 2)
+			m = (Movement)(m | Halfturn);
+
+		applyMovement(m);
+	}
+}
+
+bool State::check_continuity() const{
+	int id;
+
+	id = _data[Index_Up][0][0].cube_id;
+	if (id != _data[Index_Left][0][0].cube_id || id != _data[Index_Back][0][2].cube_id)
+		return false;
+	id = _data[Index_Up][2][0].cube_id;
+	if (id != _data[Index_Left][0][2].cube_id || id != _data[Index_Front][0][0].cube_id)
+		return false;
+	id = _data[Index_Up][0][2].cube_id;
+	if (id != _data[Index_Right][0][2].cube_id|| id != _data[Index_Back][0][0].cube_id)
+		return false;
+	id = _data[Index_Up][2][2].cube_id;
+	if (id != _data[Index_Right][0][0].cube_id|| id != _data[Index_Front][0][2].cube_id)
+		return false;
+
+	id = _data[Index_Down][0][0].cube_id;
+	if (id != _data[Index_Left][2][2].cube_id || id != _data[Index_Front][2][0].cube_id)
+		return false;
+	id = _data[Index_Down][2][0].cube_id;
+	if (id != _data[Index_Left][2][0].cube_id || id != _data[Index_Back][2][2].cube_id)
+		return false;
+	id = _data[Index_Down][0][2].cube_id;
+	if (id != _data[Index_Right][2][0].cube_id|| id != _data[Index_Front][2][2].cube_id)
+		return false;
+	id = _data[Index_Down][2][2].cube_id;
+	if (id != _data[Index_Right][2][2].cube_id|| id != _data[Index_Back][2][0].cube_id)
+		return false;
+
+	//Adding borders ID
+	if (_data[Index_Up][0][1].cube_id != _data[Index_Back][0][1].cube_id)
+		return false;
+	if (_data[Index_Up][1][0].cube_id != _data[Index_Left][0][1].cube_id)
+		return false;
+	if (_data[Index_Up][2][1].cube_id != _data[Index_Front][0][1].cube_id)
+		return false;
+	if (_data[Index_Up][1][2].cube_id != _data[Index_Right][0][1].cube_id)
+		return false;
+
+	if (_data[Index_Down][0][1].cube_id != _data[Index_Front][2][1].cube_id)
+		return false;
+	if (_data[Index_Down][1][0].cube_id != _data[Index_Left][2][1].cube_id)
+		return false;
+	if (_data[Index_Down][2][1].cube_id != _data[Index_Back][2][1].cube_id)
+		return false;
+	if (_data[Index_Down][1][2].cube_id != _data[Index_Right][2][1].cube_id)
+		return false;
+
+	if (_data[Index_Front][1][2].cube_id != _data[Index_Right][1][0].cube_id)
+		return false;
+	if (_data[Index_Right][1][2].cube_id != _data[Index_Back][1][0].cube_id)
+		return false;
+	if (_data[Index_Back][1][2].cube_id != _data[Index_Left][1][0].cube_id)
+		return false;
+	if (_data[Index_Left][1][2].cube_id != _data[Index_Front][1][0].cube_id)
+		return false;
+	return true;
 }
 
 std::vector<State::Movement>* State::get_movements() const {

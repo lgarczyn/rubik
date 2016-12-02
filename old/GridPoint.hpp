@@ -9,11 +9,11 @@
 
 class GridPoint {
 private:
-    int x, y;
+    int l, c;
 public:
     GridPoint();
 
-    GridPoint(int x, int y);
+    GridPoint(int l, int c);
 
     static GridPoint GetPointFromIndex(int index, int width);
 

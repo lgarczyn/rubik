@@ -20,7 +20,7 @@ inline int _get_opposite(int a) {
 }
 //{UP, 0, 0} {RIGHT, 0, 2}
 //{5, 0, 0} {1, 2, 0}
-int Heuristics::SquareDistance(Coord a, Coord b) {
+constexpr int Heuristics::SquareDistance(Coord a, Coord b) {
 
     bool isborder_a = (a.c == 1 || a.l == 1);
     bool isborder_b = (b.c == 1 || b.l == 1);
@@ -85,17 +85,41 @@ int Heuristics::SquareDistance(Coord a, Coord b) {
         return 2;
 }
 
+static constexpr Buffer dist_table = get_dist_table();
+
+constexpr Buffer Heuristics::get_dist_table() {
+    Buffer buff = Buffer();
+
+    for (int s = Index_Start; s < Index_Len; s++)
+		for (int l = 0; l < size; l++)
+			for (int c = 0; c < size; c++)
+                for (int _s = Index_Start; s < Index_Len; s++)
+                    for (int _l = 0; l < size; l++)
+                        for (int _c = 0; c < size; c++)
+                        {
+                            Coord a = (Coord){s, l, c};
+                            Coord b = (Coord){_s, _l, _c};
+                            buff[s][l][c][_s][l][c] = SquareDistance(a, b);
+                        }
+}
+
 Score Heuristics::Distance(const Data& data)
 {
     Score score = 0;
 
     for (int s = Index_Start; s < Index_Len; s++)
-		for (int x = 0; x < size; x++)
-			for (int y = 0; y < size; y++)
-                if (x != 1 || y != 1) {
-                    int id = data[s][x][y].face_id;
-                    //Coord p = (Coord){s, x, y};
-                    int dist = SquareDistance((Coord){s, x, y}, State::solution_finder[id]);
+		for (int l = 0; l < size; l++)
+			for (int c = 0; c < size; c++)
+                if (l != 1 || c != 1) {
+                    // if ((uint)s > data.size()) std::cerr << "overflow s" << std::endl;
+                    // if ((uint)l > data[s].size()) std::cerr << "overflow l" << std::endl;
+                    // if ((uint)c > data[l][c].size()) std::cerr << "overflow c" << std::endl;
+
+                    int id = data.at(s).at(l).at(c).face_id;
+                    //if ((uint)id > State::solution_finder.size()) std::cout << "overflow id" << std::endl;
+
+                    //Coord p = (Coord){s, l, c};
+                    int dist = SquareDistance((Coord){s, l, c}, State::solution_finder.at(id));
                     score += dist;
                     //std::cout << p << finder[id] << std::endl;
                 }

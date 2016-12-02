@@ -7,12 +7,14 @@
 #include <string>
 #include <list>
 #include <set>
+#include <map>
 #include <unordered_set>
 #include "State.hpp"
 #define MAX_SOLUTION_LENGTH ((int)10000)
 #define SOLVER_BUCKET_SIZE ((int)10000)
 
-using set = std::unordered_set<State*, custom_hash, custom_equal_to>;
+using set = std::unordered_set<StateRef>;//, custom_hash, custom_equal_to>;
+using map = std::map<int, set>;
 
 class Solver {
 	public:
@@ -22,34 +24,33 @@ class Solver {
 			public:
 				int timeComplexity;
 				int sizeComplexity;
-				State*	actual_state;
-				std::vector<State::Movement>* movements;
+				StateRef actual_state;
+				std::vector<State::Movement> movements;
 				bool finished;
 				Result(int timeComplexity, int sizeComplexity);
 		};
 
 		struct Node
 		{
-			State* value;
-			Node* left;
-			Node* right;
+			StateRef value;
+			std::unique_ptr<Node> left;
+			std::unique_ptr<Node> right;
 		};
+		using NodeRef = std::unique_ptr<Node>;
 
-		Solver(State* root, bool forget);
+		Solver(State& initial, bool forget);
 		Result step();
-		set* get_opened_set(State* state);
-		set* get_closed_set(const State* state);
-		State	**get_universe_position(State *state);
-		State* get_smallest_state();
+		set& get_opened_set(StateRef state);
+		StateRef *get_universe_position(StateRef state);
+		StateRef get_smallest_state();
 		~Solver();
 
 	private:
-		set* _opened[MAX_SOLUTION_LENGTH];
-		State* _candidates[18];
+		map _opened;
+		std::unique_ptr<Node> _universe;
+
 		int _timeComplexity;
 		int _sizeComplexity;
 		int _openCount;
 		bool _forget;
-
-		Node* _universe;
 };

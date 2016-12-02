@@ -191,20 +191,20 @@ int		main(int ac, char **av)
 				break;
 			case 's':
 				std::cout << tgetstr((char*)"cl", NULL) << std::endl;
-				for (auto &x:*solverResult.movements)
-					std::cout << x << std::endl;
+				for (auto &l:*solverResult.movements)
+					std::cout << l << std::endl;
 				std::cout << std::endl << std::flush;
 				break;
 			case 'a': {
 				State *current = new State(initial->get_data());
 
-				for (auto &x:*solverResult.movements) {
+				for (auto &l:*solverResult.movements) {
 					std::cout << tgetstr((char*)"cl", NULL) << std::endl;
 					print_map(current->get_data(), State::solution);
 					std::cout << std::endl;
 					usleep(500000);
 
-					State *tmp = new State(current, x);
+					State *tmp = new State(current, l);
 					delete current;
 					current = tmp;
 				}
@@ -227,7 +227,7 @@ int		main(int ac, char **av)
 #include "Heuristics.hpp"
 #include <random>
 
-Solver::Result	solve_loop(State *initial)//, Parser::ParseResult& parseResult)
+Solver::Result	solve_loop(State& initial)//, Parser::ParseResult& parseResult)
 {
 	Solver			puzzle(initial, false);//parseResult.forget);
 	Solver::Result	solverResult(0, 0);
@@ -241,30 +241,28 @@ Solver::Result	solve_loop(State *initial)//, Parser::ParseResult& parseResult)
 		if (solverResult.finished)
 			break;
 
-		if (it % 100000 == 0)
+		if (it % 10000 == 0)
 		{
 			//std::cout << tgetstr((char*)"cl", NULL);
-			print_map(*solverResult.actual_state);
+			if (solverResult.actual_state != nullptr)
+				print_map(*solverResult.actual_state);
+			else
+				std::cout << "null current state" << std::endl;
 			std::cout << "Iteration count: " << it << std::endl;
 			std::cout << "Solution [Score: " << solverResult.actual_state->get_weight() << "]" << std::endl;
 		}
 		++it;
 	}
 	//std::cout << tgetstr((char*)"cl", NULL);
-	print_map(*solverResult.actual_state);
+	if (solverResult.actual_state != nullptr)
+		print_map(*solverResult.actual_state);
+	else
+		std::cout << "null current state" << std::endl;
 	std::cout << "Iteration count: " << it << std::endl;
-	std::cout << "Move count: " << solverResult.movements->size() << std::endl;
+	std::cout << "Move count: " << solverResult.movements.size() << std::endl;
 	//} while ((0 && solverResult.movements->size() > parseResult.search_step));
 
 	return (solverResult);
-}
-
-void check_movement(string scramble) {
-	State s = State(scramble);
-	if (!s.check_continuity())
-		std::cout << "error: " << scramble << std::endl;
-	else
-		std::cout << "success: " << scramble << std::endl;
 }
 
 int main(int argc, char const *argv[]) {
@@ -274,7 +272,7 @@ int main(int argc, char const *argv[]) {
 
 	string scramble = string(argv[1]);
 	State initial = State(scramble);
-	solve_loop(&initial);
+	solve_loop(initial);
 
 
 	/*(void)argc;

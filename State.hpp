@@ -21,6 +21,7 @@
 class State;
 
 using indexer = Score (*)(const State&);
+using StateRef = std::shared_ptr<State>;
 
 class State {
 	public:
@@ -38,6 +39,10 @@ class State {
 			Left = 4,
 			Front = 5,
 			Back = 6,
+
+			Movement_Start = 1,
+			Movement_End = 7,
+
 			Mask = 15,
 			Reversed = 16,
 			Halfturn = 32,
@@ -60,6 +65,7 @@ class State {
 		};
 
 		State();
+		State(const State& clone);
 		State(const string& scramble);
 		State(State* parent, const Movement direction);
 		State(int scramble_count);
@@ -70,19 +76,17 @@ class State {
 
 		void							applyScramble(const string& scramble);
 		void							applyMovement(Movement m);
-		std::vector<State::Movement>	*get_movements() const;
+		const std::vector<Movement>&	get_movements() const;
 		Movement						get_movement() const;
 		int 							get_distance() const;
 		Score 							get_weight() const;
 		void 							set_weight(Score s);
 		void 							set_distance(int d);
 		bool 							is_final() const;
-		void							set_parent(State* p);
-		State*							get_parent(void) const;
 		Data&							get_data();
 		const Data&						get_data() const;
 		const Finder&					get_finder() const;
-		void							get_candidates(State** candidates);
+		void							get_candidates(std::vector<StateRef>& candidates);
 
 		static Score					indexer_astar(const State&);
 		static Score					indexer_uniform(const State&);
@@ -93,15 +97,13 @@ class State {
 		bool							check_continuity() const;
 
 	private:
-		static Data		_calculate_solution();
-		static Finder	_calculate_finder(const Data& data);
+		static Data						_calculate_solution();
+		static Finder					_calculate_finder(const Data& data);
 
-		Data			_data;
-		Finder			_finder;
-		Score			_weight;
-		int 			_distance;
-		Movement 		_movement;
-		State*			_parent;
+		Data							_data;
+		Finder							_finder;
+		Score							_weight;
+		std::vector<Movement>			_movements;
 };
 
 std::ostream& operator<< (std::ostream& s, const State::Movement c);
@@ -109,7 +111,7 @@ std::ostream& operator<< (std::ostream& s, const State::Movement c);
 struct custom_hash
 {
 	public:
-		size_t operator()(const State* x) const noexcept;
+		size_t operator()(const State* l) const noexcept;
 };
 
 struct custom_equal_to

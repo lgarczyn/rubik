@@ -7,33 +7,32 @@
 #include "tools.hpp"
 
 
-set*	Solver::get_opened_set(State *state)
-{
+set&	Solver::get_opened_set(StateRef state) {
+
+	if (state == nullptr)
+		throw std::logic_error("Storing null to set");
+
 	int index = State::get_index(*state);
 
-	if (index >= MAX_SOLUTION_LENGTH)
-		throw std::logic_error("State index too big: check get_index function.");
-
-	if (_opened[index] == nullptr)
-		_opened[index] = new std::unordered_set<State*, custom_hash, custom_equal_to>(SOLVER_BUCKET_SIZE);
 	return _opened[index];
 }
 
-State*	Solver::get_smallest_state()
-{
-	for (int i = 0; i < MAX_SOLUTION_LENGTH; i++)
-	{
-		if (_opened[i] && !_opened[i]->empty())
-		{
-			return (*_opened[i]->begin());
-		}
+StateRef 	Solver::get_smallest_state() {
+
+	while (_opened.begin()->second.size() == 0) {
+
+		_opened.erase(_opened.begin());
 	}
-	throw new std::logic_error("No valid opened state but count is still superior to 0");
+
+
+	return *(_opened.begin()->second.begin());
 }
 
-State**	Solver::get_universe_position(State *state)
-{
-	Node* node = _universe;
+StateRef* Solver::get_universe_position(StateRef state) {
+	Node* node = _universe.get();
+
+	if (state == nullptr)
+		throw std::logic_error("Storing null");
 
 	//While no empty or equivalent node has been found
 	while (1) {
@@ -48,87 +47,88 @@ State**	Solver::get_universe_position(State *state)
 			return &(node->value);
 		else if (d == 1) {
 			if (node->right == nullptr)
-				node->right = new Node();
-			node = node->right;
+				node->right = NodeRef(new Node());
+			node = node->right.get();
 		} else {
 			if (node->left == nullptr)
-				node->left = new Node();
-			node = node->left;
+				node->left = NodeRef(new Node());
+			node = node->left.get();
 		}
 	}
 }
 
-Solver::Solver(State* root, bool forget) : _opened(), _forget(forget)
-{
+Solver::Solver(State& initial, bool forget) : _opened(), _forget(forget) {
+
+	StateRef root = StateRef(new State(initial));
 
 	State::initial_score = root->get_weight();
-	get_opened_set(root)->insert(root);
+	get_opened_set(root).insert(root);
 
 	/*universe*/
-	_universe = new Node();
+	_universe = NodeRef(new Node());
 	if (!_forget)
 		*get_universe_position(root) = root;
+	std::cerr << "started" << std::endl;
 
 	_openCount = 1;
 	_sizeComplexity = 1;
 	_timeComplexity = 1;
 }
 
-Solver::Result Solver::step()
-{
+Solver::Result Solver::step() {
 	Result result = Result(0, 0);
+	std::vector<StateRef > candidates;
 
-	if (_openCount > 0)
-	{
-		State* e = get_smallest_state();
+	if (_openCount <= 0)
+		throw std::logic_error("No opened State");
 
-		result.actual_state = e;
-		if (e->is_final())
-		{
-			result.finished = true;
-			result.movements = e->get_movements();
-		}
-		else
-		{
-			get_opened_set(e)->erase(e);
+	StateRef e = get_smallest_state();
 
-			_openCount--;
+	e->update();//SEGFAULT CHECK
 
-			e->get_candidates(_candidates);
+	result.actual_state = e;
 
-			if (State::stateCount > _sizeComplexity)
-				_sizeComplexity = State::stateCount;
-			for (int i = 0; _candidates[i] != nullptr; i++)
-			{
-				auto s = _candidates[i];
-				if (!_forget && false)
-				{
-					State** position = get_universe_position(s);
+	if (e->is_final()) {
+		result.finished = true;
+		result.movements = e->get_movements();
+		result.sizeComplexity = _sizeComplexity;
+		result.timeComplexity = _timeComplexity;
+		return result;
+	}
 
-					if (*position != nullptr)
-					{
-						State* previous = *position;
-						if (State::get_index(*s) < State::get_index(*previous))
-						{
-							get_opened_set(previous)->erase(previous);
-							_openCount--;
-							delete previous;
-						}
-						else
-						{
-							delete s;
-							continue;
-						}
-					}
+	//remove e from open nodes
+	get_opened_set(e).erase(e);
+	_openCount--;
 
-					*position = s;
+	//get children
+	candidates.clear();
+	e->get_candidates(candidates);
+
+	//update size complexity
+	if (State::stateCount > _sizeComplexity)
+		_sizeComplexity = State::stateCount;
+
+	//for every children
+	for (StateRef s:candidates) {
+		if (!_forget && false) {
+			StateRef* position = get_universe_position(s);
+
+			if (*position != nullptr) {
+				StateRef previous = *position;
+				if (State::get_index(*s) < State::get_index(*previous)) {
+					get_opened_set(previous).erase(previous);
+					_openCount--;
+				} else {
+					continue;
 				}
-
-				get_opened_set(s)->insert(s);
-				_openCount++;
-				_timeComplexity++;
 			}
+
+			*position = s;
 		}
+
+		get_opened_set(s).insert(s);
+		_openCount++;
+		_timeComplexity++;
 	}
 
 	result.sizeComplexity = _sizeComplexity;
@@ -142,7 +142,5 @@ Solver::Result::Result(int timeComplexity, int sizeComplexity):
 		timeComplexity(timeComplexity),
 		sizeComplexity(sizeComplexity),
 		actual_state(nullptr),
-		movements(nullptr),
-		finished(false)
-{
+		finished(false) {
 }

@@ -38,14 +38,14 @@ void display_square(Square c, int dist, bool correct) {
     std::cout << foreground << background << " " << dist << " " << std::setw(2) << c.cube_id << " \e[0m";
 }
 
-void print_line(const Data& data, const Data& solution, const Finder& finder, int s, int x) {
-    for (int y = 0; y < size; y++)
+void print_line(const Data& data, const Data& solution, const Finder& finder, int s, int l) {
+    for (int c = 0; c < size; c++)
     {
-        Square c = data[s][x][y];
-        int dist = Heuristics::SquareDistance((Coord){s, x, y}, finder[c.face_id]);
-        bool correct = solution[s][x][y] == c;
+        Square sq = data[s][l][c];
+        int dist = Heuristics::SquareDistance((Coord){s, l, c}, finder[sq.face_id]);
+        bool correct = solution[s][l][c] == sq;
 
-        display_square(c, dist, correct);
+        display_square(sq, dist, correct);
     }
 }
 
@@ -55,29 +55,29 @@ void	print_map(const State& state)
     const Data& data = state.get_data();
     const Finder& finder = state.get_finder();
 
-    for (int x = 0; x < size; x++) {
+    for (int l = 0; l < size; l++) {
         std::cout << " _ __ " << " _ __ " << " _ __ ";
-        print_line(data, solution, finder, 0, x);
+        print_line(data, solution, finder, 0, l);
         std::cout << std::endl;
     }
-    for (int x = 0; x < size; x++) {
-        print_line(data, solution, finder, 4, x);
-        print_line(data, solution, finder, 1, x);
-        print_line(data, solution, finder, 2, x);
-        print_line(data, solution, finder, 3, x);
+    for (int l = 0; l < size; l++) {
+        print_line(data, solution, finder, 4, l);
+        print_line(data, solution, finder, 1, l);
+        print_line(data, solution, finder, 2, l);
+        print_line(data, solution, finder, 3, l);
         std::cout << std::endl;
     }
-    for (int x = 0; x < size; x++) {
+    for (int l = 0; l < size; l++) {
         std::cout << " _ __ " << " _ __ " << " _ __ ";
-        print_line(data, solution, finder, 5, x);
+        print_line(data, solution, finder, 5, l);
         std::cout << std::endl;
     }
 }
 
-void print_line_dist(Coord pos, int s, int x) {
-    for (int y = 0; y < size; y++)
+void print_line_dist(Coord pos, int s, int l) {
+    for (int c = 0; c < size; c++)
     {
-        Coord p = (Coord){s, x, y};
+        Coord p = (Coord){s, l, c};
         int dist = Heuristics::SquareDistance(pos, p);
         int rdist = Heuristics::SquareDistance(p, pos);
 
@@ -101,21 +101,21 @@ void print_line_dist(Coord pos, int s, int x) {
 
 void	print_dist(Coord pos)
 {
-    for (int x = 0; x < size; x++) {
+    for (int l = 0; l < size; l++) {
         std::cout << "  " << "  " << "  ";
-        print_line_dist(pos, 0, x);
+        print_line_dist(pos, 0, l);
         std::cout << std::endl;
     }
-    for (int x = 0; x < size; x++) {
-        print_line_dist(pos, 4, x);
-        print_line_dist(pos, 1, x);
-        print_line_dist(pos, 2, x);
-        print_line_dist(pos, 3, x);
+    for (int l = 0; l < size; l++) {
+        print_line_dist(pos, 4, l);
+        print_line_dist(pos, 1, l);
+        print_line_dist(pos, 2, l);
+        print_line_dist(pos, 3, l);
         std::cout << std::endl;
     }
-    for (int x = 0; x < size; x++) {
+    for (int l = 0; l < size; l++) {
         std::cout << "  " << "  " << "  ";
-        print_line_dist(pos, 5, x);
+        print_line_dist(pos, 5, l);
         std::cout << std::endl;
     }
 }

@@ -26,6 +26,7 @@ using StateRef = std::shared_ptr<State>;
 class State {
 	public:
 		static const Data solution;
+		static const DataFull solution_full;
 		static const Finder solution_finder;
 		static int stateCount;
 		static Score initial_score;
@@ -74,19 +75,15 @@ class State {
 
 		bool							operator<(const State& ra) const;
 
-		void							applyScramble(const string& scramble);
-		void							applyMovement(Movement m);
-		const std::vector<Movement>&	get_movements() const;
+		void							apply_scramble(const string& scramble);
+		void							apply_movement(Movement m);
+		std::vector<Movement>			get_movements() const;
 		Movement						get_movement() const;
-		int 							get_distance() const;
+		Score							get_distance() const;
 		Score 							get_weight() const;
-		void 							set_weight(Score s);
-		void 							set_distance(int d);
-		bool 							is_final() const;
-		Data&							get_data();
 		const Data&						get_data() const;
-		const Finder&					get_finder() const;
 		void							get_candidates(std::vector<StateRef>& candidates);
+		bool 							is_final() const;
 
 		static Score					indexer_astar(const State&);
 		static Score					indexer_uniform(const State&);
@@ -94,16 +91,16 @@ class State {
 
 		static int						compare(const Data& a, const Data& b);
 
-		bool							check_continuity() const;
-
 	private:
 		static Data						_calculate_solution();
+		static DataFull					_calculate_solution_full();
 		static Finder					_calculate_finder(const Data& data);
 
 		Data							_data;
-		Finder							_finder;
 		Score							_weight;
-		std::vector<Movement>			_movements;
+		Score							_distance;
+		Movement						_movement;
+		StateRef						_parent;
 };
 
 std::ostream& operator<< (std::ostream& s, const State::Movement c);

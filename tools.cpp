@@ -20,7 +20,11 @@ void display_square(Square c, int dist, bool correct) {
     string background;
     string foreground;
 
-    switch (c.color) {
+    int id = c.face_id;
+    Coord pos = State::solution_finder[id];
+    SquareFull full = State::solution_full[pos.f][pos.l][pos.c];
+
+    switch (full.color) {
         case White: background = "\e[107m"; break;
         case Red: background = "\e[41m"; break;
         case Blue: background = "\e[44m"; break;
@@ -35,14 +39,14 @@ void display_square(Square c, int dist, bool correct) {
     else
         foreground = "\e[30m";
 
-    std::cout << foreground << background << " " << dist << " " << std::setw(2) << c.cube_id << " \e[0m";
+    std::cout << foreground << background << " " << dist << " " << std::setw(2) << full.cube_id << " \e[0m";
 }
 
-void print_line(const Data& data, const Data& solution, const Finder& finder, int s, int l) {
+void print_line(const Data& data, const Data& solution, int s, int l) {
     for (int c = 0; c < size; c++)
     {
         Square sq = data[s][l][c];
-        int dist = Heuristics::SquareDistance((Coord){s, l, c}, finder[sq.face_id]);
+        int dist = Heuristics::SquareDistance((Coord){s, l, c}, State::solution_finder[sq.face_id]);
         bool correct = solution[s][l][c] == sq;
 
         display_square(sq, dist, correct);
@@ -53,23 +57,22 @@ void	print_map(const State& state)
 {
     const Data& solution = State::solution;
     const Data& data = state.get_data();
-    const Finder& finder = state.get_finder();
 
     for (int l = 0; l < size; l++) {
         std::cout << " _ __ " << " _ __ " << " _ __ ";
-        print_line(data, solution, finder, 0, l);
+        print_line(data, solution, 0, l);
         std::cout << std::endl;
     }
     for (int l = 0; l < size; l++) {
-        print_line(data, solution, finder, 4, l);
-        print_line(data, solution, finder, 1, l);
-        print_line(data, solution, finder, 2, l);
-        print_line(data, solution, finder, 3, l);
+        print_line(data, solution, 4, l);
+        print_line(data, solution, 1, l);
+        print_line(data, solution, 2, l);
+        print_line(data, solution, 3, l);
         std::cout << std::endl;
     }
     for (int l = 0; l < size; l++) {
         std::cout << " _ __ " << " _ __ " << " _ __ ";
-        print_line(data, solution, finder, 5, l);
+        print_line(data, solution, 5, l);
         std::cout << std::endl;
     }
 }

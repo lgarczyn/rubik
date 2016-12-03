@@ -20,12 +20,14 @@ Score				State::initial_score = 0;
 indexer				State::get_index = indexer_astar;
 
 const Data			State::solution = _calculate_solution();
+const DataFull		State::solution_full = _calculate_solution_full();
 const Finder		State::solution_finder = _calculate_finder(solution);
 
 State::State() {
 	_data = solution;
-	_finder = solution_finder;
 	_weight = 0;
+	_movement = None;
+	_distance = 0;
 	stateCount++;
 }
 
@@ -34,17 +36,18 @@ State::State(const State& clone) {
 }
 
 State::State(const std::string& scramble):State(){
-	applyScramble(scramble);
+	apply_scramble(scramble);
 	update();
 }
 
 State::State(State* parent, State::Movement m):State() {
 
+	_parent = StateRef(parent);
 	_data = parent->_data;
-	_movements = parent->_movements;
-	_movements.push_back(m);
+	_distance = parent->_distance + 1;
+	_movement = m;
 
-	applyMovement(m);
+	apply_movement(m);
 	update();
 }
 
@@ -62,13 +65,12 @@ State::State(int scramble_count):State(){
 		else if (c == 2)
 			m = (Movement)(m | Halfturn);
 
-		applyMovement(m);
+		apply_movement(m);
 	}
 	update();
 }
 
 void State::update() {
-	_finder = _calculate_finder(_data);
 	_weight = Heuristics::HeuristicFunction(_data);
 }
 
@@ -78,13 +80,16 @@ State::~State()
 }
 
 int State::compare(const Data& a, const Data& b) {
+
+	//TODO ONLY COMPARE NECESSARY ELEMENTS
+
 	for (int s = 0; s < 6; s++)
 		for (int l = 0; l < size; l++)
 			for (int c = 0; c < size; c++)
 				if (l != 1 || c != 1) {
-					if (a[s][l][c].color < b[s][l][c].color)
+					if (a[s][l][c].face_id < b[s][l][c].face_id)
 						return -1;
-					else if (a[s][l][c].color > b[s][l][c].color)
+					else if (a[s][l][c].face_id > b[s][l][c].face_id)
 						return 1;
 				}
 	return 0;
@@ -92,7 +97,7 @@ int State::compare(const Data& a, const Data& b) {
 
 void	State::get_candidates(std::vector<StateRef>& candidates)
 {
-	Movement m = _movements.size() > 0 ? *_movements.rend() : None;
+	Movement m = _movement;
 
 	for (int n = Movement_Start; n < Movement_End; n++) {
 		Movement nr = (Movement)(n | Reversed);
@@ -104,8 +109,8 @@ void	State::get_candidates(std::vector<StateRef>& candidates)
 	}
 }
 
-Data				State::_calculate_solution() {
-	Data			data;
+DataFull			State::_calculate_solution_full() {
+	DataFull		data;
 
 	int uid = 0;
 	for (int l = 0; l < size; l++)
@@ -161,6 +166,20 @@ Data				State::_calculate_solution() {
 	return data;
 }
 
+
+Data				State::_calculate_solution() {
+	Data			data;
+
+	int uid = 0;
+
+	for (int s = Index_Start; s < Index_Len; s++)
+		for (int l = 0; l < size; l++)
+			for (int c = 0; c < size; c++)
+				data[s][l][c].face_id = uid++;
+
+	return data;
+}
+
 Finder				State::_calculate_finder(const Data &data) {
 	Finder			finder;
 
@@ -174,7 +193,7 @@ Finder				State::_calculate_finder(const Data &data) {
 	return finder;
 }
 
-void State::applyScramble(const string& scramble) {
+void State::apply_scramble(const string& scramble) {
 
 	std::stringstream ss = std::stringstream(scramble);
 
@@ -196,7 +215,7 @@ void State::applyScramble(const string& scramble) {
 			case '\'': m = (Movement)(m | Reversed); break;
 			case '2': m = (Movement)(m | Halfturn); break;
 		}
-		applyMovement(m);
+		apply_movement(m);
 	}
 }
 
@@ -227,7 +246,7 @@ void swap_s(Square& a, Square& b, Square& c, Square& d, int turns) {
 	}
 }
 
-void State::applyMovement(State::Movement m) {
+void State::apply_movement(State::Movement m) {
 
 	bool reversed = m & Reversed;
 	bool halfturn = m & Halfturn;
@@ -281,6 +300,7 @@ void State::applyMovement(State::Movement m) {
 	}
 }
 
+/*
 bool State::check_continuity() const{
 	int id;
 
@@ -338,29 +358,28 @@ bool State::check_continuity() const{
 	if (_data[Index_Left][1][2].cube_id != _data[Index_Front][1][0].cube_id)
 		return false;
 	return true;
+}*/
+
+std::vector<State::Movement> State::get_movements() const {
+
+	std::vector<Movement> movements;
+
+	const State* s = this;
+
+	while (s->_movement != None) {
+		movements.insert(movements.begin(), s->_movement);
+		s = s->_parent.get();
+	}
+	return (movements);
 }
 
-const std::vector<State::Movement>& State::get_movements() const {
-	return (_movements);
-}
-
-int State::get_distance() const
+Score State::get_distance() const
 {
-	return (_movements.size());
+	return (_distance);
 }
 
 bool State::is_final() const {
 	return _weight == 0;
-}
-
-Data&	State::get_data(void)
-{
-	return (this->_data);
-}
-
-const Finder&	State::get_finder(void) const
-{
-	return (this->_finder);
 }
 
 const Data&	State::get_data(void) const
@@ -387,11 +406,6 @@ std::ostream& operator<< (std::ostream& s, const State::Movement c)
 Score 			State::get_weight(void) const
 {
 	return (this->_weight);
-}
-
-void 			State::set_weight(Score s)
-{
-	this->_weight = s;
 }
 
 size_t custom_hash::operator()(const State* l) const noexcept {

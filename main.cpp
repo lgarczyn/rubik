@@ -229,7 +229,7 @@ int		main(int ac, char **av)
 
 Solver::Result	solve_loop(State& initial)//, Parser::ParseResult& parseResult)
 {
-	Solver			puzzle(initial, false);//parseResult.forget);
+	Solver			puzzle(initial, true);//parseResult.forget);
 	Solver::Result	solverResult(0, 0);
 	size_t 			it;
 

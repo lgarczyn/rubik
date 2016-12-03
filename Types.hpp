@@ -2,6 +2,8 @@
 
 #include <array>
 
+using uchar = unsigned char;
+
 enum Color {
 	White = 0,
 	Red = 1,
@@ -23,10 +25,14 @@ enum Indexes {
 	Index_Len = 6,
 };
 
-struct Square {
+struct SquareFull {
 	Color color;
 	int face_id;
 	int cube_id;
+};
+
+struct Square {
+	uchar face_id;
 };
 
 struct Coord {
@@ -44,9 +50,14 @@ std::ostream& operator<<(std::ostream& s, const Coord& cb);
  // RECODER TOUT LE SYSTEME DE TRANSFORMATION AUSSI
 static const int size = 3;
 
+using ColumnFull = std::array<SquareFull, size>;
+using FaceFull = std::array<ColumnFull, size>;
+using DataFull = std::array<FaceFull, 6>;
+
 using Column = std::array<Square, size>;
 using Face = std::array<Column, size>;
 using Data = std::array<Face, 6>;
+
 using Finder = std::array<Coord, size * size * 6>;
 
 using Score = long int;

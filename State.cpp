@@ -23,10 +23,14 @@ const Data			State::solution = _calculate_solution();
 const DataFull		State::solution_full = _calculate_solution_full();
 const Finder		State::solution_finder = _calculate_finder(solution);
 
+
+State::MovementNode::MovementNode(Movement _m, MovementRef& _p):value(_m),parent(_p) {}
+State::MovementNode::MovementNode(Movement _m):value(_m) {}
+
 State::State() {
 	_data = solution;
 	_weight = 0;
-	_movement = None;
+	_movement = MovementRef(new MovementNode(None));
 	_distance = 0;
 	stateCount++;
 }
@@ -42,10 +46,12 @@ State::State(const std::string& scramble):State(){
 
 State::State(State* parent, State::Movement m):State() {
 
-	_parent = StateRef(parent);
+	if (m == None)
+		throw std::logic_error("None is not an allowed move, use copy constructor");
+
 	_data = parent->_data;
 	_distance = parent->_distance + 1;
-	_movement = m;
+	_movement = MovementRef(new MovementNode(m, parent->_movement));
 
 	apply_movement(m);
 	update();
@@ -97,7 +103,7 @@ int State::compare(const Data& a, const Data& b) {
 
 void	State::get_candidates(std::vector<StateRef>& candidates)
 {
-	Movement m = _movement;
+	Movement m = _movement->value;
 
 	for (int n = Movement_Start; n < Movement_End; n++) {
 		Movement nr = (Movement)(n | Reversed);
@@ -364,11 +370,11 @@ std::vector<State::Movement> State::get_movements() const {
 
 	std::vector<Movement> movements;
 
-	const State* s = this;
+	MovementNode* m = _movement.get();
 
-	while (s->_movement != None) {
-		movements.insert(movements.begin(), s->_movement);
-		s = s->_parent.get();
+	while (m->value != None) {
+		movements.insert(movements.begin(), m->value);
+		m = m->parent.get();
 	}
 	return (movements);
 }

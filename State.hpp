@@ -65,6 +65,19 @@ class State {
 			H_Back = Halfturn | Back,
 		};
 
+
+		struct MovementNode;
+		using MovementRef = std::shared_ptr<MovementNode>;
+		struct MovementNode{
+
+
+				Movement value;
+				MovementRef parent;
+
+				MovementNode(Movement _m, MovementRef& _p);
+				MovementNode(Movement _m);
+		};
+
 		State();
 		State(const State& clone);
 		State(const string& scramble);
@@ -99,8 +112,7 @@ class State {
 		Data							_data;
 		Score							_weight;
 		Score							_distance;
-		Movement						_movement;
-		StateRef						_parent;
+		MovementRef						_movement;
 };
 
 std::ostream& operator<< (std::ostream& s, const State::Movement c);

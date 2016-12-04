@@ -45,6 +45,14 @@ StateRef 	Solver::get_smallest_state() {
 	throw std::logic_error("No opened state, scount is " + std::to_string(_openCount));
 }
 
+void		Solver::print_mem() {
+
+	for (auto pair:_opened) {
+		std::cout << pair.first << ": " << pair.second.size() << std::endl;
+	}
+	std::cout << std::flush;
+}
+
 /*
 StateRef* Solver::get_universe_position(StateRef state) {
 	Node* node = _universe.get();
@@ -121,6 +129,11 @@ Solver::Result Solver::step() {
 
 	//for every children
 	for (StateRef s:candidates) {
+
+		//if (astar && valid heuristic)
+		if (State::get_index(*s) > 20 * score_multiplier)//TODO maybe 19 instead of 20?
+			continue;
+
 		if (!_forget) {
 			auto position = _universe.find(s);
 

@@ -25,6 +25,8 @@ enum Indexes {
 	Index_Len = 6,
 };
 
+static const int score_multiplier = 20;
+
 struct SquareFull {
 	Color color;
 	int face_id;
@@ -33,6 +35,7 @@ struct SquareFull {
 
 struct Square {
 	uchar face_id;
+	uchar spec_id;
 };
 
 struct Coord {

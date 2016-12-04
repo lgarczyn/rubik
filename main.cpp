@@ -38,8 +38,8 @@ Parser::ParseResult	parse_args(int ac, char **av)
 {
 	Parser::ParseResult result;
 	try {
-		//char	buf[255];
-		//tgetent(buf, getenv("TERM"));
+		char	buf[255];
+		tgetent(buf, getenv("TERM"));
 
 		// ARGS
 		if (is_cmd_opt(av, av + ac, "-h"))
@@ -86,19 +86,21 @@ Solver::Result	solve_loop(State& initial, Parser::ParseResult& parseResult)
 		if (solverResult.finished)
 			break;
 
-		if (it % 10000 == 0)
+		if (it % 100000 == 0)
 		{
-			//std::cout << tgetstr((char*)"cl", NULL);
+			std::cout << tgetstr((char*)"cl", NULL);
 			if (solverResult.actual_state != nullptr)
 				print_map(*solverResult.actual_state);
 			else
 				std::cout << "null current state" << std::endl;
 			std::cout << "Iteration count: " << it << std::endl;
 			std::cout << "Solution [Score: " << solverResult.actual_state->get_weight() << "]" << std::endl;
+            //std::cout << "Memory repartition:" << std::endl;
+            //puzzle.print_mem();
 		}
 		++it;
 	}
-	//std::cout << tgetstr((char*)"cl", NULL);
+	std::cout << tgetstr((char*)"cl", NULL);
 	if (solverResult.actual_state != nullptr)
 		print_map(*solverResult.actual_state);
 	else

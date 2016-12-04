@@ -28,7 +28,6 @@ State::MovementNode::MovementNode(Movement _m, MovementRef& _p):value(_m),parent
 State::MovementNode::MovementNode(Movement _m):value(_m) {}
 
 State::State() {
-	_alive = true;
 	_data = solution;
 	_weight = 0;
 	_movement = MovementRef(new MovementNode(None));
@@ -49,10 +48,9 @@ State::State(State* parent, State::Movement m) {
 
 	if (m == None)
 		throw std::logic_error("None is not an allowed move, use copy constructor");
-	if (parent->_alive == false)
+	if (parent->_weight < 0)
 		throw std::logic_error("Attempting to create children from dead parent");
 
-	_alive = true;
 	_data = parent->_data;
 	_distance = parent->_distance + 1;
 	_movement = MovementRef(new MovementNode(m, parent->_movement));
@@ -85,8 +83,44 @@ State::State(int scramble_count):State(){
 	update();
 }
 
+inline void move_value(uchar values[], uchar pos) {
+
+	for (uchar i = pos + 1; i < 8; i++) {
+		values[i]--;
+	}
+}
+
 void State::update() {
 	_weight = Heuristics::HeuristicFunction(_data);
+
+	uchar values[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+	uchar c;
+	uint s;
+
+	c = values[_data[Index_Up][0][0].spec_id];
+	move_value(values, c);
+	s = c;
+	c = values[_data[Index_Up][0][2].spec_id];
+	move_value(values, c);
+	s = s * 7 + c;
+	c = values[_data[Index_Up][2][0].spec_id];
+	move_value(values, c);
+	s = s * 6 + c;
+	c = values[_data[Index_Up][2][2].spec_id];
+	move_value(values, c);
+	s = s * 5 + c;
+	c = values[_data[Index_Down][0][0].spec_id];
+	move_value(values, c);
+	s = s * 4 + c;
+	c = values[_data[Index_Down][0][2].spec_id];
+	move_value(values, c);
+	s = s * 3 + c;
+	c = values[_data[Index_Down][2][0].spec_id];
+	move_value(values, c);
+	s = s * 2 + c;
+	//c = c + values[_data[Index_Down][2][2].spec_id];
+	//move_value(values, c);
+	//s = s * 1 + c;
 }
 
 State::~State()
@@ -409,13 +443,13 @@ bool State::is_final() const {
 }
 
 bool State::is_alive() const {
-	return _alive;
+	return _weight >= 0;
 }
 
 void State::kill() {
-	if (_alive == false)
+	if (_weight < 0)
 		throw std::logic_error("Node already dead");
-	_alive = false;
+	_weight = -1;
 }
 
 const Data&	State::get_data(void) const
@@ -475,7 +509,7 @@ bool custom_equal_to::operator()(const StateRef& a, const StateRef& b) const noe
 
 Score State::indexer_astar(const State& state)
 {
-	return state.get_weight() + state.get_distance() * 20;
+	return state.get_weight() + state.get_distance() * score_multiplier;
 }
 
 Score State::indexer_greedy(const State& state)

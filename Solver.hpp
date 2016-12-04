@@ -15,6 +15,7 @@
 
 #define USE_LIST
 
+//using set = std::unordered_set<StateRef, custom_hash, custom_equal_to>;
 using set = std::list<StateRef>;
 using map = std::map<int, set>;
 
@@ -47,6 +48,7 @@ class Solver {
 		Result step();
 		set& get_opened_set(StateRef state);
 		StateRef get_smallest_state();
+		void print_mem();
 		~Solver();
 
 	private:

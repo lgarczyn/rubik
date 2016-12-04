@@ -1,0 +1,13 @@
+database
+    indexing
+        kinda already have something maybe
+    calculating
+        no idea, probably a whole week to make it work
+deflating
+    store data?
+        + minus one (big) element
+        - have to bring it everywhere
+    if not, then
+        inflate();
+        deflate();
+    maybe other way to store aliveness

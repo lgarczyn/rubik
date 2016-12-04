@@ -65,6 +65,12 @@ class State {
 			H_Back = Halfturn | Back,
 		};
 
+		struct ID {
+			uint borders_top;
+			uint borders_bot;
+			uint corners;
+		};
+
 
 		struct MovementNode;
 		using MovementRef = std::shared_ptr<MovementNode>;
@@ -84,12 +90,11 @@ class State {
 		State(State* parent, const Movement direction);
 		State(int scramble_count);
 		~State();
-		void							update();
-
-		bool							operator<(const State& ra) const;
 
 		void							apply_scramble(const string& scramble);
 		void							apply_movement(Movement m);
+		void							update();
+
 		std::vector<Movement>			get_movements() const;
 		Movement						get_movement() const;
 		Score							get_distance() const;
@@ -112,10 +117,10 @@ class State {
 		static Finder					_calculate_finder(const Data& data);
 
 		Data							_data;
+		ID								_id;
 		Score							_weight;
 		Score							_distance;
 		MovementRef						_movement;
-		bool							_alive;
 };
 
 std::ostream& operator<< (std::ostream& s, const State::Movement c);

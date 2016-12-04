@@ -13,8 +13,12 @@
 #define MAX_SOLUTION_LENGTH ((int)10000)
 #define SOLVER_BUCKET_SIZE ((int)10000)
 
-using set = std::unordered_set<StateRef>;//, custom_hash, custom_equal_to>;
+#define USE_LIST
+
+using set = std::list<StateRef>;
 using map = std::map<int, set>;
+
+using universe = std::unordered_set<StateRef, custom_hash, custom_equal_to>;
 
 class Solver {
 	public:
@@ -30,24 +34,24 @@ class Solver {
 				Result(int timeComplexity, int sizeComplexity);
 		};
 
-		struct Node
+		/*struct Node
 		{
 			StateRef value;
 			std::unique_ptr<Node> left;
 			std::unique_ptr<Node> right;
 		};
-		using NodeRef = std::unique_ptr<Node>;
+		using NodeRef = std::unique_ptr<Node>;*/
+		//StateRef *get_universe_position(StateRef state);
 
 		Solver(State& initial, bool forget);
 		Result step();
 		set& get_opened_set(StateRef state);
-		StateRef *get_universe_position(StateRef state);
 		StateRef get_smallest_state();
 		~Solver();
 
 	private:
 		map _opened;
-		std::unique_ptr<Node> _universe;
+		universe _universe;
 
 		int _timeComplexity;
 		int _sizeComplexity;

@@ -14,94 +14,56 @@
 
 #include "CliOptParser.hpp"
 #include "Solver.hpp"
+#include "Parser.hpp"
 #include "tools.hpp"
+#include "Types.hpp"
+#include "Heuristics.hpp"
+#include <random>
 #include <unistd.h>
 #include <termcap.h>
 #include <unistd.h>
 
-/*
+
 int		display_help(const char* path = "npuzzle")
 {
 	std::cout << "Usage: " << path << " [-h] " << std::endl
-		<< "1: [-w WIDTH] [-i ITERATION] [-u] [-s]" << std::endl
-		<< "2: [-m FILE]" << std::endl
-		<< "3: [-s]" << std::endl
-		<< "[--rect]" << std::endl
+		<< "1: [-i ITERATION]" << std::endl
+		<< "2: [-m MOVEMENTS]" << std::endl
 	   	<< "[-f1] [-f2] [-f3]" << std::endl
 	   	<< "[--greedy] [--uniform]" << std::endl;
 	return (0);
-}
-
-Parser::ParseResult	get_result(int ac, char **av)
-{
-	Parser::ParseResult	result;
-	Parser				p;
-
-	if (is_cmd_opt(av, av + ac, "-m")) {
-		result = p.parse_file(get_cmd_opt(av, av + ac, "-m"));
-	}
-	else if (is_cmd_opt(av, av + ac, "-w")) {
-		result.width = std::stoi(get_cmd_opt(av, av + ac, "-w"));
-		if (result.width < 3) {
-			std::cerr << av[0] << ": width too small" << std::endl;
-			exit(1);
-		}
-		result.height = result.width;
-		result.shouldGenerate = true;
-	}
-	else if (is_cmd_opt(av, av + ac, "-s"))
-		result = p.parse_istream(std::cin);
-	else
-	{
-		display_help(av[0]);
-		exit(0);
-	}
-	return (result);
 }
 
 Parser::ParseResult	parse_args(int ac, char **av)
 {
 	Parser::ParseResult result;
 	try {
-		char	buf[255];
-		// INIT
-		std::srand(std::time(0));
-		tgetent(buf, getenv("TERM"));
+		//char	buf[255];
+		//tgetent(buf, getenv("TERM"));
 
 		// ARGS
 		if (is_cmd_opt(av, av + ac, "-h"))
 			exit(display_help(av[0]));
-		if (is_cmd_opt(av, av + ac, "-f1"))
-			Heuristics::HeuristicFunction = Heuristics::ManhattanDistance;
-		if (is_cmd_opt(av, av + ac, "-f2"))
-			Heuristics::HeuristicFunction = Heuristics::LinearConflict;
-		if (is_cmd_opt(av, av + ac, "-f3"))
-			Heuristics::HeuristicFunction = Heuristics::SuperSmartDistance;
+		// if (is_cmd_opt(av, av + ac, "-f1"))
+		// 	Heuristics::HeuristicFunction = Heuristics::ManhattanDistance;
+		// if (is_cmd_opt(av, av + ac, "-f2"))
+		// 	Heuristics::HeuristicFunction = Heuristics::LinearConflict;
+		// if (is_cmd_opt(av, av + ac, "-f3"))
+		// 	Heuristics::HeuristicFunction = Heuristics::SuperSmartDistance;
 		if (is_cmd_opt(av, av + ac, "--uniform"))
 			State::get_index = State::indexer_uniform;
 		if (is_cmd_opt(av, av + ac, "--greedy"))
 			State::get_index = State::indexer_greedy;
-		if (is_cmd_opt(av, av + ac, "--rect"))
-			Parser::allow_rectangle = true;
-		result = get_result(ac, av);
 		if (is_cmd_opt(av, av + ac, "--forget"))
 			result.forget = true;
-		if (is_cmd_opt(av, av + ac, "-i"))
-			Generator::iteration = std::stoi(get_cmd_opt(av, av + ac, "-i"));
-
-		if (is_cmd_opt(av, av + ac, "-c"))
-			sscanf(get_cmd_opt(av, av + ac, "-c"), "%zu", &result.search_step);
-		State::init(result.width, result.height);
-
-		if (result.shouldGenerate)
-		{
-			if (is_cmd_opt(av, av + ac, "-s"))
-				result.data = Generator::gen_solvable(result);
-			else if (is_cmd_opt(av, av + ac, "-u"))
-				result.data = Generator::gen_unsolvable(result);
-			else
-				result.data = Generator::gen_random(result);
-		}
+		if (is_cmd_opt(av, av + ac, "-i")) {
+			result.iteration = std::stoi(get_cmd_opt(av, av + ac, "-i"));
+            result.is_random = true;
+        }
+        if (is_cmd_opt(av, av + ac, "-m")) {
+            result.data = get_cmd_opt(av, av + ac, "-m");
+            result.is_random = false;
+        }
 		return (result);
 	}
 	catch (std::exception& e)
@@ -111,130 +73,13 @@ Parser::ParseResult	parse_args(int ac, char **av)
 	}
 }
 
-Solver::Result	solve_loop(State *initial, Parser::ParseResult&parseResult)
+Solver::Result	solve_loop(State& initial, Parser::ParseResult& parseResult)
 {
 	Solver			puzzle(initial, parseResult.forget);
 	Solver::Result	solverResult(0, 0);
 	size_t 			it;
 
 	it = 0;
-	do {
-		while (!(solverResult = puzzle.step()).finished)
-		{
-			if (it % 100000 == 0)
-			{
-				std::cout << tgetstr((char*)"cl", NULL);
-				print_map(solverResult.actual_state->get_data(), State::solution);
-				std::cout << "Iteration count: " << it << std::endl;
-				std::cout << "Solution [Score: " << solverResult.actual_state->get_weight() << "]" << std::endl;
-			}
-			++it;
-		}
-		std::cout << tgetstr((char*)"cl", NULL);
-		print_map(solverResult.actual_state->get_data(), State::solution);
-		std::cout << "Iteration count: " << it << std::endl;
-		std::cout << "Move count: " << solverResult.movements->size() << std::endl;
-	} while ((parseResult.search_step && solverResult.movements->size() > parseResult.search_step));
-
-	return (solverResult);
-}
-
-int		main(int ac, char **av)
-{
-	State*					initial;
-	Parser::ParseResult parseResult;
-
-	parseResult = parse_args(ac, av);
-	initial = new State(parseResult.data);
-	if (initial->is_solvable() == State::Valid)
-	{
-		std::cout << av[0] << ": Puzzle is solvable" << std::endl << std::flush;
-	}
-	else if (initial->is_solvable() == State::Impossible)
-	{
-		std::cerr << av[0] << ": Puzzle is unsolvable" << std::endl << std::flush;
-		exit(1);
-	}
-	else
-	{
-		std::cerr << av[0] << ": Puzzle is broken" << std::endl << std::flush;
-		exit(1);
-	}
-
-	Solver::Result solverResult = solve_loop(initial, parseResult);
-
-	bool displayHelp = true;
-	while (1)
-	{
-		char	c;
-		if (displayHelp)
-			std::cout << "Press:" << std::endl
-				<< "\t[q] to quit" << std::endl
-				<< "\t[d] to display data" << std::endl
-				<< "\t[s] to display solution" << std::endl
-				<< "\t[a] to display animation" << std::endl
-				<< std::endl << std::flush;
-
-		displayHelp = true;
-		c = std::getchar();
-		switch(c)
-		{
-			case 'q':
-				exit(0);
-			case 'd':
-				std::cout << tgetstr((char*)"cl", NULL);
-				std::cout
-				<< "Total number of states ever in open set: " << solverResult.sizeComplexity << std::endl
-				<< "Max number of states concurrent in memory: " << solverResult.timeComplexity << std::endl
-				<< "Solution move count: " << solverResult.movements->size() << std::endl
-				<< std::endl << std::flush;
-				break;
-			case 's':
-				std::cout << tgetstr((char*)"cl", NULL) << std::endl;
-				for (auto &l:*solverResult.movements)
-					std::cout << l << std::endl;
-				std::cout << std::endl << std::flush;
-				break;
-			case 'a': {
-				State *current = new State(initial->get_data());
-
-				for (auto &l:*solverResult.movements) {
-					std::cout << tgetstr((char*)"cl", NULL) << std::endl;
-					print_map(current->get_data(), State::solution);
-					std::cout << std::endl;
-					usleep(500000);
-
-					State *tmp = new State(current, l);
-					delete current;
-					current = tmp;
-				}
-				std::cout << tgetstr((char*)"cl", NULL) << std::endl;
-				print_map(current->get_data(), State::solution);
-				std::cout << std::endl << std::flush;
-				usleep(500000);
-				delete current;
-
-				break;
-			}
-			default:
-				displayHelp = false;
-				break;
-		}
-	}
-} */
-
-#include "Types.hpp"
-#include "Heuristics.hpp"
-#include <random>
-
-Solver::Result	solve_loop(State& initial)//, Parser::ParseResult& parseResult)
-{
-	Solver			puzzle(initial, true);//parseResult.forget);
-	Solver::Result	solverResult(0, 0);
-	size_t 			it;
-
-	it = 0;
-	//do {
 	while (1)
 	{
 		solverResult = puzzle.step();
@@ -260,11 +105,83 @@ Solver::Result	solve_loop(State& initial)//, Parser::ParseResult& parseResult)
 		std::cout << "null current state" << std::endl;
 	std::cout << "Iteration count: " << it << std::endl;
 	std::cout << "Move count: " << solverResult.movements.size() << std::endl;
-	//} while ((0 && solverResult.movements->size() > parseResult.search_step));
 
 	return (solverResult);
 }
+int		                           main(int ac, char **av)
+{
+	StateRef					  initial;
+	Parser::ParseResult           parseResult;
 
+	parseResult = parse_args(ac, av);
+    if (parseResult.is_random)
+        initial = StateRef(new State(parseResult.iteration));
+    else
+        initial = StateRef(new State(parseResult.data));
+
+    /*std::cout << "GENERATED CUBE" << std::endl;
+    print_map(*initial);
+    std::cout << "ATTEMPTING SOLUTION" << std::endl;*/
+
+	Solver::Result solverResult = solve_loop(*initial, parseResult);
+
+	bool displayHelp = true;
+	while (1)
+	{
+		char	c;
+		if (displayHelp)
+			std::cout << "Press:" << std::endl
+				<< "\t[q] to quit" << std::endl
+				<< "\t[d] to display data" << std::endl
+				<< "\t[s] to display solution" << std::endl
+				<< "\t[a] to display animation" << std::endl
+				<< std::endl << std::flush;
+
+		displayHelp = true;
+		c = std::getchar();
+		switch(c)
+		{
+			case 'q':
+				exit(0);
+			case 'd':
+				std::cout << tgetstr((char*)"cl", NULL);
+				std::cout
+				<< "Total number of states ever in open set: " << solverResult.sizeComplexity << std::endl
+				<< "Max number of states concurrent in memory: " << solverResult.timeComplexity << std::endl
+				<< "Solution move count: " << solverResult.movements.size() << std::endl
+				<< std::endl << std::flush;
+				break;
+			case 's':
+				std::cout << tgetstr((char*)"cl", NULL) << std::endl;
+				for (auto &l:solverResult.movements)
+					std::cout << l << std::endl;
+				std::cout << std::endl << std::flush;
+				break;
+			case 'a': {
+				StateRef current = StateRef(new State(*initial));
+
+				for (auto &l:solverResult.movements) {
+					std::cout << tgetstr((char*)"cl", NULL) << std::endl;
+					print_map(*current);
+					std::cout << std::endl;
+					usleep(500000);
+
+					current = StateRef(new State(current.get(), l));
+				}
+				std::cout << tgetstr((char*)"cl", NULL) << std::endl;
+				print_map(*current);
+				std::cout << std::endl << std::flush;
+				usleep(500000);
+
+				break;
+			}
+			default:
+				displayHelp = false;
+				break;
+		}
+	}
+}
+/*
 int main(int argc, char const *argv[]) {
 
 	if (argc != 2)
@@ -275,7 +192,7 @@ int main(int argc, char const *argv[]) {
 	solve_loop(initial);
 
 
-	/*(void)argc;
+	(void)argc;
 	(void)argv;
 
 	State s;
@@ -288,10 +205,10 @@ int main(int argc, char const *argv[]) {
 		s.applyScramble(line);
 
 		print_map(s);
-	}*/
+	}
 
 	//Test heuristic validity/quality
-	/*std::random_device rd;     // only used once to initialise (seed) engine
+	std::random_device rd;     // only used once to initialise (seed) engine
 	std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
 	std::uniform_int_distribution<int> uni(0,20); // guaranteed unbiased
 
@@ -307,10 +224,10 @@ int main(int argc, char const *argv[]) {
 		if (r > s_count)
 			std::cout << "Error, heuristic result is bigger than solution" << std::endl;
 
-	}*/
+	}
 
 	//Test every Movement
-	/*check_movement("");
+	check_movement("");
 	check_movement("U");
 	check_movement("D");
 	check_movement("R");
@@ -328,10 +245,10 @@ int main(int argc, char const *argv[]) {
 	check_movement("R2");
 	check_movement("L2");
 	check_movement("F2");
-	check_movement("B2");*/
+	check_movement("B2");
 
 	//isplay distance for entry position and every other
-	/*while (1) {
+	while (1) {
 		int f;
 		int l;
 		int c;
@@ -341,8 +258,8 @@ int main(int argc, char const *argv[]) {
 		std::cin >> c;
 
 		print_dist((Coord){f, l, c});
-	}*/
+	}
 
 
 	return 0;
-}
+}*/

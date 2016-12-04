@@ -177,6 +177,33 @@ Heuristics.cpp.s:
 	$(MAKE) -f CMakeFiles/rubik.dir/build.make CMakeFiles/rubik.dir/Heuristics.cpp.s
 .PHONY : Heuristics.cpp.s
 
+Parser.o: Parser.cpp.o
+
+.PHONY : Parser.o
+
+# target to build an object file
+Parser.cpp.o:
+	$(MAKE) -f CMakeFiles/rubik.dir/build.make CMakeFiles/rubik.dir/Parser.cpp.o
+.PHONY : Parser.cpp.o
+
+Parser.i: Parser.cpp.i
+
+.PHONY : Parser.i
+
+# target to preprocess a source file
+Parser.cpp.i:
+	$(MAKE) -f CMakeFiles/rubik.dir/build.make CMakeFiles/rubik.dir/Parser.cpp.i
+.PHONY : Parser.cpp.i
+
+Parser.s: Parser.cpp.s
+
+.PHONY : Parser.s
+
+# target to generate assembly for a file
+Parser.cpp.s:
+	$(MAKE) -f CMakeFiles/rubik.dir/build.make CMakeFiles/rubik.dir/Parser.cpp.s
+.PHONY : Parser.cpp.s
+
 Solver.o: Solver.cpp.o
 
 .PHONY : Solver.o
@@ -327,6 +354,9 @@ help:
 	@echo "... Heuristics.o"
 	@echo "... Heuristics.i"
 	@echo "... Heuristics.s"
+	@echo "... Parser.o"
+	@echo "... Parser.i"
+	@echo "... Parser.s"
 	@echo "... Solver.o"
 	@echo "... Solver.i"
 	@echo "... Solver.s"

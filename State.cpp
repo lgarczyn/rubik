@@ -28,6 +28,7 @@ State::MovementNode::MovementNode(Movement _m, MovementRef& _p):value(_m),parent
 State::MovementNode::MovementNode(Movement _m):value(_m) {}
 
 State::State() {
+	_alive = true;
 	_data = solution;
 	_weight = 0;
 	_movement = MovementRef(new MovementNode(None));
@@ -44,17 +45,22 @@ State::State(const std::string& scramble):State(){
 	update();
 }
 
-State::State(State* parent, State::Movement m):State() {
+State::State(State* parent, State::Movement m) {
 
 	if (m == None)
 		throw std::logic_error("None is not an allowed move, use copy constructor");
+	if (parent->_alive == false)
+		throw std::logic_error("Attempting to create children from dead parent");
 
+	_alive = true;
 	_data = parent->_data;
 	_distance = parent->_distance + 1;
 	_movement = MovementRef(new MovementNode(m, parent->_movement));
 
 	apply_movement(m);
 	update();
+
+	stateCount++;
 }
 
 State::State(int scramble_count):State(){
@@ -63,8 +69,11 @@ State::State(int scramble_count):State(){
 	std::uniform_int_distribution<int> uni(0,6);
 	std::uniform_int_distribution<int> bo(0,2);
 
+	Movement previous = None;
 	for (int i = 0; i < scramble_count; i++) {
 		Movement m = (Movement)uni(rng);
+		while (m == previous)
+			m = (Movement)uni(rng);
 		int c = bo(rng);
 		if (c == 1)
 			m = (Movement)(m | Reversed);
@@ -98,20 +107,25 @@ int State::compare(const Data& a, const Data& b) {
 					else if (a[s][l][c].face_id > b[s][l][c].face_id)
 						return 1;
 				}
+
 	return 0;
 }
 
 void	State::get_candidates(std::vector<StateRef>& candidates)
 {
-	Movement m = _movement->value;
+	Movement m = (Movement)(_movement->value & Mask);
 
 	for (int n = Movement_Start; n < Movement_End; n++) {
+
+		if (n == m)
+			continue;
+
 		Movement nr = (Movement)(n | Reversed);
 		Movement nh = (Movement)(n | Halfturn);
 
-		if (m != n) candidates.push_back(StateRef(new State(this, (Movement)n)));
-		if (m != nr) candidates.push_back(StateRef(new State(this, nr)));
-		if (m != nh) candidates.push_back(StateRef(new State(this, nh)));
+		candidates.push_back(StateRef(new State(this, (Movement)n)));
+		candidates.push_back(StateRef(new State(this, nr)));
+		candidates.push_back(StateRef(new State(this, nh)));
 	}
 }
 
@@ -225,31 +239,37 @@ void State::apply_scramble(const string& scramble) {
 	}
 }
 
-void rotate_face(Face& face, int turns) {
-	for (int i = 0; i < turns; i++) {
-		Square tl =  face[0][0];
-		face[0][0] = face[2][0];
-		face[2][0] = face[2][2];
-		face[2][2] = face[0][2];
-		face[0][2] = tl;
 
-		tl =         face[0][1];
-		face[0][1] = face[1][0];
-		face[1][0] = face[2][1];
-		face[2][1] = face[1][2];
-		face[1][2] = tl;
+
+void swap_s(Square& a, Square& b, Square& c, Square& d, int turns) {
+	Square t;
+	switch (turns) {
+		case 1:
+
+			t = d;
+			d = c;
+			c = b;
+			b = a;
+			a = t;
+			break;
+		case 2:
+			std::swap(a, c);
+			std::swap(b, d);
+			break;
+		case 3:
+			t = a;
+			a = b;
+			b = c;
+			c = d;
+			d = t;
+			break;
 	}
 }
 
-void swap_s(Square& a, Square& b, Square& c, Square& d, int turns) {
-	for (int i = 0; i < turns; i++) {
-		Square t;
-		t = d;
-		d = c;
-		c = b;
-		b = a;
-		a = t;
-	}
+void rotate_face(Face& face, int turns) {
+
+	swap_s(face[0][2], face[2][2], face[2][0], face[0][0], turns);
+	swap_s(face[1][2], face[2][1], face[1][0], face[0][1], turns);
 }
 
 void State::apply_movement(State::Movement m) {
@@ -388,6 +408,16 @@ bool State::is_final() const {
 	return _weight == 0;
 }
 
+bool State::is_alive() const {
+	return _alive;
+}
+
+void State::kill() {
+	if (_alive == false)
+		throw std::logic_error("Node already dead");
+	_alive = false;
+}
+
 const Data&	State::get_data(void) const
 {
 	return (this->_data);
@@ -414,21 +444,33 @@ Score 			State::get_weight(void) const
 	return (this->_weight);
 }
 
-size_t custom_hash::operator()(const State* l) const noexcept {
+size_t custom_hash::operator()(const StateRef& l) const noexcept {
 	const Data& data = l->get_data();
 	size_t h = 13;
 
+	//TODO skip useless faces
+	//std::cerr << "h";
     for (int s = 0; s < 6; s++)
 		for (int l = 0; l < size; l++)
 			for (int c = 0; c < size; c++)
-				if (l != 2 && c != 2)
+				//if (l != 1 || c != 1)
 					h = h * 31 + data[s][l][c].face_id;
+	//std::clog << "h" << h << std::endl;
 	return (h);
 }
 
-bool custom_equal_to::operator()(const State* a, const State* b) const noexcept
+bool return_bool(bool value) {
+	//std::cerr << "compared map a" << a->get_weight() << " and b " << b->get_weight() << ": " << value << std::endl;
+	//std::clog << "=" << value << std::endl;
+
+	return value;
+}
+
+bool custom_equal_to::operator()(const StateRef& a, const StateRef& b) const noexcept
 {
-	return (a->get_data() == b->get_data());
+	if (a->get_weight() != b->get_weight() )
+		return return_bool(false);
+	return return_bool(a->get_data() == b->get_data());
 }
 
 Score State::indexer_astar(const State& state)

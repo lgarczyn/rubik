@@ -125,6 +125,10 @@ Score Heuristics::HeuristicFunction(const Data& data)
 {
     Score score = 0;
 
+    //TODO
+    //FIRST LOOP HALF CAN BE REDUCED
+    //SECOND LOOP HALF CAN BE BUFFERIZED FOR ONE SOLUTION
+
     for (int f = Index_Start; f < Index_Len; f++)
 		for (int l = 0; l < size; l++)
 			for (int c = 0; c < size; c++)
@@ -146,7 +150,6 @@ Score Heuristics::HeuristicFunction(const Data& data)
                     score += dist;
                     //std::cout << p << finder[id] << std::endl;
                 }
-    //if (State::compare(data, State::solution) != 0)
     return score;
 }
 

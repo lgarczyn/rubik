@@ -19,15 +19,33 @@ set&	Solver::get_opened_set(StateRef state) {
 
 StateRef 	Solver::get_smallest_state() {
 
-	while (_opened.begin()->second.size() == 0) {
+	auto set_it = _opened.begin();
 
-		_opened.erase(_opened.begin());
+	//Iterate over set of lists
+	while (set_it != _opened.end()) {
+
+		//Remove any possible empty lists
+		while (set_it->second.empty()) {
+			set_it = _opened.erase(set_it);
+		}
+
+		//Iterate over list until either empty, or value was found
+		auto& list = set_it->second;
+
+		while (list.empty() == false) {
+
+			StateRef value = list.front();
+			list.pop_front();
+
+			//If value is found, remove and return
+			if (value->is_alive())
+				return value;
+		}
 	}
-
-
-	return *(_opened.begin()->second.begin());
+	throw std::logic_error("No opened state, scount is " + std::to_string(_openCount));
 }
 
+/*
 StateRef* Solver::get_universe_position(StateRef state) {
 	Node* node = _universe.get();
 
@@ -55,19 +73,17 @@ StateRef* Solver::get_universe_position(StateRef state) {
 			node = node->left.get();
 		}
 	}
-}
+}*/
 
 Solver::Solver(State& initial, bool forget) : _opened(), _forget(forget) {
 
 	StateRef root = StateRef(new State(initial));
 
 	State::initial_score = root->get_weight();
-	get_opened_set(root).insert(root);
+	get_opened_set(root).push_front(root);
 
-	/*universe*/
-	_universe = NodeRef(new Node());
 	if (!_forget)
-		*get_universe_position(root) = root;
+		_universe.insert(root);
 	std::cerr << "started" << std::endl;
 
 	_openCount = 1;
@@ -83,8 +99,7 @@ Solver::Result Solver::step() {
 		throw std::logic_error("No opened State");
 
 	StateRef e = get_smallest_state();
-
-	e->update();//SEGFAULT CHECK
+	_openCount--;
 
 	result.actual_state = e;
 
@@ -96,10 +111,6 @@ Solver::Result Solver::step() {
 		return result;
 	}
 
-	//remove e from open nodes
-	get_opened_set(e).erase(e);
-	_openCount--;
-
 	//get children
 	candidates.clear();
 	e->get_candidates(candidates);
@@ -110,23 +121,24 @@ Solver::Result Solver::step() {
 
 	//for every children
 	for (StateRef s:candidates) {
-		if (!_forget && false) {
-			StateRef* position = get_universe_position(s);
+		if (!_forget) {
+			auto position = _universe.find(s);
 
-			if (*position != nullptr) {
-				StateRef previous = *position;
+			if (position != _universe.end()) {
+
+				const StateRef& previous = *position;
 				if (State::get_index(*s) < State::get_index(*previous)) {
-					get_opened_set(previous).erase(previous);
+					previous->kill();
+					_universe.erase(previous);
 					_openCount--;
 				} else {
 					continue;
 				}
 			}
-
-			*position = s;
+			_universe.insert(s);
 		}
+		get_opened_set(s).push_front(s);
 
-		get_opened_set(s).insert(s);
 		_openCount++;
 		_timeComplexity++;
 	}

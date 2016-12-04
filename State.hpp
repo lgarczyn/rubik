@@ -97,6 +97,8 @@ class State {
 		const Data&						get_data() const;
 		void							get_candidates(std::vector<StateRef>& candidates);
 		bool 							is_final() const;
+		bool 							is_alive() const;
+		void							kill();
 
 		static Score					indexer_astar(const State&);
 		static Score					indexer_uniform(const State&);
@@ -113,6 +115,7 @@ class State {
 		Score							_weight;
 		Score							_distance;
 		MovementRef						_movement;
+		bool							_alive;
 };
 
 std::ostream& operator<< (std::ostream& s, const State::Movement c);
@@ -120,17 +123,17 @@ std::ostream& operator<< (std::ostream& s, const State::Movement c);
 struct custom_hash
 {
 	public:
-		size_t operator()(const State* l) const noexcept;
+		size_t operator()(const StateRef& l) const noexcept;
 };
 
 struct custom_equal_to
 {
 	public:
-		bool operator()(const State* a, const State* b) const noexcept;
+		bool operator()(const StateRef& a, const StateRef& b) const noexcept;
 };
 
 struct custom_less
 {
 	public:
-		bool operator()(const State* a, const State* b);
+		bool operator()(const StateRef& a, const StateRef& b);
 };

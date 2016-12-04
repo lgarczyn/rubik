@@ -20,21 +20,17 @@ class	Parser
 {
 	private:
 	public:
-		static bool		allow_rectangle;
 		class ParseResult
 		{
 		public:
-			std::string data;
-			int		width;
-			int		height;
-			bool	shouldGenerate;
-			bool 	forget;
-			size_t 	search_step;
+			bool		is_random;
+			std::string	data;
+			int			iteration;
+			bool 		forget;
+			size_t 		search_step;
 
 			ParseResult();
 		};
 
 		Parser() {}
-		ParseResult parse_file(const char* file_src);
-		ParseResult parse_istream(std::istream& file);
 };

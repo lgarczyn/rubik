@@ -20,15 +20,16 @@ Score				State::initial_score = 0;
 indexer				State::get_index = indexer_astar;
 
 const Data			State::solution = _calculate_solution();
-const DataFull		State::solution_full = _calculate_solution_full();
 const Finder		State::solution_finder = _calculate_finder(solution);
+
+const Color State::solution_colors[] = {White, Green, Red, Blue, Orange, Yellow};
 
 
 State::MovementNode::MovementNode(Movement _m, MovementRef& _p):value(_m),parent(_p) {}
 State::MovementNode::MovementNode(Movement _m):value(_m) {}
 
 State::State() {
-	_data = solution;
+	_data = new Data(solution);
 	_weight = 0;
 	_movement = MovementRef(new MovementNode(None));
 	_distance = 0;
@@ -37,6 +38,7 @@ State::State() {
 
 State::State(const State& clone) {
 	*this = clone;
+	_data = new Data(*_data);
 }
 
 State::State(const std::string& scramble):State(){
@@ -44,19 +46,26 @@ State::State(const std::string& scramble):State(){
 	update();
 }
 
-State::State(State* parent, State::Movement m) {
+void State::update() {
+	_weight = Heuristics::HeuristicFunction(*_data);
+	deflate();//TODO remove
+}
 
+State::State(State* parent, State::Movement m) {
 	if (m == None)
 		throw std::logic_error("None is not an allowed move, use copy constructor");
 	if (parent->_weight < 0)
 		throw std::logic_error("Attempting to create children from dead parent");
 
-	_data = parent->_data;
+	_data = new Data(*parent->_data);
 	_distance = parent->_distance + 1;
 	_movement = MovementRef(new MovementNode(m, parent->_movement));
 
 	apply_movement(m);
 	update();
+
+	if (parent->_id == _id)
+		std::cerr << m;
 
 	stateCount++;
 }
@@ -83,66 +92,155 @@ State::State(int scramble_count):State(){
 	update();
 }
 
-inline void move_value(uchar values[], uchar pos) {
+inline void move_value(uchar* values, uchar pos, int len) {
 
-	for (uchar i = pos + 1; i < 8; i++) {
-		values[i]--;
+	//values[pos] = 0;
+	for (uchar i = pos + 1; i < len; i++) {//TODO pos + 1
+		if (values[i])
+			values[i]--;
 	}
 }
 
-void State::update() {
-	_weight = Heuristics::HeuristicFunction(_data);
+inline uchar get_orientation(Color value, Color up, Color fb) {
+	if (value == up)
+		return 0;
+	if (value == fb)
+		return 1;
+	return 2;
+}
 
+void disp(uchar* values,uchar id, uchar pos, int len) {
+	std::cerr << "E" << (int)id << "=>" << (int)pos << ">" << len << ":{";
+	for (uchar i = 0; i < len; i++)
+		std::cerr << (int)values[i] << ",";
+	std::cerr << "}" << std::endl;
+}
+
+uint get_id_corners(const Data& data) {
 	uchar values[8] = {0, 1, 2, 3, 4, 5, 6, 7};
 	uchar c;
 	uint s;
 
-	c = values[_data[Index_Up][0][0].spec_id];
-	move_value(values, c);
-	s = c;
-	c = values[_data[Index_Up][0][2].spec_id];
-	move_value(values, c);
-	s = s * 7 + c;
-	c = values[_data[Index_Up][2][0].spec_id];
-	move_value(values, c);
-	s = s * 6 + c;
-	c = values[_data[Index_Up][2][2].spec_id];
-	move_value(values, c);
-	s = s * 5 + c;
-	c = values[_data[Index_Down][0][0].spec_id];
-	move_value(values, c);
-	s = s * 4 + c;
-	c = values[_data[Index_Down][0][2].spec_id];
-	move_value(values, c);
-	s = s * 3 + c;
-	c = values[_data[Index_Down][2][0].spec_id];
-	move_value(values, c);
-	s = s * 2 + c;
-	//c = c + values[_data[Index_Down][2][2].spec_id];
-	//move_value(values, c);
+	c = data[Index_Up][0][0].cube_id;//0-7
+	s = values[c];
+	move_value(values, c, 8);
+	c = data[Index_Up][0][2].cube_id;//0-6
+	s = s * 7 + values[c];
+	move_value(values, c, 8);
+	c = data[Index_Up][2][0].cube_id;//0-5
+	s = s * 6 + values[c];
+	move_value(values, c, 8);
+	c = data[Index_Up][2][2].cube_id;//0-4
+	s = s * 5 + values[c];
+	move_value(values, c, 8);
+	c = data[Index_Down][0][0].cube_id;//0-3
+	s = s * 4 + values[c];
+	move_value(values, c, 8);
+	c = data[Index_Down][0][2].cube_id;//0-2
+	s = s * 3 + values[c];
+	move_value(values, c, 8);
+	c = data[Index_Down][2][0].cube_id;//0-1
+	s = s * 2 + values[c];
+	move_value(values, c, 8);
+	//c = data[Index_Down][2][2].cube_id;//0-0
 	//s = s * 1 + c;
+	//move_value(values, c, 8);
+	s = s * 3 + get_orientation(data[Index_Up][0][0].color, State::solution_colors[Index_Up], State::solution_colors[Index_Back]);//0-2
+	s = s * 3 + get_orientation(data[Index_Up][0][2].color, State::solution_colors[Index_Up], State::solution_colors[Index_Back]);//0-2
+	s = s * 3 + get_orientation(data[Index_Up][2][0].color, State::solution_colors[Index_Up], State::solution_colors[Index_Front]);//0-2
+	s = s * 3 + get_orientation(data[Index_Up][2][2].color, State::solution_colors[Index_Up], State::solution_colors[Index_Front]);//0-2
+	s = s * 3 + get_orientation(data[Index_Down][0][0].color, State::solution_colors[Index_Down], State::solution_colors[Index_Back]);//0-2
+	s = s * 3 + get_orientation(data[Index_Down][0][2].color, State::solution_colors[Index_Down], State::solution_colors[Index_Back]);//0-2
+	s = s * 3 + get_orientation(data[Index_Down][2][0].color, State::solution_colors[Index_Down], State::solution_colors[Index_Front]);//0-2
+	s = s * 3 + get_orientation(data[Index_Down][2][2].color, State::solution_colors[Index_Down], State::solution_colors[Index_Front]);//0-2
+	return s;
+}
+
+inline uchar get_orientation(Color value, Color up) {
+	if (value == up)
+		return 0;
+	return 1;
+}
+
+uint get_id_borders_rot(const Data& data) {
+	uint s;
+
+	s = get_orientation(data[Index_Up][0][1].color, State::solution_colors[Index_Up]);//0-1
+	s = s * 2 + get_orientation(data[Index_Up][1][0].color, State::solution_colors[Index_Up]);//0-1
+	s = s * 2 + get_orientation(data[Index_Up][2][1].color, State::solution_colors[Index_Up]);//0-1
+	s = s * 2 + get_orientation(data[Index_Up][1][2].color, State::solution_colors[Index_Up]);//0-1
+
+	s = s * 2 + get_orientation(data[Index_Front][1][0].color, State::solution_colors[Index_Front]);//0-1
+	s = s * 2 + get_orientation(data[Index_Right][1][0].color, State::solution_colors[Index_Right]);//0-1
+	s = s * 2 + get_orientation(data[Index_Back][1][0].color, State::solution_colors[Index_Back]);//0-1
+	s = s * 2 + get_orientation(data[Index_Left][1][0].color, State::solution_colors[Index_Left]);//0-1
+
+	s = s * 2 + get_orientation(data[Index_Down][0][1].color, State::solution_colors[Index_Down]);//0-1
+	s = s * 2 + get_orientation(data[Index_Down][1][0].color, State::solution_colors[Index_Down]);//0-1
+	s = s * 2 + get_orientation(data[Index_Down][2][1].color, State::solution_colors[Index_Down]);//0-1
+	s = s * 2 + get_orientation(data[Index_Down][1][2].color, State::solution_colors[Index_Down]);//0-1
+
+	return s;
+}
+
+uint get_id_borders_pos(const Data& data) {
+	uchar values[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+	uchar c;
+	uint s;
+
+	c = data[Index_Up][0][1].cube_id;//0-11
+	s = values[c];
+	move_value(values, c, 12);
+	c = data[Index_Up][1][0].cube_id;//0-10
+	s = s * 11 + values[c];
+	move_value(values, c, 12);
+	c = data[Index_Up][2][1].cube_id;//0-9
+	s = s * 10 + values[c];
+	move_value(values, c, 12);
+	c = data[Index_Up][1][2].cube_id;//0-8
+	s = s * 9 + values[c];
+	move_value(values, c, 12);
+
+	c = data[Index_Front][1][0].cube_id;//0-7
+	s = s * 8 + values[c];
+	move_value(values, c, 12);
+	c = data[Index_Right][1][0].cube_id;//0-6
+	s = s * 7 + values[c];
+	move_value(values, c, 12);
+	c = data[Index_Back][1][0].cube_id;//0-5
+	s = s * 6 + values[c];
+	move_value(values, c, 12);
+	c = data[Index_Left][1][0].cube_id;//0-4
+	s = s * 5 + values[c];
+	move_value(values, c, 12);
+
+	c = data[Index_Down][0][1].cube_id;//0-3
+	s = s * 4 + values[c];
+	move_value(values, c, 12);
+	c = data[Index_Down][1][0].cube_id;//0-2
+	s = s * 3 + values[c];
+	move_value(values, c, 12);
+	c = data[Index_Down][2][1].cube_id;//0-1
+	s = s * 2 + values[c];
+	move_value(values, c, 12);
+	//c = data[Index_Down][1][2].cube_id;//0-0
+	//s = s * 1 +values[c]
+	//move_value(values, c, 12);
+	return s;
+}
+
+void State::inflate() {
+}
+void State::deflate() {
+	_id.corners = get_id_corners(*_data);
+	_id.borders_pos = get_id_borders_pos(*_data);
+	_id.borders_rot = get_id_borders_rot(*_data);
 }
 
 State::~State()
 {
+	delete _data;
 	stateCount--;
-}
-
-int State::compare(const Data& a, const Data& b) {
-
-	//TODO ONLY COMPARE NECESSARY ELEMENTS
-
-	for (int s = 0; s < 6; s++)
-		for (int l = 0; l < size; l++)
-			for (int c = 0; c < size; c++)
-				if (l != 1 || c != 1) {
-					if (a[s][l][c].face_id < b[s][l][c].face_id)
-						return -1;
-					else if (a[s][l][c].face_id > b[s][l][c].face_id)
-						return 1;
-				}
-
-	return 0;
 }
 
 void	State::get_candidates(std::vector<StateRef>& candidates)
@@ -163,8 +261,8 @@ void	State::get_candidates(std::vector<StateRef>& candidates)
 	}
 }
 
-DataFull			State::_calculate_solution_full() {
-	DataFull		data;
+Data				State::_calculate_solution() {
+	Data			data;
 
 	int uid = 0;
 	for (int l = 0; l < size; l++)
@@ -183,31 +281,30 @@ DataFull			State::_calculate_solution_full() {
 				data[s][l][c].face_id = uid++;
 
 	//Adding corners ID
-	data[Index_Up][0][0].cube_id = data[Index_Left][0][0].cube_id = data[Index_Back][0][2].cube_id = 1;
-	data[Index_Up][2][0].cube_id = data[Index_Left][0][2].cube_id = data[Index_Front][0][0].cube_id = 2;
-	data[Index_Up][0][2].cube_id = data[Index_Right][0][2].cube_id = data[Index_Back][0][0].cube_id = 3;
-	data[Index_Up][2][2].cube_id = data[Index_Right][0][0].cube_id = data[Index_Front][0][2].cube_id = 4;
-
-	data[Index_Down][0][0].cube_id = data[Index_Left][2][2].cube_id = data[Index_Front][2][0].cube_id = 5;
-	data[Index_Down][2][0].cube_id = data[Index_Left][2][0].cube_id = data[Index_Back][2][2].cube_id = 6;
-	data[Index_Down][0][2].cube_id = data[Index_Right][2][0].cube_id = data[Index_Front][2][2].cube_id = 7;
-	data[Index_Down][2][2].cube_id = data[Index_Right][2][2].cube_id = data[Index_Back][2][0].cube_id = 8;
+	data[Index_Up][0][0].cube_id = data[Index_Left][0][0].cube_id = data[Index_Back][0][2].cube_id = 0;
+	data[Index_Up][2][0].cube_id = data[Index_Left][0][2].cube_id = data[Index_Front][0][0].cube_id = 1;
+	data[Index_Up][0][2].cube_id = data[Index_Right][0][2].cube_id = data[Index_Back][0][0].cube_id = 2;
+	data[Index_Up][2][2].cube_id = data[Index_Right][0][0].cube_id = data[Index_Front][0][2].cube_id = 3;
+	data[Index_Down][0][0].cube_id = data[Index_Left][2][2].cube_id = data[Index_Front][2][0].cube_id = 4;
+	data[Index_Down][2][0].cube_id = data[Index_Left][2][0].cube_id = data[Index_Back][2][2].cube_id = 5;
+	data[Index_Down][0][2].cube_id = data[Index_Right][2][0].cube_id = data[Index_Front][2][2].cube_id = 6;
+	data[Index_Down][2][2].cube_id = data[Index_Right][2][2].cube_id = data[Index_Back][2][0].cube_id = 7;
 
 	//Adding borders ID
-	data[Index_Up][0][1].cube_id = data[Index_Back][0][1].cube_id = 9;
-	data[Index_Up][1][0].cube_id = data[Index_Left][0][1].cube_id = 10;
-	data[Index_Up][2][1].cube_id = data[Index_Front][0][1].cube_id = 11;
-	data[Index_Up][1][2].cube_id = data[Index_Right][0][1].cube_id = 12;
+	data[Index_Up][0][1].cube_id = data[Index_Back][0][1].cube_id = 0;
+	data[Index_Up][1][0].cube_id = data[Index_Left][0][1].cube_id = 1;
+	data[Index_Up][2][1].cube_id = data[Index_Front][0][1].cube_id = 2;
+	data[Index_Up][1][2].cube_id = data[Index_Right][0][1].cube_id = 3;
 
-	data[Index_Down][0][1].cube_id = data[Index_Front][2][1].cube_id = 13;
-	data[Index_Down][1][0].cube_id = data[Index_Left][2][1].cube_id = 14;
-	data[Index_Down][2][1].cube_id = data[Index_Back][2][1].cube_id = 15;
-	data[Index_Down][1][2].cube_id = data[Index_Right][2][1].cube_id = 16;
+	data[Index_Down][0][1].cube_id = data[Index_Front][2][1].cube_id = 4;
+	data[Index_Down][1][0].cube_id = data[Index_Left][2][1].cube_id = 5;
+	data[Index_Down][2][1].cube_id = data[Index_Back][2][1].cube_id = 6;
+	data[Index_Down][1][2].cube_id = data[Index_Right][2][1].cube_id = 7;
 
-	data[Index_Front][1][2].cube_id = data[Index_Right][1][0].cube_id = 17;
-	data[Index_Right][1][2].cube_id = data[Index_Back][1][0].cube_id = 18;
-	data[Index_Back][1][2].cube_id = data[Index_Left][1][0].cube_id = 19;
-	data[Index_Left][1][2].cube_id = data[Index_Front][1][0].cube_id = 20;
+	data[Index_Front][1][2].cube_id = data[Index_Right][1][0].cube_id = 8;
+	data[Index_Right][1][2].cube_id = data[Index_Back][1][0].cube_id = 9;
+	data[Index_Back][1][2].cube_id = data[Index_Left][1][0].cube_id = 10;
+	data[Index_Left][1][2].cube_id = data[Index_Front][1][0].cube_id = 11;
 
 	//Adding center ID
 	data[Index_Up][1][1].cube_id = 0;
@@ -216,20 +313,6 @@ DataFull			State::_calculate_solution_full() {
 	data[Index_Left][1][1].cube_id = 0;
 	data[Index_Front][1][1].cube_id = 0;
 	data[Index_Right][1][1].cube_id = 0;
-
-	return data;
-}
-
-
-Data				State::_calculate_solution() {
-	Data			data;
-
-	int uid = 0;
-
-	for (int s = Index_Start; s < Index_Len; s++)
-		for (int l = 0; l < size; l++)
-			for (int c = 0; c < size; c++)
-				data[s][l][c].face_id = uid++;
 
 	return data;
 }
@@ -306,55 +389,55 @@ void rotate_face(Face& face, int turns) {
 	swap_s(face[1][2], face[2][1], face[1][0], face[0][1], turns);
 }
 
-void State::apply_movement(State::Movement m) {
+void State::apply_movement(Movement m) {
 
 	bool reversed = m & Reversed;
 	bool halfturn = m & Halfturn;
 	int turns = reversed ? 3 : (halfturn ? 2 : 1);
-
+	Data& data = *_data;
 	switch (m & Mask) {
 		case None : return;
 		case Up :
-			rotate_face(_data[Index_Up], turns);
+			rotate_face(data[Index_Up], turns);
 			 //Crown is front, left, back, right
-			swap_s(_data[Index_Front][0][0], _data[Index_Left][0][0], _data[Index_Back][0][0], _data[Index_Right][0][0], turns);
-			swap_s(_data[Index_Front][0][1], _data[Index_Left][0][1], _data[Index_Back][0][1], _data[Index_Right][0][1], turns);
-			swap_s(_data[Index_Front][0][2], _data[Index_Left][0][2], _data[Index_Back][0][2], _data[Index_Right][0][2], turns);
+			swap_s(data[Index_Front][0][0], data[Index_Left][0][0], data[Index_Back][0][0], data[Index_Right][0][0], turns);
+			swap_s(data[Index_Front][0][1], data[Index_Left][0][1], data[Index_Back][0][1], data[Index_Right][0][1], turns);
+			swap_s(data[Index_Front][0][2], data[Index_Left][0][2], data[Index_Back][0][2], data[Index_Right][0][2], turns);
 			break;
 		case Front :
-			rotate_face(_data[Index_Front], turns);
+			rotate_face(data[Index_Front], turns);
 			 //Crown is up, right, down, left
-			swap_s(_data[Index_Up][2][0], _data[Index_Right][0][0], _data[Index_Down][0][2], _data[Index_Left][2][2], turns);
-			swap_s(_data[Index_Up][2][1], _data[Index_Right][1][0], _data[Index_Down][0][1], _data[Index_Left][1][2], turns);
-			swap_s(_data[Index_Up][2][2], _data[Index_Right][2][0], _data[Index_Down][0][0], _data[Index_Left][0][2], turns);
+			swap_s(data[Index_Up][2][0], data[Index_Right][0][0], data[Index_Down][0][2], data[Index_Left][2][2], turns);
+			swap_s(data[Index_Up][2][1], data[Index_Right][1][0], data[Index_Down][0][1], data[Index_Left][1][2], turns);
+			swap_s(data[Index_Up][2][2], data[Index_Right][2][0], data[Index_Down][0][0], data[Index_Left][0][2], turns);
 			break;
 		case Right :
-			rotate_face(_data[Index_Right], turns);
+			rotate_face(data[Index_Right], turns);
 			 //Crown is up, back, down, front
-			swap_s(_data[Index_Up][2][2], _data[Index_Back][0][0], _data[Index_Down][2][2], _data[Index_Front][2][2], turns);
-			swap_s(_data[Index_Up][1][2], _data[Index_Back][1][0], _data[Index_Down][1][2], _data[Index_Front][1][2], turns);
-			swap_s(_data[Index_Up][0][2], _data[Index_Back][2][0], _data[Index_Down][0][2], _data[Index_Front][0][2], turns);
+			swap_s(data[Index_Up][2][2], data[Index_Back][0][0], data[Index_Down][2][2], data[Index_Front][2][2], turns);
+			swap_s(data[Index_Up][1][2], data[Index_Back][1][0], data[Index_Down][1][2], data[Index_Front][1][2], turns);
+			swap_s(data[Index_Up][0][2], data[Index_Back][2][0], data[Index_Down][0][2], data[Index_Front][0][2], turns);
 			break;
 		case Back :
-			rotate_face(_data[Index_Back], turns);
+			rotate_face(data[Index_Back], turns);
 			 //Crown is up, left, down, right
-			swap_s(_data[Index_Up][0][0], _data[Index_Left][2][0], _data[Index_Down][2][2], _data[Index_Right][0][2], turns);
-			swap_s(_data[Index_Up][0][1], _data[Index_Left][1][0], _data[Index_Down][2][1], _data[Index_Right][1][2], turns);
-			swap_s(_data[Index_Up][0][2], _data[Index_Left][0][0], _data[Index_Down][2][0], _data[Index_Right][2][2], turns);
+			swap_s(data[Index_Up][0][0], data[Index_Left][2][0], data[Index_Down][2][2], data[Index_Right][0][2], turns);
+			swap_s(data[Index_Up][0][1], data[Index_Left][1][0], data[Index_Down][2][1], data[Index_Right][1][2], turns);
+			swap_s(data[Index_Up][0][2], data[Index_Left][0][0], data[Index_Down][2][0], data[Index_Right][2][2], turns);
 			break;
 		case Left :
-			rotate_face(_data[Index_Left], turns);
+			rotate_face(data[Index_Left], turns);
 			 //Crown is up, front, down, back
-			swap_s(_data[Index_Up][0][0], _data[Index_Front][0][0], _data[Index_Down][0][0], _data[Index_Back][2][2], turns);
-			swap_s(_data[Index_Up][1][0], _data[Index_Front][1][0], _data[Index_Down][1][0], _data[Index_Back][1][2], turns);
-			swap_s(_data[Index_Up][2][0], _data[Index_Front][2][0], _data[Index_Down][2][0], _data[Index_Back][0][2], turns);
+			swap_s(data[Index_Up][0][0], data[Index_Front][0][0], data[Index_Down][0][0], data[Index_Back][2][2], turns);
+			swap_s(data[Index_Up][1][0], data[Index_Front][1][0], data[Index_Down][1][0], data[Index_Back][1][2], turns);
+			swap_s(data[Index_Up][2][0], data[Index_Front][2][0], data[Index_Down][2][0], data[Index_Back][0][2], turns);
 			break;
 		case Down :
-			rotate_face(_data[Index_Down], turns);
+			rotate_face(data[Index_Down], turns);
  			 //Crown is front, right, back, left
-			swap_s(_data[Index_Front][2][0], _data[Index_Right][2][0], _data[Index_Back][2][0], _data[Index_Left][2][0], turns);
-			swap_s(_data[Index_Front][2][1], _data[Index_Right][2][1], _data[Index_Back][2][1], _data[Index_Left][2][1], turns);
-			swap_s(_data[Index_Front][2][2], _data[Index_Right][2][2], _data[Index_Back][2][2], _data[Index_Left][2][2], turns);
+			swap_s(data[Index_Front][2][0], data[Index_Right][2][0], data[Index_Back][2][0], data[Index_Left][2][0], turns);
+			swap_s(data[Index_Front][2][1], data[Index_Right][2][1], data[Index_Back][2][1], data[Index_Left][2][1], turns);
+			swap_s(data[Index_Front][2][2], data[Index_Right][2][2], data[Index_Back][2][2], data[Index_Left][2][2], turns);
 			break;
 		default: break;
 	}
@@ -454,7 +537,12 @@ void State::kill() {
 
 const Data&	State::get_data(void) const
 {
-	return (this->_data);
+	return (*this->_data);
+}
+
+const ID&	State::get_id(void) const
+{
+	return (this->_id);
 }
 
 std::ostream& operator<< (std::ostream& s, const State::Movement c)
@@ -479,10 +567,11 @@ Score 			State::get_weight(void) const
 }
 
 size_t custom_hash::operator()(const StateRef& l) const noexcept {
-	const Data& data = l->get_data();
-	size_t h = 13;
+	//const Data& data = l->get_data();
+	//size_t h = 13;
+	const ID& id = l->get_id();
 
-	//TODO skip useless faces
+	/*//TODO skip useless faces
 	//std::cerr << "h";
     for (int s = 0; s < 6; s++)
 		for (int l = 0; l < size; l++)
@@ -490,21 +579,16 @@ size_t custom_hash::operator()(const StateRef& l) const noexcept {
 				//if (l != 1 || c != 1)
 					h = h * 31 + data[s][l][c].face_id;
 	//std::clog << "h" << h << std::endl;
+	*/
+	size_t h = (id.borders_rot ^ id.borders_pos) | ((size_t)id.corners << 32);
 	return (h);
-}
-
-bool return_bool(bool value) {
-	//std::cerr << "compared map a" << a->get_weight() << " and b " << b->get_weight() << ": " << value << std::endl;
-	//std::clog << "=" << value << std::endl;
-
-	return value;
 }
 
 bool custom_equal_to::operator()(const StateRef& a, const StateRef& b) const noexcept
 {
 	if (a->get_weight() != b->get_weight() )
-		return return_bool(false);
-	return return_bool(a->get_data() == b->get_data());
+		return (false);
+	return (a->get_id() == b->get_id());
 }
 
 Score State::indexer_astar(const State& state)

@@ -26,8 +26,8 @@ using StateRef = std::shared_ptr<State>;
 class State {
 	public:
 		static const Data solution;
-		static const DataFull solution_full;
 		static const Finder solution_finder;
+		static const Color solution_colors[];
 		static int stateCount;
 		static Score initial_score;
 		static indexer	get_index;
@@ -65,12 +65,6 @@ class State {
 			H_Back = Halfturn | Back,
 		};
 
-		struct ID {
-			uint borders_top;
-			uint borders_bot;
-			uint corners;
-		};
-
 
 		struct MovementNode;
 		using MovementRef = std::shared_ptr<MovementNode>;
@@ -94,30 +88,30 @@ class State {
 		void							apply_scramble(const string& scramble);
 		void							apply_movement(Movement m);
 		void							update();
+		void							inflate();
+		void							deflate();
+		void							kill();
 
 		std::vector<Movement>			get_movements() const;
 		Movement						get_movement() const;
 		Score							get_distance() const;
 		Score 							get_weight() const;
 		const Data&						get_data() const;
+		const ID&						get_id() const;
 		void							get_candidates(std::vector<StateRef>& candidates);
 		bool 							is_final() const;
 		bool 							is_alive() const;
-		void							kill();
 
 		static Score					indexer_astar(const State&);
 		static Score					indexer_uniform(const State&);
 		static Score					indexer_greedy(const State&);
 
-		static int						compare(const Data& a, const Data& b);
-
+		ID								_id;
 	private:
 		static Data						_calculate_solution();
-		static DataFull					_calculate_solution_full();
 		static Finder					_calculate_finder(const Data& data);
 
-		Data							_data;
-		ID								_id;
+		Data*							_data;
 		Score							_weight;
 		Score							_distance;
 		MovementRef						_movement;

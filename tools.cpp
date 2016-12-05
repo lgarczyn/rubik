@@ -20,11 +20,7 @@ void display_square(Square c, int dist, bool correct) {
     string background;
     string foreground;
 
-    int id = c.face_id;
-    Coord pos = State::solution_finder[id];
-    SquareFull full = State::solution_full[pos.f][pos.l][pos.c];
-
-    switch (full.color) {
+    switch (c.color) {
         case White: background = "\e[107m"; break;
         case Red: background = "\e[41m"; break;
         case Blue: background = "\e[44m"; break;
@@ -39,7 +35,7 @@ void display_square(Square c, int dist, bool correct) {
     else
         foreground = "\e[30m";
 
-    std::cout << foreground << background << " " << dist << " " << std::setw(2) << full.cube_id << " \e[0m";
+    std::cout << foreground << background << " " << dist << " " << std::setw(2) << (int)c.cube_id << " \e[0m";
 }
 
 void print_line(const Data& data, const Data& solution, int s, int l) {

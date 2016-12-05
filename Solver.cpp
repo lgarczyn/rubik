@@ -53,36 +53,6 @@ void		Solver::print_mem() {
 	std::cout << std::flush;
 }
 
-/*
-StateRef* Solver::get_universe_position(StateRef state) {
-	Node* node = _universe.get();
-
-	if (state == nullptr)
-		throw std::logic_error("Storing null");
-
-	//While no empty or equivalent node has been found
-	while (1) {
-
-		//If the curent node is empty, return ptr
-		if (node->value == nullptr)
-			return &(node->value);
-		//Get the difference
-		int d = State::compare(state->get_data(), node->value->get_data());
-		//If equal, return ptr
-		if (d == 0)
-			return &(node->value);
-		else if (d == 1) {
-			if (node->right == nullptr)
-				node->right = NodeRef(new Node());
-			node = node->right.get();
-		} else {
-			if (node->left == nullptr)
-				node->left = NodeRef(new Node());
-			node = node->left.get();
-		}
-	}
-}*/
-
 Solver::Solver(State& initial, bool forget) : _opened(), _forget(forget) {
 
 	StateRef root = StateRef(new State(initial));
@@ -142,6 +112,12 @@ Solver::Result Solver::step() {
 				const StateRef& previous = *position;
 				if (State::get_index(*s) < State::get_index(*previous)) {
 					previous->kill();
+
+					s->deflate();
+					previous->deflate();
+					if (s->_id != previous->_id)
+						std::cerr << "bug" << std::endl;
+
 					_universe.erase(previous);
 					_openCount--;
 				} else {

@@ -62,10 +62,10 @@ std::ostream& operator<<(std::ostream& s, const Coord& cb);
 using Column = std::array<Square, size>;
 using Face = std::array<Column, size>;
 using Data = std::array<Face, 6>;
-//TODO remove * 100
-using CornerUIDFinder = std::array<std::array<uchar, 3 * 100>, 8 * 100>;
-using BorderUIDFinder = std::array<std::array<uchar, 2 * 100>, 12 * 100>;
-using CenterUIDFinder = std::array<uchar, 6 * 100>;
+
+using CornerUIDFinder = std::array<std::array<uchar, 3>, 8>;
+using BorderUIDFinder = std::array<std::array<uchar, 2>, 12>;
+using CenterUIDFinder = std::array<uchar, 6>;
 struct UIDFinder {
 	CornerUIDFinder corners;
 	BorderUIDFinder borders;

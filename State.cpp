@@ -66,7 +66,29 @@ State::State(State* parent, State::Movement m) {
 	update();
 
 	if (parent->_id == _id)
-		std::cerr << m;
+		std::cerr << m;//TODO remove
+
+	Data d1 = get_data();
+
+	inflate();
+
+	Data d2 = get_data();
+
+	if (d1 != d2) {
+		std::cerr << "WHAT" << std::endl;
+		for (int s = Index_Start; s < Index_Len; s++) {
+			for (int l = 0; l < size; l++) {
+				for (int c = 0; c < size; c++)
+	            {
+					Square as = d1[s][l][c];
+					Square bs = d2[s][l][c];
+					std::cout << "  {" << (int)as.cube_id << "=" << (int)bs.cube_id << " " << (int)as.rot_id << "=" << (int)bs.rot_id << "}  ";
+				}
+				std::cout << std::endl;
+			}
+			std::cout << std::endl;
+		}
+	}
 
 	stateCount++;
 }
@@ -91,13 +113,6 @@ State::State(int scramble_count):State(){
 		apply_movement(m);
 	}
 	update();
-}
-
-void disp(uchar* values,uchar id, uchar pos, int len) {
-	std::cerr << "E" << (int)id << "=>" << (int)pos << ">" << len << ":{";
-	for (uchar i = 0; i < len; i++)
-		std::cerr << (int)values[i] << ",";
-	std::cerr << "}" << std::endl;
 }
 
 State::~State()
@@ -219,13 +234,13 @@ constexpr UIDFinder		State::_calculate_uid_finder(const Data& data) {
 		for (int l = 0; l < size; l++)
 			for (int c = 0; c < size; c++) {
                 Square sq = data[s][l][c];
-                if (l == 0 && c == 0)
+                if (l == 1 && c == 1)
                     finder.centers.at(sq.cube_id) = sq.face_id;
-                if (l == 1 || c == 1)
+                else if (l == 1 || c == 1)
                     finder.borders.at(sq.cube_id).at(sq.rot_id) = sq.face_id;
                 else
                     finder.corners.at(sq.cube_id).at(sq.rot_id) = sq.face_id;
-				}
+			}
     return finder;
 }
 

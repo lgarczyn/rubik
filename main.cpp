@@ -110,7 +110,8 @@ Solver::Result	solve_loop(State& initial, Parser::ParseResult& parseResult)
 
 	return (solverResult);
 }
-int		                           main2(int ac, char **av)
+
+int		                           main(int ac, char **av)
 {
 	StateRef					  initial;
 	Parser::ParseResult           parseResult;
@@ -183,6 +184,7 @@ int		                           main2(int ac, char **av)
 		}
 	}
 }
+/*
 
 constexpr int fact(int i) {
     int r = 1;
@@ -191,7 +193,6 @@ constexpr int fact(int i) {
     }
     return r;
 }
-
 int main() {
 
 	State a;
@@ -260,13 +261,16 @@ int main() {
             {
 				Square as = d1[s][l][c];
 				Square bs = d2[s][l][c];
-				std::cout << "  {" << (int)as.cube_id << "=" << (int)bs.cube_id /* << " " << (int)as.rot_id << "=" << (int)bs.rot_id << " " << (int)as.face_id << "=" << (int)bs.face_id*/ << "}  ";
+				std::cout << "  {" << (int)as.cube_id << "=" << (int)bs.cube_id << " " << (int)as.face_id << "=" << (int)bs.face_id << "}  ";
 			}
 			std::cout << std::endl;
 		}
 		std::cout << std::endl;
 	}
-}
+
+	if (d1 == d2)
+		std::cout << "FUCK YES" << std::endl;
+}*/
 
 /*
 int main(int argc, char const *argv[]) {

@@ -27,6 +27,7 @@ class State {
 	public:
 		static const Data solution;
 		static const Finder solution_finder;
+		static const UIDFinder uid_finder;
 		static const Color solution_colors[];
 		static int stateCount;
 		static Score initial_score;
@@ -97,6 +98,7 @@ class State {
 		Score							get_distance() const;
 		Score 							get_weight() const;
 		const Data&						get_data() const;
+		Data&							get_data();
 		const ID&						get_id() const;
 		void							get_candidates(std::vector<StateRef>& candidates);
 		bool 							is_final() const;
@@ -108,8 +110,9 @@ class State {
 
 		ID								_id;
 	private:
-		static Data						_calculate_solution();
-		static Finder					_calculate_finder(const Data& data);
+		static constexpr Data			_calculate_solution();
+		static constexpr UIDFinder		_calculate_uid_finder(const Data& data);
+		static constexpr Finder			_calculate_finder(const Data& data);
 
 		Data*							_data;
 		Score							_weight;

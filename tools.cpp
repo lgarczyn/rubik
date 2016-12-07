@@ -20,7 +20,9 @@ void display_square(Square c, int dist, bool correct) {
     string background;
     string foreground;
 
-    switch (c.color) {
+    Color color = State::solution_colors[State::solution_finder[c.face_id].f];
+
+    switch (color) {
         case White: background = "\e[107m"; break;
         case Red: background = "\e[41m"; break;
         case Blue: background = "\e[44m"; break;

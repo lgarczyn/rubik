@@ -20,6 +20,7 @@ Score				State::initial_score = 0;
 indexer				State::get_index = indexer_astar;
 
 const Data			State::solution = _calculate_solution();
+const UIDFinder		State::uid_finder = _calculate_uid_finder(solution);
 const Finder		State::solution_finder = _calculate_finder(solution);
 
 const Color State::solution_colors[] = {White, Green, Red, Blue, Orange, Yellow};
@@ -92,149 +93,11 @@ State::State(int scramble_count):State(){
 	update();
 }
 
-inline void move_value(uchar* values, uchar pos, int len) {
-
-	//values[pos] = 0;
-	for (uchar i = pos + 1; i < len; i++) {//TODO pos + 1
-		if (values[i])
-			values[i]--;
-	}
-}
-
-inline uchar get_orientation(Color value, Color up, Color fb) {
-	if (value == up)
-		return 0;
-	if (value == fb)
-		return 1;
-	return 2;
-}
-
 void disp(uchar* values,uchar id, uchar pos, int len) {
 	std::cerr << "E" << (int)id << "=>" << (int)pos << ">" << len << ":{";
 	for (uchar i = 0; i < len; i++)
 		std::cerr << (int)values[i] << ",";
 	std::cerr << "}" << std::endl;
-}
-
-uint get_id_corners(const Data& data) {
-	uchar values[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-	uchar c;
-	uint s;
-
-	c = data[Index_Up][0][0].cube_id;//0-7
-	s = values[c];
-	move_value(values, c, 8);
-	c = data[Index_Up][0][2].cube_id;//0-6
-	s = s * 7 + values[c];
-	move_value(values, c, 8);
-	c = data[Index_Up][2][0].cube_id;//0-5
-	s = s * 6 + values[c];
-	move_value(values, c, 8);
-	c = data[Index_Up][2][2].cube_id;//0-4
-	s = s * 5 + values[c];
-	move_value(values, c, 8);
-	c = data[Index_Down][0][0].cube_id;//0-3
-	s = s * 4 + values[c];
-	move_value(values, c, 8);
-	c = data[Index_Down][0][2].cube_id;//0-2
-	s = s * 3 + values[c];
-	move_value(values, c, 8);
-	c = data[Index_Down][2][0].cube_id;//0-1
-	s = s * 2 + values[c];
-	move_value(values, c, 8);
-	//c = data[Index_Down][2][2].cube_id;//0-0
-	//s = s * 1 + c;
-	//move_value(values, c, 8);
-	s = s * 3 + get_orientation(data[Index_Up][0][0].color, State::solution_colors[Index_Up], State::solution_colors[Index_Back]);//0-2
-	s = s * 3 + get_orientation(data[Index_Up][0][2].color, State::solution_colors[Index_Up], State::solution_colors[Index_Back]);//0-2
-	s = s * 3 + get_orientation(data[Index_Up][2][0].color, State::solution_colors[Index_Up], State::solution_colors[Index_Front]);//0-2
-	s = s * 3 + get_orientation(data[Index_Up][2][2].color, State::solution_colors[Index_Up], State::solution_colors[Index_Front]);//0-2
-	s = s * 3 + get_orientation(data[Index_Down][0][0].color, State::solution_colors[Index_Down], State::solution_colors[Index_Back]);//0-2
-	s = s * 3 + get_orientation(data[Index_Down][0][2].color, State::solution_colors[Index_Down], State::solution_colors[Index_Back]);//0-2
-	s = s * 3 + get_orientation(data[Index_Down][2][0].color, State::solution_colors[Index_Down], State::solution_colors[Index_Front]);//0-2
-	s = s * 3 + get_orientation(data[Index_Down][2][2].color, State::solution_colors[Index_Down], State::solution_colors[Index_Front]);//0-2
-	return s;
-}
-
-inline uchar get_orientation(Color value, Color up) {
-	if (value == up)
-		return 0;
-	return 1;
-}
-
-uint get_id_borders_rot(const Data& data) {
-	uint s;
-
-	s = get_orientation(data[Index_Up][0][1].color, State::solution_colors[Index_Up]);//0-1
-	s = s * 2 + get_orientation(data[Index_Up][1][0].color, State::solution_colors[Index_Up]);//0-1
-	s = s * 2 + get_orientation(data[Index_Up][2][1].color, State::solution_colors[Index_Up]);//0-1
-	s = s * 2 + get_orientation(data[Index_Up][1][2].color, State::solution_colors[Index_Up]);//0-1
-
-	s = s * 2 + get_orientation(data[Index_Front][1][0].color, State::solution_colors[Index_Front]);//0-1
-	s = s * 2 + get_orientation(data[Index_Right][1][0].color, State::solution_colors[Index_Right]);//0-1
-	s = s * 2 + get_orientation(data[Index_Back][1][0].color, State::solution_colors[Index_Back]);//0-1
-	s = s * 2 + get_orientation(data[Index_Left][1][0].color, State::solution_colors[Index_Left]);//0-1
-
-	s = s * 2 + get_orientation(data[Index_Down][0][1].color, State::solution_colors[Index_Down]);//0-1
-	s = s * 2 + get_orientation(data[Index_Down][1][0].color, State::solution_colors[Index_Down]);//0-1
-	s = s * 2 + get_orientation(data[Index_Down][2][1].color, State::solution_colors[Index_Down]);//0-1
-	s = s * 2 + get_orientation(data[Index_Down][1][2].color, State::solution_colors[Index_Down]);//0-1
-
-	return s;
-}
-
-uint get_id_borders_pos(const Data& data) {
-	uchar values[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
-	uchar c;
-	uint s;
-
-	c = data[Index_Up][0][1].cube_id;//0-11
-	s = values[c];
-	move_value(values, c, 12);
-	c = data[Index_Up][1][0].cube_id;//0-10
-	s = s * 11 + values[c];
-	move_value(values, c, 12);
-	c = data[Index_Up][2][1].cube_id;//0-9
-	s = s * 10 + values[c];
-	move_value(values, c, 12);
-	c = data[Index_Up][1][2].cube_id;//0-8
-	s = s * 9 + values[c];
-	move_value(values, c, 12);
-
-	c = data[Index_Front][1][0].cube_id;//0-7
-	s = s * 8 + values[c];
-	move_value(values, c, 12);
-	c = data[Index_Right][1][0].cube_id;//0-6
-	s = s * 7 + values[c];
-	move_value(values, c, 12);
-	c = data[Index_Back][1][0].cube_id;//0-5
-	s = s * 6 + values[c];
-	move_value(values, c, 12);
-	c = data[Index_Left][1][0].cube_id;//0-4
-	s = s * 5 + values[c];
-	move_value(values, c, 12);
-
-	c = data[Index_Down][0][1].cube_id;//0-3
-	s = s * 4 + values[c];
-	move_value(values, c, 12);
-	c = data[Index_Down][1][0].cube_id;//0-2
-	s = s * 3 + values[c];
-	move_value(values, c, 12);
-	c = data[Index_Down][2][1].cube_id;//0-1
-	s = s * 2 + values[c];
-	move_value(values, c, 12);
-	//c = data[Index_Down][1][2].cube_id;//0-0
-	//s = s * 1 +values[c]
-	//move_value(values, c, 12);
-	return s;
-}
-
-void State::inflate() {
-}
-void State::deflate() {
-	_id.corners = get_id_corners(*_data);
-	_id.borders_pos = get_id_borders_pos(*_data);
-	_id.borders_rot = get_id_borders_rot(*_data);
 }
 
 State::~State()
@@ -261,11 +124,10 @@ void	State::get_candidates(std::vector<StateRef>& candidates)
 	}
 }
 
-Data				State::_calculate_solution() {
-	Data			data;
+constexpr Data		State::_calculate_solution() {
+	Data			data = Data();
 
-	int uid = 0;
-	for (int l = 0; l < size; l++)
+	/*for (int l = 0; l < size; l++)
 		for (int c = 0; c < size; c++) {
 			data[Index_Up][l][c].color = White;
 			data[Index_Front][l][c].color = Green;
@@ -274,7 +136,9 @@ Data				State::_calculate_solution() {
 			data[Index_Left][l][c].color = Orange;
 			data[Index_Down][l][c].color = Yellow;
 		}
+	*/
 
+    int uid = 0;
 	for (int s = Index_Start; s < Index_Len; s++)
 		for (int l = 0; l < size; l++)
 			for (int c = 0; c < size; c++)
@@ -290,35 +154,83 @@ Data				State::_calculate_solution() {
 	data[Index_Down][0][2].cube_id = data[Index_Right][2][0].cube_id = data[Index_Front][2][2].cube_id = 6;
 	data[Index_Down][2][2].cube_id = data[Index_Right][2][2].cube_id = data[Index_Back][2][0].cube_id = 7;
 
+	data[Index_Up][0][0].rot_id = 0; data[Index_Left][0][0].rot_id = 1; data[Index_Back][0][2].rot_id = 2;
+	data[Index_Up][2][0].rot_id = 0; data[Index_Left][0][2].rot_id = 1; data[Index_Front][0][0].rot_id = 2;
+	data[Index_Up][0][2].rot_id = 0; data[Index_Right][0][2].rot_id = 1; data[Index_Back][0][0].rot_id = 2;
+	data[Index_Up][2][2].rot_id = 0; data[Index_Right][0][0].rot_id = 1; data[Index_Front][0][2].rot_id = 2;
+	data[Index_Down][0][0].rot_id = 0; data[Index_Left][2][2].rot_id = 1; data[Index_Front][2][0].rot_id = 2;
+	data[Index_Down][2][0].rot_id = 0; data[Index_Left][2][0].rot_id = 1; data[Index_Back][2][2].rot_id = 2;
+	data[Index_Down][0][2].rot_id = 0; data[Index_Right][2][0].rot_id = 1; data[Index_Front][2][2].rot_id = 2;
+	data[Index_Down][2][2].rot_id = 0; data[Index_Right][2][2].rot_id = 1; data[Index_Back][2][0].rot_id = 2;
+
 	//Adding borders ID
 	data[Index_Up][0][1].cube_id = data[Index_Back][0][1].cube_id = 0;
 	data[Index_Up][1][0].cube_id = data[Index_Left][0][1].cube_id = 1;
-	data[Index_Up][2][1].cube_id = data[Index_Front][0][1].cube_id = 2;
-	data[Index_Up][1][2].cube_id = data[Index_Right][0][1].cube_id = 3;
+	data[Index_Up][1][2].cube_id = data[Index_Right][0][1].cube_id = 2;
+	data[Index_Up][2][1].cube_id = data[Index_Front][0][1].cube_id = 3;
 
 	data[Index_Down][0][1].cube_id = data[Index_Front][2][1].cube_id = 4;
 	data[Index_Down][1][0].cube_id = data[Index_Left][2][1].cube_id = 5;
-	data[Index_Down][2][1].cube_id = data[Index_Back][2][1].cube_id = 6;
-	data[Index_Down][1][2].cube_id = data[Index_Right][2][1].cube_id = 7;
+	data[Index_Down][1][2].cube_id = data[Index_Right][2][1].cube_id = 6;
+	data[Index_Down][2][1].cube_id = data[Index_Back][2][1].cube_id = 7;
 
 	data[Index_Front][1][2].cube_id = data[Index_Right][1][0].cube_id = 8;
 	data[Index_Right][1][2].cube_id = data[Index_Back][1][0].cube_id = 9;
 	data[Index_Back][1][2].cube_id = data[Index_Left][1][0].cube_id = 10;
 	data[Index_Left][1][2].cube_id = data[Index_Front][1][0].cube_id = 11;
 
+	data[Index_Up][0][1].rot_id = 0; data[Index_Back][0][1].rot_id = 1;
+	data[Index_Up][1][0].rot_id = 0; data[Index_Left][0][1].rot_id = 1;
+	data[Index_Up][1][2].rot_id = 0; data[Index_Right][0][1].rot_id = 1;
+	data[Index_Up][2][1].rot_id = 0; data[Index_Front][0][1].rot_id = 1;
+
+	data[Index_Down][0][1].rot_id = 0; data[Index_Front][2][1].rot_id = 1;
+	data[Index_Down][1][0].rot_id = 0; data[Index_Left][2][1].rot_id = 1;
+	data[Index_Down][1][2].rot_id = 0; data[Index_Right][2][1].rot_id = 1;
+	data[Index_Down][2][1].rot_id = 0; data[Index_Back][2][1].rot_id = 1;
+
+	data[Index_Front][1][2].rot_id = 0; data[Index_Right][1][0].rot_id = 1;
+	data[Index_Right][1][2].rot_id = 0; data[Index_Back][1][0].rot_id = 1;
+	data[Index_Back][1][2].rot_id = 0; data[Index_Left][1][0].rot_id = 1;
+	data[Index_Left][1][2].rot_id = 0; data[Index_Front][1][0].rot_id = 1;
+
 	//Adding center ID
 	data[Index_Up][1][1].cube_id = 0;
-	data[Index_Down][1][1].cube_id = 0;
-	data[Index_Back][1][1].cube_id = 0;
-	data[Index_Left][1][1].cube_id = 0;
-	data[Index_Front][1][1].cube_id = 0;
-	data[Index_Right][1][1].cube_id = 0;
+	data[Index_Down][1][1].cube_id = 1;
+	data[Index_Back][1][1].cube_id = 2;
+	data[Index_Left][1][1].cube_id = 3;
+	data[Index_Front][1][1].cube_id = 4;
+	data[Index_Right][1][1].cube_id = 5;
+	data[Index_Up][1][1].rot_id = 0;
+	data[Index_Down][1][1].rot_id = 0;
+	data[Index_Back][1][1].rot_id = 0;
+	data[Index_Left][1][1].rot_id = 0;
+	data[Index_Front][1][1].rot_id = 0;
+	data[Index_Right][1][1].rot_id = 0;
 
 	return data;
 }
 
-Finder				State::_calculate_finder(const Data &data) {
-	Finder			finder;
+constexpr UIDFinder		State::_calculate_uid_finder(const Data& data) {
+
+    UIDFinder finder = UIDFinder();
+
+    for (int s = Index_Start; s < Index_Len; s++)
+		for (int l = 0; l < size; l++)
+			for (int c = 0; c < size; c++) {
+                Square sq = data[s][l][c];
+                if (l == 0 && c == 0)
+                    finder.centers.at(sq.cube_id) = sq.face_id;
+                if (l == 1 || c == 1)
+                    finder.borders.at(sq.cube_id).at(sq.rot_id) = sq.face_id;
+                else
+                    finder.corners.at(sq.cube_id).at(sq.rot_id) = sq.face_id;
+				}
+    return finder;
+}
+
+constexpr Finder	State::_calculate_finder(const Data &data) {
+	Finder			finder = Finder();
 
 	for (int s = Index_Start; s < Index_Len; s++)
 		for (int l = 0; l < size; l++)
@@ -536,6 +448,11 @@ void State::kill() {
 }
 
 const Data&	State::get_data(void) const
+{
+	return (*this->_data);
+}
+
+Data&	State::get_data(void)
 {
 	return (*this->_data);
 }

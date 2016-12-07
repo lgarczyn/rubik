@@ -110,7 +110,7 @@ Solver::Result	solve_loop(State& initial, Parser::ParseResult& parseResult)
 
 	return (solverResult);
 }
-int		                           main(int ac, char **av)
+int		                           main2(int ac, char **av)
 {
 	StateRef					  initial;
 	Parser::ParseResult           parseResult;
@@ -183,6 +183,91 @@ int		                           main(int ac, char **av)
 		}
 	}
 }
+
+constexpr int fact(int i) {
+    int r = 1;
+    for (int it = 1; it <= i; it++) {
+        r *= it;
+    }
+    return r;
+}
+
+int main() {
+
+	State a;
+	Data d1 = a.get_data();
+
+
+
+
+	a.deflate();
+	a.inflate();
+
+
+	Data d2 = a.get_data();
+
+	std::cout
+	<< (int)d1[Index_Up][0][0].cube_id << " "
+	<< (int)d1[Index_Up][0][2].cube_id << " "
+	<< (int)d1[Index_Up][2][0].cube_id << " "
+	<< (int)d1[Index_Up][2][2].cube_id << " "
+	<< (int)d1[Index_Down][0][0].cube_id << " "
+	<< (int)d1[Index_Down][0][2].cube_id << " "
+	<< (int)d1[Index_Down][2][0].cube_id << " "
+	<< (int)d1[Index_Down][2][2].cube_id << std::endl;
+
+	std::cout
+	<< (int)d2[Index_Up][0][0].cube_id << " "
+	<< (int)d2[Index_Up][0][2].cube_id << " "
+	<< (int)d2[Index_Up][2][0].cube_id << " "
+	<< (int)d2[Index_Up][2][2].cube_id << " "
+	<< (int)d2[Index_Down][0][0].cube_id << " "
+	<< (int)d2[Index_Down][0][2].cube_id << " "
+	<< (int)d2[Index_Down][2][0].cube_id << " "
+	<< (int)d2[Index_Down][2][2].cube_id << std::endl;
+
+	std::cout
+	<< (int)d1[Index_Up][0][1].cube_id << " "
+	<< (int)d1[Index_Up][1][0].cube_id << " "
+	<< (int)d1[Index_Up][2][1].cube_id << " "
+	<< (int)d1[Index_Up][1][2].cube_id << " "
+	<< (int)d1[Index_Front][1][0].cube_id << " "
+	<< (int)d1[Index_Right][1][0].cube_id << " "
+	<< (int)d1[Index_Back][1][0].cube_id << " "
+	<< (int)d1[Index_Left][1][0].cube_id << " "
+	<< (int)d1[Index_Down][0][1].cube_id << " "
+	<< (int)d1[Index_Down][1][0].cube_id << " "
+	<< (int)d1[Index_Down][2][1].cube_id << " "
+	<< (int)d1[Index_Down][1][2].cube_id << std::endl;
+
+	std::cout
+	<< (int)d2[Index_Up][0][1].cube_id << " "
+	<< (int)d2[Index_Up][1][0].cube_id << " "
+	<< (int)d2[Index_Up][2][1].cube_id << " "
+	<< (int)d2[Index_Up][1][2].cube_id << " "
+	<< (int)d2[Index_Front][1][0].cube_id << " "
+	<< (int)d2[Index_Right][1][0].cube_id << " "
+	<< (int)d2[Index_Back][1][0].cube_id << " "
+	<< (int)d2[Index_Left][1][0].cube_id << " "
+	<< (int)d2[Index_Down][0][1].cube_id << " "
+	<< (int)d2[Index_Down][1][0].cube_id << " "
+	<< (int)d2[Index_Down][2][1].cube_id << " "
+	<< (int)d2[Index_Down][1][2].cube_id << std::endl;
+
+	for (int s = Index_Start; s < Index_Len; s++) {
+		for (int l = 0; l < size; l++) {
+			for (int c = 0; c < size; c++)
+            {
+				Square as = d1[s][l][c];
+				Square bs = d2[s][l][c];
+				std::cout << "  {" << (int)as.cube_id << "=" << (int)bs.cube_id /* << " " << (int)as.rot_id << "=" << (int)bs.rot_id << " " << (int)as.face_id << "=" << (int)bs.face_id*/ << "}  ";
+			}
+			std::cout << std::endl;
+		}
+		std::cout << std::endl;
+	}
+}
+
 /*
 int main(int argc, char const *argv[]) {
 

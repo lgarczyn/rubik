@@ -1,21 +1,21 @@
 database http://www.cs.princeton.edu/courses/archive/fall06/cos402/papers/korfrubik.pdf
-    indexing
-        kinda already have something maybe
+    v indexing
+        v kinda already have something maybe
     calculating
         no idea, probably a whole week to make it work
-deflating
-    calculate indices
+deflating-inflating
+    v calculate indices
 
     store data?
         + minus one (big) element
         - have to bring it everywhere
     if not, then
         inflate();
-        deflate();
-    hash
-        i1 ^ i2 ^ i3
-    equal
-        a1 == b1 && a2 == b2 && a3 == b3
+        v deflate();
+    v hash
+        v i1 ^ i2 ^ i3
+    v equal
+        v a1 == b1 && a2 == b2 && a3 == b3
 optimizing
     google array https://github.com/sparsehash/sparsehash
     swap instead of delete
@@ -28,4 +28,3 @@ heuristic
         yeah I don't think so
     optimize squares taken in account
     use the max(a/4, b/4) heuristic
-    

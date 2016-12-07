@@ -21,7 +21,7 @@ enum Color {
 	Yellow = 6
 };
 
-enum Indexes {
+enum Index {
 	Index_Up = 0,
 	Index_Front = 1,
 	Index_Right = 2,
@@ -34,9 +34,9 @@ enum Indexes {
 };
 
 struct Square {
-	Color color;
-	uchar face_id;
 	uchar cube_id;
+	uchar rot_id;
+	uchar face_id;
 };
 
 struct Coord {
@@ -62,6 +62,15 @@ std::ostream& operator<<(std::ostream& s, const Coord& cb);
 using Column = std::array<Square, size>;
 using Face = std::array<Column, size>;
 using Data = std::array<Face, 6>;
+//TODO remove * 100
+using CornerUIDFinder = std::array<std::array<uchar, 3 * 100>, 8 * 100>;
+using BorderUIDFinder = std::array<std::array<uchar, 2 * 100>, 12 * 100>;
+using CenterUIDFinder = std::array<uchar, 6 * 100>;
+struct UIDFinder {
+	CornerUIDFinder corners;
+	BorderUIDFinder borders;
+	CenterUIDFinder centers;
+};
 
 using Finder = std::array<Coord, size * size * 6>;
 using weighter = Score (*)(const Data& data);

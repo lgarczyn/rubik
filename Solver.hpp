@@ -54,7 +54,6 @@ class Solver {
 	private:
 		map _opened;
 		universe _universe;
-
 		int _timeComplexity;
 		int _sizeComplexity;
 		int _openCount;

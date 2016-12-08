@@ -19,6 +19,7 @@ int					State::stateCount = 0;
 Score				State::initial_score = 0;
 indexer				State::get_index = indexer_astar;
 
+State::Pool			State::pool = Pool(1);
 const Data			State::solution = _calculate_solution();
 const UIDFinder		State::uid_finder = _calculate_uid_finder(solution);
 const Finder		State::solution_finder = _calculate_finder(solution);
@@ -114,8 +115,14 @@ State::~State()
 	stateCount--;
 }
 
+StateRef create(State::ThreadData data) {
+	return StateRef(new State(data.parent, data.move));
+}
+
 void	State::get_candidates(std::vector<StateRef>& candidates)
 {
+	std::vector<ThreadData> moves;
+
 	inflate();
 	Movement m = (_movement.get() == nullptr) ? None : (Movement)(_movement->value & Mask);
 
@@ -127,10 +134,13 @@ void	State::get_candidates(std::vector<StateRef>& candidates)
 		Movement nr = (Movement)(n | Reversed);
 		Movement nh = (Movement)(n | Halfturn);
 
-		candidates.push_back(StateRef(new State(this, (Movement)n)));
-		candidates.push_back(StateRef(new State(this, nr)));
-		candidates.push_back(StateRef(new State(this, nh)));
+		moves.push_back(ThreadData(this, (Movement)n));
+		moves.push_back(ThreadData(this, nr));
+		moves.push_back(ThreadData(this, nh));
 	}
+
+	candidates = pool.run(&create, moves);
+
 	deflate();
 }
 

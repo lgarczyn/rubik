@@ -16,3 +16,4 @@ heuristic
         yeah I don't think so
     optimize squares taken in account
     use the max(a/4, b/4) heuristic
+    multithreading

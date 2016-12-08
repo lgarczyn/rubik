@@ -20,18 +20,13 @@
 
 class State;
 
+#include "ThreadPool.hpp"
+
 using indexer = Score (*)(const State&);
 using StateRef = std::shared_ptr<State>;
 
 class State {
 	public:
-		static const Data solution;
-		static const Finder solution_finder;
-		static const UIDFinder uid_finder;
-		static const Color solution_colors[];
-		static int stateCount;
-		static Score initial_score;
-		static indexer	get_index;
 
 		enum Movement {
 			None = 0,
@@ -78,6 +73,30 @@ class State {
 				MovementNode(Movement _m, MovementRef& _p);
 				MovementNode(Movement _m);
 		};
+
+		struct ThreadData
+		{
+			ThreadData(){};
+			ThreadData(State* _parent, State::Movement _move):
+				parent(_parent),
+				move(_move)
+			{}
+
+			~ThreadData(){};
+
+			State* parent;
+			State::Movement move;
+		};
+		using Pool = ThreadPool<ThreadData, StateRef>;
+
+		static Pool pool;
+		static const Data solution;
+		static const Finder solution_finder;
+		static const UIDFinder uid_finder;
+		static const Color solution_colors[];
+		static int stateCount;
+		static Score initial_score;
+		static indexer	get_index;
 
 		State();
 		State(const State& clone);

@@ -90,7 +90,6 @@ Solver::Result Solver::step() {
 	}
 
 	//get children
-	candidates.clear();
 	e->get_candidates(candidates);
 
 	//update size complexity
@@ -125,6 +124,7 @@ Solver::Result Solver::step() {
 		_openCount++;
 		_timeComplexity++;
 	}
+	candidates.clear();
 
 	result.sizeComplexity = _sizeComplexity;
 	result.timeComplexity = _timeComplexity;

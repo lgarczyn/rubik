@@ -10,8 +10,8 @@ constexpr int fact(int i) {
 }
 
 constexpr int pow(int a, int b) {
-    int r = a;
-    for (int it = 1; it < b; it++) {
+    int r = 1;
+    for (int it = 0; it < b; it++) {
         r *= a;
     }
     return r;
@@ -101,7 +101,7 @@ uint get_id_borders_rot(const Data& data) {
 }
 
 void State::deflate() {
-	_id.corners = get_id_corners_pos(*_data) * pow(2, 12) + get_id_corners_rot(*_data);
+	_id.corners = get_id_corners_pos(*_data) * pow(3, 8) + get_id_corners_rot(*_data);
 	_id.borders_pos = get_id_borders_pos(*_data);
 	_id.borders_rot = get_id_borders_rot(*_data);
 }
@@ -139,32 +139,42 @@ inline void set_corner_rot(uchar& up, uchar& fb, uchar& rl, uchar i) {
 }
 
 void set_data_corners_rot(Data& data, uint id) {
-	set_corner_rot(data[Index_Up][0][0].rot_id, data[Index_Left][0][0].rot_id, data[Index_Back][0][2].rot_id, id % 3); id /= 3;
-	set_corner_rot(data[Index_Up][0][2].rot_id, data[Index_Left][0][2].rot_id, data[Index_Front][0][0].rot_id, id % 3); id /= 3;
-	set_corner_rot(data[Index_Up][2][0].rot_id, data[Index_Right][0][2].rot_id, data[Index_Back][0][0].rot_id, id % 3); id /= 3;
-	set_corner_rot(data[Index_Up][2][2].rot_id, data[Index_Right][0][0].rot_id, data[Index_Front][0][2].rot_id, id % 3); id /= 3;
-	set_corner_rot(data[Index_Down][0][0].rot_id, data[Index_Left][2][2].rot_id, data[Index_Front][2][0].rot_id, id % 3); id /= 3;
-	set_corner_rot(data[Index_Down][0][2].rot_id, data[Index_Left][2][0].rot_id, data[Index_Back][2][2].rot_id, id % 3); id /= 3;
-	set_corner_rot(data[Index_Down][2][0].rot_id, data[Index_Right][2][0].rot_id, data[Index_Front][2][2].rot_id, id % 3); id /= 3;
+    // data[Index_Down][2][2].rot_id = 0; data[Index_Right][2][2].rot_id = 1; data[Index_Back][2][0].rot_id = 2;
+    // data[Index_Down][0][2].rot_id = 0; data[Index_Right][2][0].rot_id = 1; data[Index_Front][2][2].rot_id = 2;
+    // data[Index_Down][2][0].rot_id = 0; data[Index_Left][2][0].rot_id = 1; data[Index_Back][2][2].rot_id = 2;
+    // data[Index_Down][0][0].rot_id = 0; data[Index_Left][2][2].rot_id = 1; data[Index_Front][2][0].rot_id = 2;
+    // data[Index_Up][2][2].rot_id = 0; data[Index_Right][0][0].rot_id = 1; data[Index_Front][0][2].rot_id = 2;
+    // data[Index_Up][0][2].rot_id = 0; data[Index_Right][0][2].rot_id = 1; data[Index_Back][0][0].rot_id = 2;
+    // data[Index_Up][2][0].rot_id = 0; data[Index_Left][0][2].rot_id = 1; data[Index_Front][0][0].rot_id = 2;
+    // data[Index_Up][0][0].rot_id = 0; data[Index_Left][0][0].rot_id = 1; data[Index_Back][0][2].rot_id = 2;
+
 	set_corner_rot(data[Index_Down][2][2].rot_id, data[Index_Right][2][2].rot_id, data[Index_Back][2][0].rot_id, id % 3); id /= 3;
+	set_corner_rot(data[Index_Down][2][0].rot_id, data[Index_Right][2][0].rot_id, data[Index_Front][2][2].rot_id, id % 3); id /= 3;
+	set_corner_rot(data[Index_Down][0][2].rot_id, data[Index_Left][2][0].rot_id, data[Index_Back][2][2].rot_id, id % 3); id /= 3;
+	set_corner_rot(data[Index_Down][0][0].rot_id, data[Index_Left][2][2].rot_id, data[Index_Front][2][0].rot_id, id % 3); id /= 3;
+	set_corner_rot(data[Index_Up][2][2].rot_id, data[Index_Right][0][0].rot_id, data[Index_Front][0][2].rot_id, id % 3); id /= 3;
+	set_corner_rot(data[Index_Up][2][0].rot_id, data[Index_Right][0][2].rot_id, data[Index_Back][0][0].rot_id, id % 3); id /= 3;
+	set_corner_rot(data[Index_Up][0][2].rot_id, data[Index_Left][0][2].rot_id, data[Index_Front][0][0].rot_id, id % 3); id /= 3;
+	set_corner_rot(data[Index_Up][0][0].rot_id, data[Index_Left][0][0].rot_id, data[Index_Front][0][2].rot_id, id % 3); id /= 3;//TODO remove /% 3
 }
 
 void set_data_borders_rot(Data& data, uint id) {
 	uint s = id;
+
 	data[Index_Right][2][1].rot_id = !((data[Index_Down][1][2].rot_id = s % 2)); s /= 2;
-	data[Index_Back][2][1].rot_id = !((data[Index_Down][2][1].rot_id = s % 2)); s /= 2;
-	data[Index_Left][2][1].rot_id = !((data[Index_Down][1][0].rot_id = s % 2)); s /= 2;
+    data[Index_Back][2][1].rot_id = !((data[Index_Down][2][1].rot_id = s % 2)); s /= 2;
+    data[Index_Left][2][1].rot_id = !((data[Index_Down][1][0].rot_id = s % 2)); s /= 2;
     data[Index_Front][2][1].rot_id = !((data[Index_Down][0][1].rot_id = s % 2)); s /= 2;
 
-	data[Index_Back][1][2].rot_id = !((data[Index_Left][1][0].rot_id = s % 2)); s /= 2;
-	data[Index_Right][1][2].rot_id = !((data[Index_Back][1][0].rot_id = s % 2)); s /= 2;
-	data[Index_Front][1][2].rot_id = !((data[Index_Right][1][0].rot_id = s % 2)); s /= 2;
-	data[Index_Left][1][2].rot_id = !((data[Index_Front][1][0].rot_id = s % 2)); s /= 2;
+    data[Index_Back][1][2].rot_id = !((data[Index_Left][1][0].rot_id = s % 2)); s /= 2;
+    data[Index_Right][1][2].rot_id = !((data[Index_Back][1][0].rot_id = s % 2)); s /= 2;
+    data[Index_Front][1][2].rot_id = !((data[Index_Right][1][0].rot_id = s % 2)); s /= 2;
+    data[Index_Left][1][2].rot_id = !((data[Index_Front][1][0].rot_id = s % 2)); s /= 2;
 
-	data[Index_Right][0][1].rot_id = !((data[Index_Up][1][2].rot_id = s % 2)); s /= 2;
-	data[Index_Front][0][1].rot_id = !((data[Index_Up][2][1].rot_id = s % 2)); s /= 2;
-	data[Index_Left][0][1].rot_id = !((data[Index_Up][1][0].rot_id = s % 2)); s /= 2;
-	data[Index_Back][0][1].rot_id = !((data[Index_Up][0][1].rot_id = s));
+    data[Index_Right][0][1].rot_id = !((data[Index_Up][1][2].rot_id = s % 2)); s /= 2;
+    data[Index_Front][0][1].rot_id = !((data[Index_Up][2][1].rot_id = s % 2)); s /= 2;
+    data[Index_Left][0][1].rot_id = !((data[Index_Up][1][0].rot_id = s % 2)); s /= 2;
+    data[Index_Back][0][1].rot_id = !((data[Index_Up][0][1].rot_id = s)); //s % 2)); s /= 2;
 }
 
 void set_data_corners_pos(Data& data, uint id) {
@@ -230,8 +240,8 @@ void get_uids(Data& data) {
 
 void State::inflate() {
     get_data() = Data();
-    set_data_corners_pos(get_data(), _id.corners / pow(2, 12));
-    set_data_corners_rot(get_data(), _id.corners % pow(2, 12));
+    set_data_corners_pos(get_data(), _id.corners / pow(3, 8));
+    set_data_corners_rot(get_data(), _id.corners % pow(3, 8));
     set_data_borders_pos(get_data(), _id.borders_pos);
     set_data_borders_rot(get_data(), _id.borders_rot);
     set_data_center(get_data());

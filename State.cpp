@@ -52,6 +52,16 @@ void State::update() {
 	deflate();//TODO remove
 }
 
+string disp(int a, int b) {
+	std::stringstream out;
+	if (a == b)
+		out << a--;
+	else {
+		out << "\e[45m" << a << "-" << b << "\e[0m";
+	}
+	return out.str();
+}
+
 State::State(State* parent, State::Movement m) {
 	if (m == None)
 		throw std::logic_error("None is not an allowed move, use copy constructor");
@@ -74,7 +84,7 @@ State::State(State* parent, State::Movement m) {
 
 	Data d2 = get_data();
 
-	if (d1 != d2) {
+	//if (d1 != d2) {
 		std::cerr << "WHAT" << std::endl;
 		for (int s = Index_Start; s < Index_Len; s++) {
 			for (int l = 0; l < size; l++) {
@@ -82,13 +92,13 @@ State::State(State* parent, State::Movement m) {
 	            {
 					Square as = d1[s][l][c];
 					Square bs = d2[s][l][c];
-					std::cout << "  {" << (int)as.cube_id << "=" << (int)bs.cube_id << " " << (int)as.rot_id << "=" << (int)bs.rot_id << "}  ";
+					std::cout << "  {" << /*disp(as.cube_id, bs.cube_id) << " " <<*/ disp(as.rot_id, bs.rot_id) /*<< " " << disp(as.face_id, bs.face_id)*/ << "}  ";
 				}
 				std::cout << std::endl;
 			}
 			std::cout << std::endl;
 		}
-	}
+	//}
 
 	stateCount++;
 }
@@ -160,6 +170,16 @@ constexpr Data		State::_calculate_solution() {
 				data[s][l][c].face_id = uid++;
 
 	//Adding corners ID
+	//ULB 
+	//UFL
+	//UBR
+	//URF
+	//DBL
+	//DLF
+	//DRB
+	//DFR
+
+
 	data[Index_Up][0][0].cube_id = data[Index_Left][0][0].cube_id = data[Index_Back][0][2].cube_id = 0;
 	data[Index_Up][2][0].cube_id = data[Index_Left][0][2].cube_id = data[Index_Front][0][0].cube_id = 1;
 	data[Index_Up][0][2].cube_id = data[Index_Right][0][2].cube_id = data[Index_Back][0][0].cube_id = 2;

@@ -184,8 +184,16 @@ int		                           main(int ac, char **av)
 		}
 	}
 }
-/*
 
+
+/*
+constexpr int pow(int a, int b) {
+    int r = 1;
+    for (int it = 0; it < b; it++) {
+        r *= a;
+    }
+    return r;
+}
 constexpr int fact(int i) {
     int r = 1;
     for (int it = 1; it <= i; it++) {
@@ -195,10 +203,11 @@ constexpr int fact(int i) {
 }
 int main() {
 
-	State a;
+	State a = State(100);
 	Data d1 = a.get_data();
 
-
+	uint n2 = a.get_id().borders_rot;
+	uint n1 = a.get_id().corners % pow(3, 8);
 
 
 	a.deflate();
@@ -208,52 +217,61 @@ int main() {
 	Data d2 = a.get_data();
 
 	std::cout
-	<< (int)d1[Index_Up][0][0].cube_id << " "
-	<< (int)d1[Index_Up][0][2].cube_id << " "
-	<< (int)d1[Index_Up][2][0].cube_id << " "
-	<< (int)d1[Index_Up][2][2].cube_id << " "
-	<< (int)d1[Index_Down][0][0].cube_id << " "
-	<< (int)d1[Index_Down][0][2].cube_id << " "
-	<< (int)d1[Index_Down][2][0].cube_id << " "
-	<< (int)d1[Index_Down][2][2].cube_id << std::endl;
+	<< (int)d1[Index_Up][0][0].rot_id << " "
+	<< (int)d1[Index_Up][0][2].rot_id << " "
+	<< (int)d1[Index_Up][2][0].rot_id << " "
+	<< (int)d1[Index_Up][2][2].rot_id << " "
+	<< (int)d1[Index_Down][0][0].rot_id << " "
+	<< (int)d1[Index_Down][0][2].rot_id << " "
+	<< (int)d1[Index_Down][2][0].rot_id << " "
+	<< (int)d1[Index_Down][2][2].rot_id << std::endl;
+
+	for (int i = 7; i >= 0; i--)
+		std::cout << (n1 / pow(3, i)) % 3 << " ";
+	std::cout << std::endl;
 
 	std::cout
-	<< (int)d2[Index_Up][0][0].cube_id << " "
-	<< (int)d2[Index_Up][0][2].cube_id << " "
-	<< (int)d2[Index_Up][2][0].cube_id << " "
-	<< (int)d2[Index_Up][2][2].cube_id << " "
-	<< (int)d2[Index_Down][0][0].cube_id << " "
-	<< (int)d2[Index_Down][0][2].cube_id << " "
-	<< (int)d2[Index_Down][2][0].cube_id << " "
-	<< (int)d2[Index_Down][2][2].cube_id << std::endl;
+	<< (int)d2[Index_Up][0][0].rot_id << " "
+	<< (int)d2[Index_Up][0][2].rot_id << " "
+	<< (int)d2[Index_Up][2][0].rot_id << " "
+	<< (int)d2[Index_Up][2][2].rot_id << " "
+	<< (int)d2[Index_Down][0][0].rot_id << " "
+	<< (int)d2[Index_Down][0][2].rot_id << " "
+	<< (int)d2[Index_Down][2][0].rot_id << " "
+	<< (int)d2[Index_Down][2][2].rot_id << std::endl;
 
 	std::cout
-	<< (int)d1[Index_Up][0][1].cube_id << " "
-	<< (int)d1[Index_Up][1][0].cube_id << " "
-	<< (int)d1[Index_Up][2][1].cube_id << " "
-	<< (int)d1[Index_Up][1][2].cube_id << " "
-	<< (int)d1[Index_Front][1][0].cube_id << " "
-	<< (int)d1[Index_Right][1][0].cube_id << " "
-	<< (int)d1[Index_Back][1][0].cube_id << " "
-	<< (int)d1[Index_Left][1][0].cube_id << " "
-	<< (int)d1[Index_Down][0][1].cube_id << " "
-	<< (int)d1[Index_Down][1][0].cube_id << " "
-	<< (int)d1[Index_Down][2][1].cube_id << " "
-	<< (int)d1[Index_Down][1][2].cube_id << std::endl;
+	<< (int)d1[Index_Up][0][1].rot_id << " "
+	<< (int)d1[Index_Up][1][0].rot_id << " "
+	<< (int)d1[Index_Up][2][1].rot_id << " "
+	<< (int)d1[Index_Up][1][2].rot_id << " "
+	<< (int)d1[Index_Front][1][0].rot_id << " "
+	<< (int)d1[Index_Right][1][0].rot_id << " "
+	<< (int)d1[Index_Back][1][0].rot_id << " "
+	<< (int)d1[Index_Left][1][0].rot_id << " "
+	<< (int)d1[Index_Down][0][1].rot_id << " "
+	<< (int)d1[Index_Down][1][0].rot_id << " "
+	<< (int)d1[Index_Down][2][1].rot_id << " "
+	<< (int)d1[Index_Down][1][2].rot_id << std::endl;
+
+	for (int i = 11; i >= 0; i--)
+		std::cout << (n2 / pow(2, i)) % 2 << " ";
+	std::cout << std::endl;
 
 	std::cout
-	<< (int)d2[Index_Up][0][1].cube_id << " "
-	<< (int)d2[Index_Up][1][0].cube_id << " "
-	<< (int)d2[Index_Up][2][1].cube_id << " "
-	<< (int)d2[Index_Up][1][2].cube_id << " "
-	<< (int)d2[Index_Front][1][0].cube_id << " "
-	<< (int)d2[Index_Right][1][0].cube_id << " "
-	<< (int)d2[Index_Back][1][0].cube_id << " "
-	<< (int)d2[Index_Left][1][0].cube_id << " "
-	<< (int)d2[Index_Down][0][1].cube_id << " "
-	<< (int)d2[Index_Down][1][0].cube_id << " "
-	<< (int)d2[Index_Down][2][1].cube_id << " "
-	<< (int)d2[Index_Down][1][2].cube_id << std::endl;
+	<< (int)d2[Index_Up][0][1].rot_id << " "
+	<< (int)d2[Index_Up][1][0].rot_id << " "
+	<< (int)d2[Index_Up][2][1].rot_id << " "
+	<< (int)d2[Index_Up][1][2].rot_id << " "
+	<< (int)d2[Index_Front][1][0].rot_id << " "
+	<< (int)d2[Index_Right][1][0].rot_id << " "
+	<< (int)d2[Index_Back][1][0].rot_id << " "
+	<< (int)d2[Index_Left][1][0].rot_id << " "
+	<< (int)d2[Index_Down][0][1].rot_id << " "
+	<< (int)d2[Index_Down][1][0].rot_id << " "
+	<< (int)d2[Index_Down][2][1].rot_id << " "
+	<< (int)d2[Index_Down][1][2].rot_id << std::endl;
+
 
 	for (int s = Index_Start; s < Index_Len; s++) {
 		for (int l = 0; l < size; l++) {

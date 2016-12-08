@@ -23,20 +23,6 @@ inline void move_values_down(uchar* values, uchar pos, int len) {
 	}
 }
 
-uint get_id_corners_rot(const Data& data) {
-	uint s;
-
-    s = data[Index_U][0][0].rot_id;
-	s = s * 3 + data[Index_U][0][2].rot_id;
-	s = s * 3 + data[Index_U][2][0].rot_id;
-	s = s * 3 + data[Index_U][2][2].rot_id;
-	s = s * 3 + data[Index_D][0][0].rot_id;
-	s = s * 3 + data[Index_D][0][2].rot_id;
-	s = s * 3 + data[Index_D][2][0].rot_id;
-	s = s * 3 + data[Index_D][2][2].rot_id;
-	return s;
-}
-
 inline uint get_fact_value(uchar cube_id, uchar *values, int len) {
 	uchar r = values[cube_id];
 	move_values_down(values, cube_id, len);
@@ -79,6 +65,20 @@ uint get_id_borders_pos(const Data& data) {
 	return s;
 }
 
+uint get_id_corners_rot(const Data& data) {
+	uint s;
+
+    s = data[Index_U][0][0].rot_id;
+	s = s * 3 + data[Index_U][0][2].rot_id;
+	s = s * 3 + data[Index_U][2][0].rot_id;
+	s = s * 3 + data[Index_U][2][2].rot_id;
+	s = s * 3 + data[Index_D][0][0].rot_id;
+	s = s * 3 + data[Index_D][0][2].rot_id;
+	s = s * 3 + data[Index_D][2][0].rot_id;
+	s = s * 3 + data[Index_D][2][2].rot_id;
+	return s;
+}
+
 uint get_id_borders_rot(const Data& data) {
 	uint s;
 
@@ -104,6 +104,8 @@ void State::deflate() {
 	_id.corners = get_id_corners_pos(*_data) * pow(3, 8) + get_id_corners_rot(*_data);
 	_id.borders_pos = get_id_borders_pos(*_data);
 	_id.borders_rot = get_id_borders_rot(*_data);
+	delete _data;
+	_data = nullptr;
 }
 
 inline void move_values_left(uchar* values, uchar pos, int len) {
@@ -139,23 +141,14 @@ inline void set_corner_rot(uchar& up, uchar& fb, uchar& rl, uchar i) {
 }
 
 void set_data_corners_rot(Data& data, uint id) {
-    // data[Index_D][2][2].rot_id = 0; data[Index_R][2][2].rot_id = 1; data[Index_B][2][0].rot_id = 2;
-    // data[Index_D][0][2].rot_id = 0; data[Index_R][2][0].rot_id = 1; data[Index_F][2][2].rot_id = 2;
-    // data[Index_D][2][0].rot_id = 0; data[Index_L][2][0].rot_id = 1; data[Index_B][2][2].rot_id = 2;
-    // data[Index_D][0][0].rot_id = 0; data[Index_L][2][2].rot_id = 1; data[Index_F][2][0].rot_id = 2;
-    // data[Index_U][2][2].rot_id = 0; data[Index_R][0][0].rot_id = 1; data[Index_F][0][2].rot_id = 2;
-    // data[Index_U][0][2].rot_id = 0; data[Index_R][0][2].rot_id = 1; data[Index_B][0][0].rot_id = 2;
-    // data[Index_U][2][0].rot_id = 0; data[Index_L][0][2].rot_id = 1; data[Index_F][0][0].rot_id = 2;
-    // data[Index_U][0][0].rot_id = 0; data[Index_L][0][0].rot_id = 1; data[Index_B][0][2].rot_id = 2;
-
-	set_corner_rot(data[Index_D][2][2].rot_id, data[Index_R][2][2].rot_id, data[Index_B][2][0].rot_id, id % 3); id /= 3;
-	set_corner_rot(data[Index_D][2][0].rot_id, data[Index_R][2][0].rot_id, data[Index_F][2][2].rot_id, id % 3); id /= 3;
-	set_corner_rot(data[Index_D][0][2].rot_id, data[Index_L][2][0].rot_id, data[Index_B][2][2].rot_id, id % 3); id /= 3;
+    set_corner_rot(data[Index_D][2][2].rot_id, data[Index_R][2][2].rot_id, data[Index_B][2][0].rot_id, id % 3); id /= 3;
+	set_corner_rot(data[Index_D][2][0].rot_id, data[Index_B][2][2].rot_id, data[Index_L][2][0].rot_id, id % 3); id /= 3;
+	set_corner_rot(data[Index_D][0][2].rot_id, data[Index_F][2][2].rot_id, data[Index_R][2][0].rot_id, id % 3); id /= 3;
 	set_corner_rot(data[Index_D][0][0].rot_id, data[Index_L][2][2].rot_id, data[Index_F][2][0].rot_id, id % 3); id /= 3;
 	set_corner_rot(data[Index_U][2][2].rot_id, data[Index_R][0][0].rot_id, data[Index_F][0][2].rot_id, id % 3); id /= 3;
-	set_corner_rot(data[Index_U][2][0].rot_id, data[Index_R][0][2].rot_id, data[Index_B][0][0].rot_id, id % 3); id /= 3;
-	set_corner_rot(data[Index_U][0][2].rot_id, data[Index_L][0][2].rot_id, data[Index_F][0][0].rot_id, id % 3); id /= 3;
-	set_corner_rot(data[Index_U][0][0].rot_id, data[Index_L][0][0].rot_id, data[Index_F][0][2].rot_id, id % 3); id /= 3;//TODO remove /% 3
+	set_corner_rot(data[Index_U][2][0].rot_id, data[Index_F][0][0].rot_id, data[Index_L][0][2].rot_id, id % 3); id /= 3;
+	set_corner_rot(data[Index_U][0][2].rot_id, data[Index_B][0][0].rot_id, data[Index_R][0][2].rot_id, id % 3); id /= 3;
+	set_corner_rot(data[Index_U][0][0].rot_id, data[Index_L][0][0].rot_id, data[Index_B][0][2].rot_id, id % 3); id /= 3;//TODO remove /% 3
 }
 
 void set_data_borders_rot(Data& data, uint id) {
@@ -225,7 +218,7 @@ void set_data_borders_pos(Data& data, uint id) {
 }
 
 void get_uids(Data& data) {
-    for (int s = Index_S; s < Index_L; s++)
+    for (int s = Index_Start; s < Index_End; s++)
 		for (int l = 0; l < size; l++)
 			for (int c = 0; c < size; c++){
                 Square &sq = data[s][l][c];
@@ -238,12 +231,16 @@ void get_uids(Data& data) {
             }
 }
 
+void State::inflate(Data& data) const {
+    set_data_corners_pos(data, _id.corners / pow(3, 8));
+    set_data_corners_rot(data, _id.corners % pow(3, 8));
+    set_data_borders_pos(data, _id.borders_pos);
+    set_data_borders_rot(data, _id.borders_rot);
+    set_data_center(data);
+    get_uids(data);
+}
+
 void State::inflate() {
-    get_data() = Data();
-    set_data_corners_pos(get_data(), _id.corners / pow(3, 8));
-    set_data_corners_rot(get_data(), _id.corners % pow(3, 8));
-    set_data_borders_pos(get_data(), _id.borders_pos);
-    set_data_borders_rot(get_data(), _id.borders_rot);
-    set_data_center(get_data());
-    get_uids(get_data());
+    _data = new Data();//Remove initialization ?
+    inflate(*_data);
 }

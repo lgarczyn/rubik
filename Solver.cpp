@@ -112,12 +112,6 @@ Solver::Result Solver::step() {
 				const StateRef& previous = *position;
 				if (State::get_index(*s) < State::get_index(*previous)) {
 					previous->kill();
-
-					s->deflate();
-					previous->deflate();
-					if (s->_id != previous->_id)
-						std::cerr << "bug" << std::endl;
-
 					_universe.erase(previous);
 					_openCount--;
 				} else {

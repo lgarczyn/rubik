@@ -29,8 +29,8 @@ enum Index {
 	Index_L = 4,
 	Index_D = 5,
 
-	Index_S = 0,
-	Index_L = 6,
+	Index_Start = 0,
+	Index_End = 6,
 };
 
 struct Square {

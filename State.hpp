@@ -86,11 +86,6 @@ class State {
 		State(int scramble_count);
 		~State();
 
-		void							apply_scramble(const string& scramble);
-		void							apply_movement(Movement m);
-		void							update();
-		void							inflate();
-		void							deflate();
 		void							kill();
 
 		std::vector<Movement>			get_movements() const;
@@ -99,6 +94,7 @@ class State {
 		Score 							get_weight() const;
 		const Data&						get_data() const;
 		Data&							get_data();
+		Data*							get_data_safe() const;
 		const ID&						get_id() const;
 		void							get_candidates(std::vector<StateRef>& candidates);
 		bool 							is_final() const;
@@ -110,6 +106,15 @@ class State {
 
 		ID								_id;
 	private:
+		void							apply_scramble(const string& scramble);
+		void							apply_movement(Movement m);
+		void							inflate();
+		void							inflate(Data& data) const;
+		void							deflate();
+
+		void							_init();
+		void							_finish();
+
 		static constexpr Data			_calculate_solution();
 		static constexpr UIDFinder		_calculate_uid_finder(const Data& data);
 		static constexpr Finder			_calculate_finder(const Data& data);

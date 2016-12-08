@@ -273,7 +273,7 @@ int main() {
 	<< (int)d2[Index_D][1][2].rot_id << std::endl;
 
 
-	for (int s = Index_S; s < Index_L; s++) {
+	for (int s = Index_Start; s < Index_End; s++) {
 		for (int l = 0; l < size; l++) {
 			for (int c = 0; c < size; c++)
             {

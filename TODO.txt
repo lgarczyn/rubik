@@ -3,20 +3,8 @@ database http://www.cs.princeton.edu/courses/archive/fall06/cos402/papers/korfru
         v kinda already have something maybe
     calculating
         no idea, probably a whole week to make it work
-deflating-inflating
-    v calculate indices
-
-    store data?
-        + minus one (big) element
-        - have to bring it everywhere
-    if not, then
-        inflate();
-        v deflate();
-    v hash
-        v i1 ^ i2 ^ i3
-    v equal
-        v a1 == b1 && a2 == b2 && a3 == b3
 optimizing
+    multithreading
     google array https://github.com/sparsehash/sparsehash
     swap instead of delete
         requires container for StateRef

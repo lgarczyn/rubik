@@ -29,81 +29,37 @@ const Color State::solution_colors[] = {White, Green, Red, Blue, Orange, Yellow}
 State::MovementNode::MovementNode(Movement _m, MovementRef& _p):value(_m),parent(_p) {}
 State::MovementNode::MovementNode(Movement _m):value(_m) {}
 
-State::State() {
+void State::_init() {
 	_data = new Data(solution);
 	_weight = 0;
-	_movement = MovementRef(new MovementNode(None));
+	_movement = MovementRef(nullptr);
 	_distance = 0;
 	stateCount++;
 }
 
-State::State(const State& clone) {
-	*this = clone;
-	_data = new Data(*_data);
-}
-
-State::State(const std::string& scramble):State(){
-	apply_scramble(scramble);
-	update();
-}
-
-void State::update() {
+void State::_finish() {
 	_weight = Heuristics::HeuristicFunction(*_data);
-	deflate();//TODO remove
+
+	//Data d1 = get_data();
+	deflate();
+	//inflate();
+	//Data d2 = get_data();
+	//if ()
 }
 
-string disp(int a, int b) {
-	std::stringstream out;
-	if (a == b)
-		out << a--;
-	else {
-		out << "\e[45m" << a << "-" << b << "\e[0m";
-	}
-	return out.str();
+State::State() {
+	_init();
+	_finish();
 }
 
-State::State(State* parent, State::Movement m) {
-	if (m == None)
-		throw std::logic_error("None is not an allowed move, use copy constructor");
-	if (parent->_weight < 0)
-		throw std::logic_error("Attempting to create children from dead parent");
-
-	_data = new Data(*parent->_data);
-	_distance = parent->_distance + 1;
-	_movement = MovementRef(new MovementNode(m, parent->_movement));
-
-	apply_movement(m);
-	update();
-
-	if (parent->_id == _id)
-		std::cerr << m;//TODO remove
-
-	Data d1 = get_data();
-
-	inflate();
-
-	Data d2 = get_data();
-
-	//if (d1 != d2) {
-		std::cerr << "WHAT" << std::endl;
-		for (int s = Index_S; s < Index_L; s++) {
-			for (int l = 0; l < size; l++) {
-				for (int c = 0; c < size; c++)
-	            {
-					Square as = d1[s][l][c];
-					Square bs = d2[s][l][c];
-					std::cout << "  {" << /*disp(as.cube_id, bs.cube_id) << " " <<*/ disp(as.rot_id, bs.rot_id) /*<< " " << disp(as.face_id, bs.face_id)*/ << "}  ";
-				}
-				std::cout << std::endl;
-			}
-			std::cout << std::endl;
-		}
-	//}
-
-	stateCount++;
+State::State(const std::string& scramble){
+	_init();
+	apply_scramble(scramble);
+	_finish();
 }
 
-State::State(int scramble_count):State(){
+State::State(int scramble_count){
+	_init();
 	std::random_device rd;
 	std::mt19937 rng(rd());
 	std::uniform_int_distribution<int> uni(0,6);
@@ -122,18 +78,46 @@ State::State(int scramble_count):State(){
 
 		apply_movement(m);
 	}
-	update();
+	_finish();
+}
+
+State::State(State* parent, State::Movement m) {
+	stateCount++;
+
+	if (m == None)
+		throw std::logic_error("None is not an allowed move, use copy constructor");
+	if (parent->_weight < 0)
+		throw std::logic_error("Attempting to create children from dead parent");
+
+	_data = new Data(*parent->_data);
+	_distance = parent->_distance + 1;
+	_movement = MovementRef(new MovementNode(m, parent->_movement));
+
+	apply_movement(m);
+	_finish();
+}
+
+State::State(const State& clone) {
+	stateCount++;
+
+	*this = clone;
+	if (clone._data == nullptr)
+		_data = nullptr;
+	else
+		_data = new Data(*clone._data);
 }
 
 State::~State()
 {
-	delete _data;
+	if (_data != nullptr)
+		delete _data;
 	stateCount--;
 }
 
 void	State::get_candidates(std::vector<StateRef>& candidates)
 {
-	Movement m = (Movement)(_movement->value & Mask);
+	inflate();
+	Movement m = (_movement.get() == nullptr) ? None : (Movement)(_movement->value & Mask);
 
 	for (int n = Movement_Start; n < Movement_End; n++) {
 
@@ -147,6 +131,7 @@ void	State::get_candidates(std::vector<StateRef>& candidates)
 		candidates.push_back(StateRef(new State(this, nr)));
 		candidates.push_back(StateRef(new State(this, nh)));
 	}
+	deflate();
 }
 
 constexpr Data		State::_calculate_solution() {
@@ -164,38 +149,28 @@ constexpr Data		State::_calculate_solution() {
 	*/
 
     int uid = 0;
-	for (int s = Index_S; s < Index_L; s++)
+	for (int s = Index_Start; s < Index_End; s++)
 		for (int l = 0; l < size; l++)
 			for (int c = 0; c < size; c++)
 				data[s][l][c].face_id = uid++;
 
 	//Adding corners ID
-	//ULB
-	//UFL
-	//UBR
-	//URF
-	//DBL
-	//DLF
-	//DRB
-	//DFR
-
-
 	data[Index_U][0][0].cube_id = data[Index_L][0][0].cube_id = data[Index_B][0][2].cube_id = 0;
-	data[Index_U][2][0].cube_id = data[Index_L][0][2].cube_id = data[Index_F][0][0].cube_id = 1;
-	data[Index_U][0][2].cube_id = data[Index_R][0][2].cube_id = data[Index_B][0][0].cube_id = 2;
+	data[Index_U][0][2].cube_id = data[Index_B][0][0].cube_id = data[Index_R][0][2].cube_id = 1;
+	data[Index_U][2][0].cube_id = data[Index_F][0][0].cube_id = data[Index_L][0][2].cube_id = 2;
 	data[Index_U][2][2].cube_id = data[Index_R][0][0].cube_id = data[Index_F][0][2].cube_id = 3;
 	data[Index_D][0][0].cube_id = data[Index_L][2][2].cube_id = data[Index_F][2][0].cube_id = 4;
-	data[Index_D][2][0].cube_id = data[Index_L][2][0].cube_id = data[Index_B][2][2].cube_id = 5;
-	data[Index_D][0][2].cube_id = data[Index_R][2][0].cube_id = data[Index_F][2][2].cube_id = 6;
+	data[Index_D][0][2].cube_id = data[Index_F][2][2].cube_id = data[Index_R][2][0].cube_id = 5;
+	data[Index_D][2][0].cube_id = data[Index_B][2][2].cube_id = data[Index_L][2][0].cube_id = 6;
 	data[Index_D][2][2].cube_id = data[Index_R][2][2].cube_id = data[Index_B][2][0].cube_id = 7;
 
 	data[Index_U][0][0].rot_id = 0; data[Index_L][0][0].rot_id = 1; data[Index_B][0][2].rot_id = 2;
-	data[Index_U][2][0].rot_id = 0; data[Index_L][0][2].rot_id = 1; data[Index_F][0][0].rot_id = 2;
-	data[Index_U][0][2].rot_id = 0; data[Index_R][0][2].rot_id = 1; data[Index_B][0][0].rot_id = 2;
+	data[Index_U][0][2].rot_id = 0; data[Index_B][0][0].rot_id = 1; data[Index_R][0][2].rot_id = 2;
+	data[Index_U][2][0].rot_id = 0; data[Index_F][0][0].rot_id = 1; data[Index_L][0][2].rot_id = 2;
 	data[Index_U][2][2].rot_id = 0; data[Index_R][0][0].rot_id = 1; data[Index_F][0][2].rot_id = 2;
 	data[Index_D][0][0].rot_id = 0; data[Index_L][2][2].rot_id = 1; data[Index_F][2][0].rot_id = 2;
-	data[Index_D][2][0].rot_id = 0; data[Index_L][2][0].rot_id = 1; data[Index_B][2][2].rot_id = 2;
-	data[Index_D][0][2].rot_id = 0; data[Index_R][2][0].rot_id = 1; data[Index_F][2][2].rot_id = 2;
+	data[Index_D][0][2].rot_id = 0; data[Index_F][2][2].rot_id = 1; data[Index_R][2][0].rot_id = 2;
+	data[Index_D][2][0].rot_id = 0; data[Index_B][2][2].rot_id = 1; data[Index_L][2][0].rot_id = 2;
 	data[Index_D][2][2].rot_id = 0; data[Index_R][2][2].rot_id = 1; data[Index_B][2][0].rot_id = 2;
 
 	//Adding borders ID
@@ -250,7 +225,7 @@ constexpr UIDFinder		State::_calculate_uid_finder(const Data& data) {
 
     UIDFinder finder = UIDFinder();
 
-    for (int s = Index_S; s < Index_L; s++)
+    for (int s = Index_Start; s < Index_End; s++)
 		for (int l = 0; l < size; l++)
 			for (int c = 0; c < size; c++) {
                 Square sq = data[s][l][c];
@@ -267,7 +242,7 @@ constexpr UIDFinder		State::_calculate_uid_finder(const Data& data) {
 constexpr Finder	State::_calculate_finder(const Data &data) {
 	Finder			finder = Finder();
 
-	for (int s = Index_S; s < Index_L; s++)
+	for (int s = Index_Start; s < Index_End; s++)
 		for (int l = 0; l < size; l++)
 			for (int c = 0; c < size; c++) {
 				Coord co = (Coord){s, l, c};
@@ -456,7 +431,7 @@ std::vector<State::Movement> State::get_movements() const {
 
 	MovementNode* m = _movement.get();
 
-	while (m->value != None) {
+	while (m != nullptr && m->value != None) {
 		movements.insert(movements.begin(), m->value);
 		m = m->parent.get();
 	}
@@ -480,6 +455,18 @@ void State::kill() {
 	if (_weight < 0)
 		throw std::logic_error("Node already dead");
 	_weight = -1;
+}
+
+Data* State::get_data_safe() const {//TODO make const somehow
+
+	Data* r;
+	if (_data == nullptr) {
+		r = new Data();
+		inflate(*r);
+	} else {
+		r = new Data(*_data);
+	}
+	return r;
 }
 
 const Data&	State::get_data(void) const

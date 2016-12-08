@@ -107,10 +107,10 @@ constexpr Buffer Heuristics::get_dist_table() {
     Buffer buff = Buffer();
 
     (void)HeuristicFunction;
-    for (int f = Index_S; f < Index_L; f++)
+    for (int f = Index_Start; f < Index_End; f++)
 		for (int l = 0; l < size; l++)
 			for (int c = 0; c < size; c++)
-                for (int _f = Index_S; _f < Index_L; _f++)
+                for (int _f = Index_Start; _f < Index_End; _f++)
                     for (int _l = 0; _l < size; _l++)
                         for (int _c = 0; _c < size; _c++)
                         {
@@ -129,7 +129,7 @@ Score Heuristics::HeuristicFunction(const Data& data)
     //FIRST LOOP HALF CAN BE REDUCED
     //SECOND LOOP HALF CAN BE BUFFERIZED FOR ONE SOLUTION
 
-    for (int f = Index_S; f < Index_L; f++)
+    for (int f = Index_Start; f < Index_End; f++)
 		for (int l = 0; l < size; l++)
 			for (int c = 0; c < size; c++)
                 if (l != 1 || c != 1) {

@@ -27,12 +27,12 @@ namespace Heuristics
 
 inline int _get_opposite(int a) {
     switch (a) {
-        case Index_Up: return Index_Down;
-        case Index_Down: return Index_Up;
-        case Index_Back: return Index_Front;
-        case Index_Front: return Index_Back;
-        case Index_Right: return Index_Left;
-        case Index_Left: return Index_Right;
+        case Index_U: return Index_D;
+        case Index_D: return Index_U;
+        case Index_B: return Index_F;
+        case Index_F: return Index_B;
+        case Index_R: return Index_L;
+        case Index_L: return Index_R;
     }
     return (-1);
 }
@@ -64,21 +64,21 @@ constexpr int Heuristics::SquareDistance(Coord a, Coord b) {
     }
 
     //If no one is on top or bottom
-    if (a.f != Index_Up && a.f != Index_Down && b.f != Index_Up && b.f != Index_Down) {
+    if (a.f != Index_U && a.f != Index_D && b.f != Index_U && b.f != Index_D) {
         if (a.c == b.c && a.l == b.l)
             return 1;
         return 2;
     }
 
     //If the one point is front and the other on top or bottom, no coord change
-    if (a.f == Index_Front || b.f == Index_Front) {
+    if (a.f == Index_F || b.f == Index_F) {
         if (a.c == b.c && a.l == b.l)
             return 1;
         return 2;
     }
 
     //If the one point is back, turning from bottom or top inverts coordinates
-    if (a.f == Index_Back || b.f == Index_Back) {
+    if (a.f == Index_B || b.f == Index_B) {
         if (a.c == 2 - b.c && a.l == 2 - b.l)
             return 1;
         return 2;
@@ -86,10 +86,10 @@ constexpr int Heuristics::SquareDistance(Coord a, Coord b) {
 
     bool clockwise = true;
     switch (a.f) {
-        case Index_Up: if (b.f == Index_Left) clockwise = false; break;
-        case Index_Right: if (b.f == Index_Up) clockwise = false; break;
-        case Index_Down: if (b.f == Index_Right) clockwise = false; break;
-        case Index_Left: if (b.f == Index_Down) clockwise = false; break;
+        case Index_U: if (b.f == Index_L) clockwise = false; break;
+        case Index_R: if (b.f == Index_U) clockwise = false; break;
+        case Index_D: if (b.f == Index_R) clockwise = false; break;
+        case Index_L: if (b.f == Index_D) clockwise = false; break;
     }
 
     if (clockwise)
@@ -107,10 +107,10 @@ constexpr Buffer Heuristics::get_dist_table() {
     Buffer buff = Buffer();
 
     (void)HeuristicFunction;
-    for (int f = Index_Start; f < Index_Len; f++)
+    for (int f = Index_S; f < Index_L; f++)
 		for (int l = 0; l < size; l++)
 			for (int c = 0; c < size; c++)
-                for (int _f = Index_Start; _f < Index_Len; _f++)
+                for (int _f = Index_S; _f < Index_L; _f++)
                     for (int _l = 0; _l < size; _l++)
                         for (int _c = 0; _c < size; _c++)
                         {
@@ -129,7 +129,7 @@ Score Heuristics::HeuristicFunction(const Data& data)
     //FIRST LOOP HALF CAN BE REDUCED
     //SECOND LOOP HALF CAN BE BUFFERIZED FOR ONE SOLUTION
 
-    for (int f = Index_Start; f < Index_Len; f++)
+    for (int f = Index_S; f < Index_L; f++)
 		for (int l = 0; l < size; l++)
 			for (int c = 0; c < size; c++)
                 if (l != 1 || c != 1) {

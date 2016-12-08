@@ -22,15 +22,15 @@ enum Color {
 };
 
 enum Index {
-	Index_Up = 0,
-	Index_Front = 1,
-	Index_Right = 2,
-	Index_Back = 3,
-	Index_Left = 4,
-	Index_Down = 5,
+	Index_U = 0,
+	Index_F = 1,
+	Index_R = 2,
+	Index_B = 3,
+	Index_L = 4,
+	Index_D = 5,
 
-	Index_Start = 0,
-	Index_Len = 6,
+	Index_S = 0,
+	Index_L = 6,
 };
 
 struct Square {

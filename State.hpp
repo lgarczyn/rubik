@@ -23,7 +23,6 @@ class State;
 #include "ThreadPool.hpp"
 
 using indexer = Score (*)(const State&);
-using StateRef = std::shared_ptr<State>;
 
 class State {
 	public:
@@ -61,6 +60,60 @@ class State {
 			H_Back = Halfturn | Back,
 		};
 
+		/*class StateRef {
+		public:
+			StateRef():_value(nullptr){}
+			StateRef(State *value):_value(value) {
+				if (_value)
+					_value->_ref_count++;
+			}
+			~StateRef() {
+				if (!_value)
+					return;
+				_value->_ref_count--;
+				if (_value->_ref_count == 0)
+					delete _value;
+				else if (_value->_ref_count < 0)
+					throw std::logic_error("_value refcount < 0");
+			}
+
+			StateRef& operator =(const StateRef& ra) {
+				this->~StateRef();
+				_value = ra._value;
+				if (_value)
+					_value->_ref_count++;
+				return *this;
+			}
+
+			State* get() const {return _value;}
+
+			State& operator*() {return *_value;}
+			State* operator->() {return _value;}
+
+			State& operator*() const {return *_value;}
+			State* operator->() const {return _value;}
+
+			operator bool() const {return _value != nullptr;}
+			bool operator==(const StateRef& ra)const {return _value == ra._value;}
+			bool operator!=(const StateRef& ra)const {return _value != ra._value;}
+			bool operator==(const std::nullptr_t ra)const {return _value == ra;}
+			bool operator!=(const std::nullptr_t ra)const {return _value != ra;}
+
+		private:
+			State* _value;
+		};*/
+		//using StateRef = std::shared_ptr<State>;
+
+		struct StateRef:std::shared_ptr<State> {
+			using Ref = std::shared_ptr<State>;
+
+			StateRef():Ref(), is_del(false){}
+			StateRef(std::nullptr_t n):Ref(n), is_del(false){}
+			StateRef(State* ptr):Ref(ptr), is_del(false){}
+			StateRef(bool b):Ref(nullptr), is_del(b){}
+			StateRef(State *state, Movement m):Ref(new State(state, m)){}
+			bool is_del;
+		};
 
 		struct MovementNode;
 		using MovementRef = std::shared_ptr<MovementNode>;
@@ -142,7 +195,10 @@ class State {
 		Score							_weight;
 		Score							_distance;
 		MovementRef						_movement;
+		int								_ref_count;
 };
+
+using StateRef = State::StateRef;
 
 std::ostream& operator<< (std::ostream& s, const State::Movement c);
 

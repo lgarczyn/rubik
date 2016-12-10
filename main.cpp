@@ -88,7 +88,7 @@ Solver::Result	solve_loop(State& initial, Parser::ParseResult& parseResult)
 
 		if (it % 100000 == 0)
 		{
-			std::cout << tgetstr((char*)"cl", NULL);
+			//std::cout << tgetstr((char*)"cl", NULL);
 			if (solverResult.actual_state != nullptr)
 				print_map(*solverResult.actual_state);
 			else
@@ -100,7 +100,7 @@ Solver::Result	solve_loop(State& initial, Parser::ParseResult& parseResult)
 		}
 		++it;
 	}
-	std::cout << tgetstr((char*)"cl", NULL);
+	//std::cout << tgetstr((char*)"cl", NULL);
 	if (solverResult.actual_state != nullptr)
 		print_map(*solverResult.actual_state);
 	else
@@ -118,7 +118,7 @@ int		                           main(int ac, char **av)
 
 	parseResult = parse_args(ac, av);
     if (parseResult.is_random)
-        initial = StateRef(new State(parseResult.iteration));
+        initial = StateRef(parseResult.iteration);
     else
         initial = StateRef(new State(parseResult.data));
 
@@ -169,7 +169,8 @@ int		                           main(int ac, char **av)
 					std::cout << std::endl;
 					usleep(500000);
 
-					current = StateRef(new State(current.get(), l));
+					//current = StateRef(current, l);
+					current = StateRef(current.get(), l);
 				}
 				std::cout << tgetstr((char*)"cl", NULL) << std::endl;
 				print_map(*current);

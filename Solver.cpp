@@ -60,9 +60,11 @@ Solver::Solver(State& initial, bool forget) : _opened(), _forget(forget) {
 	State::initial_score = root->get_weight();
 	get_opened_set(root).push_front(root);
 
-	if (!_forget)
+	if (!_forget) {
+		_universe.set_empty_key(nullptr);
+		_universe.set_deleted_key(StateRef(true));
 		_universe.insert(root);
-	std::cerr << "started" << std::endl;
+	}
 
 	_openCount = 1;
 	_sizeComplexity = 1;

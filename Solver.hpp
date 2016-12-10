@@ -10,6 +10,8 @@
 #include <map>
 #include <unordered_set>
 #include "State.hpp"
+#include <sparsehash/dense_hash_set>
+#include <sparsehash/sparse_hash_set>
 #define MAX_SOLUTION_LENGTH ((int)10000)
 #define SOLVER_BUCKET_SIZE ((int)10000)
 
@@ -19,7 +21,8 @@
 using set = std::list<StateRef>;
 using map = std::map<int, set>;
 
-using universe = std::unordered_set<StateRef, custom_hash, custom_equal_to>;
+//using universe = std::unordered_set<StateRef, custom_hash, custom_equal_to>;
+using universe = google::dense_hash_set<StateRef, custom_hash, custom_equal_to>;
 
 class Solver {
 	public:

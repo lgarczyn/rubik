@@ -19,13 +19,12 @@ int					State::stateCount = 0;
 Score				State::initial_score = 0;
 indexer				State::get_index = indexer_astar;
 
-State::Pool			State::pool = Pool(1);
+State::Pool			State::pool = Pool(8);
 const Data			State::solution = _calculate_solution();
 const UIDFinder		State::uid_finder = _calculate_uid_finder(solution);
 const Finder		State::solution_finder = _calculate_finder(solution);
 
 const Color State::solution_colors[] = {White, Green, Red, Blue, Orange, Yellow};
-
 
 State::MovementNode::MovementNode(Movement _m, MovementRef& _p):value(_m),parent(_p) {}
 State::MovementNode::MovementNode(Movement _m):value(_m) {}
@@ -35,6 +34,7 @@ void State::_init() {
 	_weight = 0;
 	_movement = MovementRef(nullptr);
 	_distance = 0;
+	_ref_count = 0;
 	stateCount++;
 }
 
@@ -116,12 +116,12 @@ State::~State()
 }
 
 StateRef create(State::ThreadData data) {
-	return StateRef(new State(data.parent, data.move));
+	return StateRef(data.parent, data.move);
 }
 
 void	State::get_candidates(std::vector<StateRef>& candidates)
 {
-	std::vector<ThreadData> moves;
+	//std::vector<ThreadData> moves;
 
 	inflate();
 	Movement m = (_movement.get() == nullptr) ? None : (Movement)(_movement->value & Mask);
@@ -134,12 +134,15 @@ void	State::get_candidates(std::vector<StateRef>& candidates)
 		Movement nr = (Movement)(n | Reversed);
 		Movement nh = (Movement)(n | Halfturn);
 
-		moves.push_back(ThreadData(this, (Movement)n));
-		moves.push_back(ThreadData(this, nr));
-		moves.push_back(ThreadData(this, nh));
-	}
+		candidates.push_back(StateRef(this, (Movement)n));
+		candidates.push_back(StateRef(this, nr));
+		candidates.push_back(StateRef(this, nh));
 
-	candidates = pool.run(&create, moves);
+		//moves.push_back(ThreadData(this, (Movement)n));
+		//moves.push_back(ThreadData(this, nr));
+		//moves.push_back(ThreadData(this, nh));
+	}
+	//candidates = pool.run(&create, moves);
 
 	deflate();
 }
@@ -533,11 +536,21 @@ size_t custom_hash::operator()(const StateRef& l) const noexcept {
 	return (h);
 }
 
+//const State* delptr = (State*)1;
+
 bool custom_equal_to::operator()(const StateRef& a, const StateRef& b) const noexcept
 {
-	if (a->get_weight() != b->get_weight() )
+	if (a && b) {
+	//if (a.get() > delptr && b.get() > delptr) {
+	//if (a && b) {
+		if (a->get_weight() != b->get_weight() ) {
+			return (false);
+		}
+		return (a->get_id() == b->get_id());
+	}
+	if (a || b)
 		return (false);
-	return (a->get_id() == b->get_id());
+	return (a.is_del == b.is_del);
 }
 
 Score State::indexer_astar(const State& state)

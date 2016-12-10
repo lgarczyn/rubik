@@ -94,7 +94,6 @@ ThreadPool<Data, Value>::~ThreadPool()
 		delete _threads[i];
 	}
 	display("main thread deleted children");
-
 }
 
 template <typename Data, typename Value>

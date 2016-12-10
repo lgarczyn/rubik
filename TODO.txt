@@ -1,19 +1,19 @@
 database http://www.cs.princeton.edu/courses/archive/fall06/cos402/papers/korfrubik.pdf
-    v indexing
-        v kinda already have something maybe
-    calculating
-        no idea, probably a whole week to make it work
+    selective heuristic
+        do max(a/4) heuristic first
+    loop
+        imply iterate over ids
 optimizing
     multithreading
-    google array https://github.com/sparsehash/sparsehash
+        fix crash
     swap instead of delete
         requires container for StateRef
             would also remove the StateRef(new State())
-    maybe make movement a Movement[20] array
+        check with google array
     check cache misses
 heuristic
+
     check square don't take seperate paths
         yeah I don't think so
     optimize squares taken in account
     use the max(a/4, b/4) heuristic
-    multithreading

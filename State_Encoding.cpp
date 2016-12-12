@@ -34,12 +34,12 @@ uint get_id_corners_pos(const Data& data) {
 	uint s;
 
     s = get_fact_value(data[Index_U][0][0].cube_id, values, 8);
-    s = get_fact_value(data[Index_U][2][0].cube_id, values, 8) + s * 7;
-    s = get_fact_value(data[Index_U][0][2].cube_id, values, 8) + s * 6;
+    s = get_fact_value(data[Index_U][0][2].cube_id, values, 8) + s * 7;
+    s = get_fact_value(data[Index_U][2][0].cube_id, values, 8) + s * 6;
     s = get_fact_value(data[Index_U][2][2].cube_id, values, 8) + s * 5;
     s = get_fact_value(data[Index_D][0][0].cube_id, values, 8) + s * 4;
-    s = get_fact_value(data[Index_D][2][0].cube_id, values, 8) + s * 3;
-    s = get_fact_value(data[Index_D][0][2].cube_id, values, 8) + s * 2;
+    s = get_fact_value(data[Index_D][0][2].cube_id, values, 8) + s * 3;
+    s = get_fact_value(data[Index_D][2][0].cube_id, values, 8) + s * 2;
   //s = get_fact_value(data[Index_D][2][2].cube_id, values, 8) + s * 1;
 	return s;
 }
@@ -174,12 +174,12 @@ void set_data_corners_pos(Data& data, uint id) {
 	uchar values[8] = {0, 1, 2, 3, 4, 5, 6, 7};
 
     data[Index_U][0][0].cube_id = data[Index_L][0][0].cube_id = data[Index_B][0][2].cube_id = get_value_fact(id, values, 8, 8);
-    data[Index_U][2][0].cube_id = data[Index_L][0][2].cube_id = data[Index_F][0][0].cube_id = get_value_fact(id, values, 7, 8);
-    data[Index_U][0][2].cube_id = data[Index_R][0][2].cube_id = data[Index_B][0][0].cube_id = get_value_fact(id, values, 6, 8);
+    data[Index_U][0][2].cube_id = data[Index_R][0][2].cube_id = data[Index_B][0][0].cube_id = get_value_fact(id, values, 7, 8);
+    data[Index_U][2][0].cube_id = data[Index_L][0][2].cube_id = data[Index_F][0][0].cube_id = get_value_fact(id, values, 6, 8);
     data[Index_U][2][2].cube_id = data[Index_R][0][0].cube_id = data[Index_F][0][2].cube_id = get_value_fact(id, values, 5, 8);
     data[Index_D][0][0].cube_id = data[Index_L][2][2].cube_id = data[Index_F][2][0].cube_id = get_value_fact(id, values, 4, 8);
-    data[Index_D][2][0].cube_id = data[Index_L][2][0].cube_id = data[Index_B][2][2].cube_id = get_value_fact(id, values, 3, 8);
-    data[Index_D][0][2].cube_id = data[Index_R][2][0].cube_id = data[Index_F][2][2].cube_id = get_value_fact(id, values, 2, 8);
+    data[Index_D][0][2].cube_id = data[Index_R][2][0].cube_id = data[Index_F][2][2].cube_id = get_value_fact(id, values, 3, 8);
+    data[Index_D][2][0].cube_id = data[Index_L][2][0].cube_id = data[Index_B][2][2].cube_id = get_value_fact(id, values, 2, 8);
     data[Index_D][2][2].cube_id = data[Index_R][2][2].cube_id = data[Index_B][2][0].cube_id = get_value_fact(id, values, 1, 8);
 }
 

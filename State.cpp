@@ -19,7 +19,7 @@ int					State::stateCount = 0;
 Score				State::initial_score = 0;
 indexer				State::get_index = indexer_astar;
 
-State::Pool			State::pool = Pool(8);
+//State::Pool			State::pool = Pool(8);
 const Data			State::solution = _calculate_solution();
 const UIDFinder		State::uid_finder = _calculate_uid_finder(solution);
 const Finder		State::solution_finder = _calculate_finder(solution);
@@ -34,7 +34,6 @@ void State::_init() {
 	_weight = 0;
 	_movement = MovementRef(nullptr);
 	_distance = 0;
-	_ref_count = 0;
 	stateCount++;
 }
 
@@ -84,28 +83,42 @@ State::State(int scramble_count){
 
 State::State(State* parent, State::Movement m) {
 	stateCount++;
+	bool deflate = false;
 
 	if (m == None)
 		throw std::logic_error("None is not an allowed move, use copy constructor");
 	if (parent->_weight < 0)
 		throw std::logic_error("Attempting to create children from dead parent");
 
+	if (parent->_data == nullptr) {
+		std::cerr << "null parent data: is in candid " << std::endl;
+		parent->inflate();
+		deflate = true;
+	}
 	_data = new Data(*parent->_data);
 	_distance = parent->_distance + 1;
 	_movement = MovementRef(new MovementNode(m, parent->_movement));
 
+	if (deflate)
+		parent->deflate();
 	apply_movement(m);
 	_finish();
 }
 
 State::State(const State& clone) {
 	stateCount++;
-
 	*this = clone;
-	if (clone._data == nullptr)
-		_data = nullptr;
-	else
-		_data = new Data(*clone._data);
+}
+
+State& State::operator=(const State& ra) {
+	_id = ra._id;
+	_data = ra._data;
+	_weight = ra._weight;
+	_movement = ra._movement;
+	_distance = ra._distance;
+	if (_data != nullptr)
+		_data = new Data(*_data);
+	return *this;
 }
 
 State::~State()
@@ -119,9 +132,12 @@ StateRef create(State::ThreadData data) {
 	return StateRef(data.parent, data.move);
 }
 
+#include <future>
+
 void	State::get_candidates(std::vector<StateRef>& candidates)
 {
-	//std::vector<ThreadData> moves;
+	//std::vector<std::future<StateRef>> futures;
+	std::vector<ThreadData> moves;
 
 	inflate();
 	Movement m = (_movement.get() == nullptr) ? None : (Movement)(_movement->value & Mask);
@@ -141,8 +157,13 @@ void	State::get_candidates(std::vector<StateRef>& candidates)
 		//moves.push_back(ThreadData(this, (Movement)n));
 		//moves.push_back(ThreadData(this, nr));
 		//moves.push_back(ThreadData(this, nh));
+		//futures.push_back(std::async(std::launch::async, create, ThreadData(this, (Movement)n)));
+		//futures.push_back(std::async(std::launch::async, create, ThreadData(this, nr)));
+		//futures.push_back(std::async(std::launch::async, create, ThreadData(this, nh)));
 	}
 	//candidates = pool.run(&create, moves);
+	//for (uint i = 0; i < futures.size(); i++)
+	//	candidates.push_back(futures[i].get());
 
 	deflate();
 }
@@ -197,10 +218,10 @@ constexpr Data		State::_calculate_solution() {
 	data[Index_D][1][2].cube_id = data[Index_R][2][1].cube_id = 6;
 	data[Index_D][2][1].cube_id = data[Index_B][2][1].cube_id = 7;
 
-	data[Index_F][1][2].cube_id = data[Index_R][1][0].cube_id = 8;
-	data[Index_R][1][2].cube_id = data[Index_B][1][0].cube_id = 9;
-	data[Index_B][1][2].cube_id = data[Index_L][1][0].cube_id = 10;
-	data[Index_L][1][2].cube_id = data[Index_F][1][0].cube_id = 11;
+	data[Index_R][1][0].cube_id = data[Index_F][1][2].cube_id = 8;
+	data[Index_B][1][0].cube_id = data[Index_R][1][2].cube_id = 9;
+	data[Index_L][1][0].cube_id = data[Index_B][1][2].cube_id = 10;
+	data[Index_F][1][0].cube_id = data[Index_L][1][2].cube_id = 11;
 
 	data[Index_U][0][1].rot_id = 0; data[Index_B][0][1].rot_id = 1;
 	data[Index_U][1][0].rot_id = 0; data[Index_L][0][1].rot_id = 1;
@@ -212,10 +233,10 @@ constexpr Data		State::_calculate_solution() {
 	data[Index_D][1][2].rot_id = 0; data[Index_R][2][1].rot_id = 1;
 	data[Index_D][2][1].rot_id = 0; data[Index_B][2][1].rot_id = 1;
 
-	data[Index_F][1][2].rot_id = 0; data[Index_R][1][0].rot_id = 1;
-	data[Index_R][1][2].rot_id = 0; data[Index_B][1][0].rot_id = 1;
-	data[Index_B][1][2].rot_id = 0; data[Index_L][1][0].rot_id = 1;
-	data[Index_L][1][2].rot_id = 0; data[Index_F][1][0].rot_id = 1;
+	data[Index_R][1][0].rot_id = 0; data[Index_F][1][2].rot_id = 1;
+	data[Index_B][1][0].rot_id = 0; data[Index_R][1][2].rot_id = 1;
+	data[Index_L][1][0].rot_id = 0; data[Index_B][1][2].rot_id = 1;
+	data[Index_F][1][0].rot_id = 0; data[Index_L][1][2].rot_id = 1;
 
 	//Adding center ID
 	data[Index_U][1][1].cube_id = 0;
@@ -497,6 +518,10 @@ const ID&	State::get_id(void) const
 	return (this->_id);
 }
 
+ID&	State::get_id(void){
+	return (this->_id);
+}
+
 std::ostream& operator<< (std::ostream& s, const State::Movement c)
 {
 	bool reversed = c & State::Reversed;
@@ -546,7 +571,7 @@ bool custom_equal_to::operator()(const StateRef& a, const StateRef& b) const noe
 		if (a->get_weight() != b->get_weight() ) {
 			return (false);
 		}
-		return (a->get_id() == b->get_id());
+		return (a->get_id().corners == b->get_id().corners);
 	}
 	if (a || b)
 		return (false);

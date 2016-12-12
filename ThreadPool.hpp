@@ -35,16 +35,17 @@ private:
 
 	Call _call;
 
-	std::mutex _startedCounterMutex;
-	int _startedCounter;
-	std::mutex _finishedCounterMutex;
-	int _finishedCounter;
+	std::atomic<int> _dataCounter;
+	std::atomic<int> _resetCounter;
+
+	std::mutex _activeCounterMutex;
+	int _activeCounter;
 
 
-	std::mutex _condMutexFinished;
-	std::mutex _condMutexStarted;
-	std::condition_variable _finished;
-	std::condition_variable _started;
+	std::mutex _condMutexFinished;//mutex for _finished
+	std::mutex _condMutexStarted;//mutex for _started
+	std::condition_variable _finished;//allow run to wait for threads
+	std::condition_variable _started;//allow threads to zait for run
 
 	std::mutex _displayMutex;
 
@@ -57,8 +58,8 @@ template <typename Data, typename Value>
 void ThreadPool<Data, Value>::display(std::string str)
 {
 	(void)str;
-	//Lock lock(_displayMutex);
-	//std::cout << str << std::endl;
+	Lock lock(_displayMutex);
+	std::cout << str << std::endl;
 }
 
 template <typename Data, typename Value>
@@ -67,6 +68,7 @@ ThreadPool<Data, Value>::ThreadPool(int threadCount)
 	isKill = false;
 
 	//creates threads
+	_resetCounter = 0;
 	_threads.resize(threadCount);
 	display("main thread creating children");
 	for (int i = 0; i < threadCount; i++)
@@ -74,7 +76,6 @@ ThreadPool<Data, Value>::ThreadPool(int threadCount)
 		auto functor = std::bind(&ThreadPool::waitForData, this, i);
 		_threads[i] = new std::thread(functor);
 	}
-
 }
 
 template <typename Data, typename Value>
@@ -106,6 +107,8 @@ void ThreadPool<Data, Value>::waitForData(int i)
 		{
 			Lock lock(_condMutexStarted);
 
+			_resetCounter++;
+
 			display(std::to_string(i) + ": thread falls asleep");
 			_started.wait(lock);
 
@@ -117,33 +120,18 @@ void ThreadPool<Data, Value>::waitForData(int i)
 			display(std::to_string(i) + ": thread returns");
 			return;
 		}
-		{
-			Lock lock(_finishedCounterMutex);
-
-			_finishedCounter++;
-		}
 
 		while (1)
 		{
 			//will contain the thread data/values index for this loop
-			int index;
-
-			//get current counter then increment it for next thread
-			{
-				Lock lock(_startedCounterMutex);
-
-				index = _startedCounter;
-				_startedCounter++;
-
-				bool isCorrect = static_cast<size_t>(index) < _data.size();
-				display(std::to_string(i) + ": thread assigned work id: " + std::to_string(index) + ", id is " + (isCorrect ? "correct" : "incorrect"));
-			}
+			uint index = _dataCounter++;
+			display(std::to_string(i) + ": thread assigned work id: " + std::to_string(index) + ", id is " + (index < _data.size() ? "correct" : "incorrect"));
 
 			//if index is under data size
 			// calculate data/values couple
 			//else
 			// set thread as finished
-			if (static_cast<size_t>(index) < _data.size())
+			if (index < _data.size())
 			{
 				display(std::to_string(i) + ": thread starts working on id: " + std::to_string(index));
 				_values[index] = _call(_data[index]);
@@ -154,14 +142,16 @@ void ThreadPool<Data, Value>::waitForData(int i)
 				//set another thread as finished
 				//if all of them are, notify main thread to stop waiting
 				{
-					Lock lock(_finishedCounterMutex);
+					Lock lock(_activeCounterMutex);
 
-					_finishedCounter--;
+					_activeCounter--;
 
-					display(std::to_string(i) + ": thread finished work, " + std::to_string(_finishedCounter) + " left working");
+					display(std::to_string(i) + ": thread finished work, " + std::to_string(_activeCounter) + " left working");
 
-					if (_finishedCounter <= 0)
+					if (_activeCounter == 0)
 						_finished.notify_one();
+					if (_activeCounter < 0)
+						throw std::logic_error("_activeCount < 0");
 				}
 				//could potentially be fired twice, but shouldn't be a problem
 				//BUG possible, no notify
@@ -179,13 +169,13 @@ std::vector<Value> ThreadPool<Data, Value>::run(Call call, const std::vector<Dat
 	_data = data;
 
 	_values.resize(_data.size());
-	_startedCounter = 0;
-	_finishedCounter = 0;
+	_dataCounter = 0;
+	_activeCounter = 0;
 
 	//release every threads waiting start loop
-
-	display("main thread loads " + std::to_string(_values.size()) + " elements");
+	display("main thread loads " + std::to_string(_values.size()) + " elements with " + std::to_string(_threads.size()) + " threads.");
 	display("main thread notifying start");
+	_activeCounter = _threads.size();
 	_started.notify_all();
 
 	{
@@ -194,6 +184,11 @@ std::vector<Value> ThreadPool<Data, Value>::run(Call call, const std::vector<Dat
 		display("main thread waiting for finish");
 		_finished.wait(lock);//BUG possible: wait after notify
 	}
+
+	while((uint)_resetCounter != _threads.size())
+		;
+
+	_resetCounter = 0;
 
 	display("main thread data marked as finished");
 	return (_values);

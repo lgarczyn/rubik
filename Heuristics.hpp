@@ -9,21 +9,30 @@
 #include "Types.hpp"
 #include "State.hpp"
 
+#define MAX_SOLUTION_LENGTH ((int)10000)
+static const int score_multiplier = 4;
+
 using Buffer = std::array<std::array<std::array<std::array<std::array<std::array<char, 3>, 3>, 6>, 3>, 3>, 6>;
 
 namespace Heuristics
 {
-    static Score	HeuristicFunction(const Data& data);
+    typedef Score           (*HeuristicIndexer)(const Data&);
+    extern HeuristicIndexer HeuristicFunction;
+    extern HeuristicIndexer HeuristicFunctionUnused;
+    extern Score        	ValidFunction(const Data& data);
+    extern Score	        InvalidFunction(const Data& data);
     static constexpr int  	SquareDistance(Coord a, Coord b);
 
     static constexpr Buffer get_dist_table();
     static const Buffer dist_table = get_dist_table();
+
 };
 
 //
 // created by louis garczynski on 3/4/16.
 //
 #include <algorithm>
+
 
 inline int _get_opposite(int a) {
     switch (a) {
@@ -121,36 +130,85 @@ constexpr Buffer Heuristics::get_dist_table() {
     return buff;
 }
 
-Score Heuristics::HeuristicFunction(const Data& data)
-{
-    Score score = 0;
 
-    //TODO
-    //FIRST LOOP HALF CAN BE REDUCED
-    //SECOND LOOP HALF CAN BE BUFFERIZED FOR ONE SOLUTION
-
-    for (int f = Index_Start; f < Index_End; f++)
-		for (int l = 0; l < size; l++)
-			for (int c = 0; c < size; c++)
-                if (l != 1 || c != 1) {
-                    // if ((uint)f > data.size()) std::cerr << "overflow f" << std::endl;
-                    // if ((uint)l > data[f].size()) std::cerr << "overflow l" << std::endl;
-                    // if ((uint)c > data[l][c].size()) std::cerr << "overflow c" << std::endl;
-
-                    //int id = data.at(f).at(l).at(c).face_id;
-                    //if ((uint)id > State::solution_finder.size()) std::cout << "overflow id" << std::endl;
-
-                    //Coord p = (Coord){f, l, c};
-                    //int dist = SquareDistance((Coord){f, l, c}, State::solution_finder.at(id));
-
-                    int id = data[f][l][c].face_id;
-                    Coord sol = State::solution_finder[id];
-                    int dist = dist_table[f][l][c][sol.f][sol.l][sol.c];
-
-                    score += dist;
-                    //std::cout << p << finder[id] << std::endl;
-                }
-    return score;
+inline int get_dist(const Data& data, Index f, int l, int c) {
+    int id = data[f][l][c].face_id;
+    Coord sol = State::solution_finder[id];
+    return Heuristics::dist_table[f][l][c][sol.f][sol.l][sol.c];
 }
+
+inline Score get_dist_corners(const Data& data) {
+    Score dist = 0;
+    dist += get_dist(data, Index_U, 0, 0);
+    dist += get_dist(data, Index_U, 0, 2);
+    dist += get_dist(data, Index_U, 2, 0);
+    dist += get_dist(data, Index_U, 2, 2);
+
+    //dist += get_dist(data, Index_D, 0, 0);
+    //dist += get_dist(data, Index_D, 0, 2);
+    //dist += get_dist(data, Index_D, 2, 0);
+    //dist += get_dist(data, Index_D, 2, 2);
+    return dist;
+}
+
+inline Score get_dist_borders(const Data& data) {
+    Score dist = 0;
+    dist += get_dist(data, Index_U, 0, 1);
+    dist += get_dist(data, Index_U, 1, 0);
+    dist += get_dist(data, Index_U, 1, 2);
+    dist += get_dist(data, Index_U, 2, 1);
+
+    dist += get_dist(data, Index_F, 1, 0);
+    dist += get_dist(data, Index_R, 1, 0);
+    dist += get_dist(data, Index_B, 1, 0);
+    dist += get_dist(data, Index_L, 1, 0);
+
+    dist += get_dist(data, Index_D, 0, 1);
+    dist += get_dist(data, Index_D, 1, 0);
+    dist += get_dist(data, Index_D, 1, 2);
+    dist += get_dist(data, Index_D, 2, 1);
+    return dist;
+}
+
+inline Score get_dist_crown(const Data& data) {
+    Score dist = 0;
+    dist += get_dist(data, Index_U, 0, 0);
+    dist += get_dist(data, Index_U, 0, 2);
+    dist += get_dist(data, Index_U, 2, 0);
+    dist += get_dist(data, Index_U, 2, 2);
+    dist += get_dist(data, Index_U, 0, 1);
+    dist += get_dist(data, Index_U, 1, 0);
+    dist += get_dist(data, Index_U, 1, 2);
+    dist += get_dist(data, Index_U, 2, 1);
+    return dist;
+}
+
+inline Score get_dist_belt(const Data& data) {
+    Score dist = 0;
+    dist += get_dist(data, Index_F, 1, 0);
+    dist += get_dist(data, Index_R, 1, 0);
+    dist += get_dist(data, Index_B, 1, 0);
+    dist += get_dist(data, Index_L, 1, 0);
+    return dist;
+}
+
+inline Score get_dist_cross(const Data& data) {
+    Score dist = 0;
+    dist += get_dist(data, Index_D, 0, 1);
+    dist += get_dist(data, Index_D, 1, 0);
+    dist += get_dist(data, Index_D, 1, 2);
+    dist += get_dist(data, Index_D, 2, 1);
+    return dist;
+}
+
+inline Score get_dist_floor(const Data& data) {
+    Score dist = 0;
+    dist += get_dist(data, Index_D, 0, 0);
+    dist += get_dist(data, Index_D, 0, 2);
+    dist += get_dist(data, Index_D, 2, 0);
+    dist += get_dist(data, Index_D, 2, 2);
+    return dist;
+}
+
 
 #endif

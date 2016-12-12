@@ -1,19 +1,37 @@
 database http://www.cs.princeton.edu/courses/archive/fall06/cos402/papers/korfrubik.pdf
     selective heuristic
-        do max(a/4) heuristic first
+        v comparison
+        v scoring
+        v    is_final
     loop
-        imply iterate over ids
+        simply iterate over ids
 optimizing
+    priority queue instead
+    bidirectional astar
     multithreading
-        fix crash
+        custom solution
     swap instead of delete
-        requires container for StateRef
-            would also remove the StateRef(new State())
+        check with StateRef
         check with google array
     check cache misses
+        cachegrind
+        array instead of list
+    --forget smart insert
+    value instead of reference inside hashtable
+    array instead of list instead of list
 heuristic
-
+    if forget and greedy, a
     check square don't take seperate paths
         yeah I don't think so
-    optimize squares taken in account
-    use the max(a/4, b/4) heuristic
+    maybe relative distance instead of absolute
+        that way the computer tries to place a border between corners instead of not
+        maybe for invalid
+cleanup
+    uid = cube_id * 3 + rot_id or something
+input
+    direct color input
+        get uid
+        check if each uid is present
+        http://math.stackexchange.com/questions/127577/how-to-tell-if-a-rubiks-cube-is-solvable
+
+longest solution is exactly 20 moves

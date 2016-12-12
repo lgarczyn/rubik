@@ -10,7 +10,6 @@ using Score = int;
 
  //DO NOT CHANGE
 static const int size = 3;
-static const int score_multiplier = 20;
 
 enum Color {
 	White = 0,

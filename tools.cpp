@@ -15,7 +15,7 @@
 #include "Heuristics.hpp"
 #include <iomanip>
 
-void display_square(Square c, int dist, bool correct) {
+void display_square(Square c, int dist, bool correct, int id) {
 
     string background;
     string foreground;
@@ -37,7 +37,7 @@ void display_square(Square c, int dist, bool correct) {
     else
         foreground = "\e[30m";
 
-    std::cout << foreground << background << " " << dist << " " << std::setw(2) << (int)c.cube_id << " \e[0m";
+    std::cout << foreground << background << " " << dist << " " << std::setw(2) << id << " \e[0m";
 }
 
 void print_line(const Data& data, const Data& solution, int s, int l) {
@@ -47,7 +47,13 @@ void print_line(const Data& data, const Data& solution, int s, int l) {
         int dist = Heuristics::SquareDistance((Coord){s, l, c}, State::solution_finder[sq.face_id]);
         bool correct = solution[s][l][c] == sq;
 
-        display_square(sq, dist, correct);
+        int cid = sq.cube_id;
+        if (c == 1 || l == 1)
+            cid += 8;
+        if (c == 1 && l == 1)
+            cid += 12;
+
+        display_square(sq, dist, correct, cid);
     }
 }
 

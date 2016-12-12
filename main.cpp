@@ -17,7 +17,7 @@
 #include "Parser.hpp"
 #include "tools.hpp"
 #include "Types.hpp"
-#include "Heuristics.hpp"
+#include "Database.hpp"
 #include <random>
 #include <unistd.h>
 #include <termcap.h>
@@ -111,20 +111,20 @@ Solver::Result	solve_loop(State& initial, Parser::ParseResult& parseResult)
 	return (solverResult);
 }
 
-int		                           main(int ac, char **av)
+int		                          main3(int ac, char **av)
 {
 	StateRef					  initial;
 	Parser::ParseResult           parseResult;
 
 	parseResult = parse_args(ac, av);
     if (parseResult.is_random)
-        initial = StateRef(parseResult.iteration);
+        initial = StateRef(new State(parseResult.iteration));
     else
         initial = StateRef(new State(parseResult.data));
 
-    /*std::cout << "GENERATED CUBE" << std::endl;
+    std::cout << "GENERATED CUBE" << std::endl;
     print_map(*initial);
-    std::cout << "ATTEMPTING SOLUTION" << std::endl;*/
+    std::cout << "ATTEMPTING SOLUTION" << std::endl;
 
 	Solver::Result solverResult = solve_loop(*initial, parseResult);
 
@@ -185,9 +185,6 @@ int		                           main(int ac, char **av)
 		}
 	}
 }
-
-
-/*
 constexpr int pow(int a, int b) {
     int r = 1;
     for (int it = 0; it < b; it++) {
@@ -202,6 +199,33 @@ constexpr int fact(int i) {
     }
     return r;
 }
+
+const int corner_length = pow(3, 8) * fact(8);
+
+int main() {
+	Database<corner_length>* d = new Database<corner_length>();
+	std::ifstream f = std::ifstream("upper_corners.db");
+	f >> *d;
+	/*State s = State();
+	for (int i = 0; i < corner_length; i++) {
+		s.get_id().corners = i;
+		Solver solver(s, false);
+
+		Solver::Result res;
+		while ((res = solver.step()).finished == false);
+
+		d->data[i] = res.movements.size();
+
+		if (i % 100000 == 0)
+			std::cout << i << std::endl;
+	}*/
+	//f.close();
+	std::ofstream of = std::ofstream("upper_corners.db");
+	of << *d;
+}
+
+
+/*
 int main() {
 
 	State a = State(100);

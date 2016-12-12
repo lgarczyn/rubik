@@ -12,8 +12,6 @@
 #include "State.hpp"
 #include <sparsehash/dense_hash_set>
 #include <sparsehash/sparse_hash_set>
-#define MAX_SOLUTION_LENGTH ((int)10000)
-#define SOLVER_BUCKET_SIZE ((int)10000)
 
 #define USE_LIST
 
@@ -36,6 +34,7 @@ class Solver {
 				std::vector<State::Movement> movements;
 				bool finished;
 				Result(int timeComplexity, int sizeComplexity);
+				Result();
 		};
 
 		/*struct Node

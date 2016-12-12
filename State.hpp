@@ -60,50 +60,6 @@ class State {
 			H_Back = Halfturn | Back,
 		};
 
-		/*class StateRef {
-		public:
-			StateRef():_value(nullptr){}
-			StateRef(State *value):_value(value) {
-				if (_value)
-					_value->_ref_count++;
-			}
-			~StateRef() {
-				if (!_value)
-					return;
-				_value->_ref_count--;
-				if (_value->_ref_count == 0)
-					delete _value;
-				else if (_value->_ref_count < 0)
-					throw std::logic_error("_value refcount < 0");
-			}
-
-			StateRef& operator =(const StateRef& ra) {
-				this->~StateRef();
-				_value = ra._value;
-				if (_value)
-					_value->_ref_count++;
-				return *this;
-			}
-
-			State* get() const {return _value;}
-
-			State& operator*() {return *_value;}
-			State* operator->() {return _value;}
-
-			State& operator*() const {return *_value;}
-			State* operator->() const {return _value;}
-
-			operator bool() const {return _value != nullptr;}
-			bool operator==(const StateRef& ra)const {return _value == ra._value;}
-			bool operator!=(const StateRef& ra)const {return _value != ra._value;}
-			bool operator==(const std::nullptr_t ra)const {return _value == ra;}
-			bool operator!=(const std::nullptr_t ra)const {return _value != ra;}
-
-		private:
-			State* _value;
-		};*/
-		//using StateRef = std::shared_ptr<State>;
-
 		struct StateRef:std::shared_ptr<State> {
 			using Ref = std::shared_ptr<State>;
 
@@ -142,7 +98,7 @@ class State {
 		};
 		using Pool = ThreadPool<ThreadData, StateRef>;
 
-		static Pool pool;
+		//static Pool pool;
 		static const Data solution;
 		static const Finder solution_finder;
 		static const UIDFinder uid_finder;
@@ -157,6 +113,7 @@ class State {
 		State(State* parent, const Movement direction);
 		State(int scramble_count);
 		~State();
+		State& operator=(const State& ra);
 
 		void							kill();
 
@@ -168,9 +125,14 @@ class State {
 		Data&							get_data();
 		Data*							get_data_safe() const;
 		const ID&						get_id() const;
+		ID&								get_id();
 		void							get_candidates(std::vector<StateRef>& candidates);
 		bool 							is_final() const;
 		bool 							is_alive() const;
+
+		void							inflate();
+		void							inflate(Data& data) const;
+		void							deflate();
 
 		static Score					indexer_astar(const State&);
 		static Score					indexer_uniform(const State&);
@@ -180,9 +142,6 @@ class State {
 	private:
 		void							apply_scramble(const string& scramble);
 		void							apply_movement(Movement m);
-		void							inflate();
-		void							inflate(Data& data) const;
-		void							deflate();
 
 		void							_init();
 		void							_finish();
@@ -195,7 +154,6 @@ class State {
 		Score							_weight;
 		Score							_distance;
 		MovementRef						_movement;
-		int								_ref_count;
 };
 
 using StateRef = State::StateRef;

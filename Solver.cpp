@@ -4,6 +4,7 @@
 
 #include <set>
 #include "Solver.hpp"
+#include "Heuristics.hpp"
 #include "tools.hpp"
 
 
@@ -78,12 +79,13 @@ Solver::Result Solver::step() {
 	if (_openCount <= 0)
 		throw std::logic_error("No opened State");
 
-	StateRef e = get_smallest_state();
-	_openCount--;
 
-	result.actual_state = e;
+	StateRef e = get_smallest_state();//LOCK
+	_openCount--;//LOCK
 
-	if (e->is_final()) {
+	result.actual_state = e;//ONLY ON MAIN THREAD
+
+	if (e->is_final()) {//HAVE ACTUAL STATE && FINISHED STATE
 		result.finished = true;
 		result.movements = e->get_movements();
 		result.sizeComplexity = _sizeComplexity;
@@ -95,17 +97,17 @@ Solver::Result Solver::step() {
 	e->get_candidates(candidates);
 
 	//update size complexity
-	if (State::stateCount > _sizeComplexity)
-		_sizeComplexity = State::stateCount;
+	if (State::stateCount > _sizeComplexity)//LOCK ?
+		_sizeComplexity = State::stateCount;//
 
 	//for every children
 	for (StateRef s:candidates) {
 
-		//if (astar && valid heuristic)
-		if (State::get_index(*s) > 20 * score_multiplier)//TODO maybe 19 instead of 20?
-			continue;
+		if (State::get_index == State::indexer_astar && Heuristics::HeuristicFunction == Heuristics::ValidFunction)
+			if (State::get_index(*s) > 20 * score_multiplier)//TODO maybe 19 instead of 20?
+				continue;
 
-		if (!_forget) {
+		if (!_forget) {//LOCK THE WHOLE THING
 			auto position = _universe.find(s);
 
 			if (position != _universe.end()) {
@@ -121,14 +123,14 @@ Solver::Result Solver::step() {
 			}
 			_universe.insert(s);
 		}
-		get_opened_set(s).push_front(s);
+		get_opened_set(s).push_front(s);//LOCK
 
-		_openCount++;
-		_timeComplexity++;
+		_openCount++;//ATOMIC
+		_timeComplexity++;//ATOMIC
 	}
 	candidates.clear();
 
-	result.sizeComplexity = _sizeComplexity;
+	result.sizeComplexity = _sizeComplexity;//only on main thread?
 	result.timeComplexity = _timeComplexity;
 	return (result);
 }
@@ -138,6 +140,13 @@ Solver::~Solver() {}
 Solver::Result::Result(int timeComplexity, int sizeComplexity):
 		timeComplexity(timeComplexity),
 		sizeComplexity(sizeComplexity),
+		actual_state(nullptr),
+		finished(false) {
+}
+
+Solver::Result::Result():
+		timeComplexity(0),
+		sizeComplexity(0),
 		actual_state(nullptr),
 		finished(false) {
 }

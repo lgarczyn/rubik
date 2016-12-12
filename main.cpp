@@ -110,9 +110,36 @@ Solver::Result	solve_loop(State& initial, Parser::ParseResult& parseResult)
 
 	return (solverResult);
 }
+constexpr int pow(int a, int b) {
+    int r = 1;
+    for (int it = 0; it < b; it++) {
+        r *= a;
+    }
+    return r;
+}
+constexpr int fact(int i) {
+    int r = 1;
+    for (int it = 1; it <= i; it++) {
+        r *= it;
+    }
+    return r;
+}
+
+const int corner_length = pow(3, 8) * fact(8);
 
 int		                          main3(int ac, char **av)
 {
+	{
+		std::ifstream f = std::ifstream("upper_corners.db");
+		Databases::upper_corners = Database(corner_length);
+		f >> Databases::upper_corners;
+	}
+	{
+		std::ifstream f = std::ifstream("lower_corners.db");
+		Databases::lower_corners = Database(corner_length);
+		f >> Databases::lower_corners;
+	}
+
 	StateRef					  initial;
 	Parser::ParseResult           parseResult;
 
@@ -185,28 +212,22 @@ int		                          main3(int ac, char **av)
 		}
 	}
 }
-constexpr int pow(int a, int b) {
-    int r = 1;
-    for (int it = 0; it < b; it++) {
-        r *= a;
-    }
-    return r;
-}
-constexpr int fact(int i) {
-    int r = 1;
-    for (int it = 1; it <= i; it++) {
-        r *= it;
-    }
-    return r;
-}
 
-const int corner_length = pow(3, 8) * fact(8);
+int main() {;
 
-int main() {
-	Database<corner_length>* d = new Database<corner_length>();
-	std::ifstream f = std::ifstream("upper_corners.db");
-	f >> *d;
-	/*State s = State();
+	{
+		std::ifstream f = std::ifstream("upper_corners.db");
+		Databases::upper_corners = Database(corner_length);
+		f >> Databases::upper_corners;
+	}
+	{
+		std::ifstream f = std::ifstream("lower_corners.db");
+		Databases::lower_corners = Database(corner_length);
+		f >> Databases::lower_corners;
+	}
+	Database* d = new Database(corner_length);
+
+	State s = State();
 	for (int i = 0; i < corner_length; i++) {
 		s.get_id().corners = i;
 		Solver solver(s, false);
@@ -218,9 +239,9 @@ int main() {
 
 		if (i % 100000 == 0)
 			std::cout << i << std::endl;
-	}*/
+	}
 	//f.close();
-	std::ofstream of = std::ofstream("upper_corners.db");
+	std::ofstream of = std::ofstream("corners.db");
 	of << *d;
 }
 

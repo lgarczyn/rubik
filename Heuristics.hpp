@@ -23,6 +23,8 @@ namespace Heuristics
     extern Score	        InvalidFunction(const Data& data);
     static constexpr int  	SquareDistance(Coord a, Coord b);
 
+    extern Score            DatabaseFunction(const ID&);
+
     static constexpr Buffer get_dist_table();
     static const Buffer dist_table = get_dist_table();
 
@@ -128,86 +130,6 @@ constexpr Buffer Heuristics::get_dist_table() {
                             buff[f][l][c][_f][_l][_c] = SquareDistance(a, b);
                         }
     return buff;
-}
-
-
-inline int get_dist(const Data& data, Index f, int l, int c) {
-    int id = data[f][l][c].face_id;
-    Coord sol = State::solution_finder[id];
-    return Heuristics::dist_table[f][l][c][sol.f][sol.l][sol.c];
-}
-
-inline Score get_dist_corners(const Data& data) {
-    Score dist = 0;
-    dist += get_dist(data, Index_U, 0, 0);
-    dist += get_dist(data, Index_U, 0, 2);
-    dist += get_dist(data, Index_U, 2, 0);
-    dist += get_dist(data, Index_U, 2, 2);
-
-    //dist += get_dist(data, Index_D, 0, 0);
-    //dist += get_dist(data, Index_D, 0, 2);
-    //dist += get_dist(data, Index_D, 2, 0);
-    //dist += get_dist(data, Index_D, 2, 2);
-    return dist;
-}
-
-inline Score get_dist_borders(const Data& data) {
-    Score dist = 0;
-    dist += get_dist(data, Index_U, 0, 1);
-    dist += get_dist(data, Index_U, 1, 0);
-    dist += get_dist(data, Index_U, 1, 2);
-    dist += get_dist(data, Index_U, 2, 1);
-
-    dist += get_dist(data, Index_F, 1, 0);
-    dist += get_dist(data, Index_R, 1, 0);
-    dist += get_dist(data, Index_B, 1, 0);
-    dist += get_dist(data, Index_L, 1, 0);
-
-    dist += get_dist(data, Index_D, 0, 1);
-    dist += get_dist(data, Index_D, 1, 0);
-    dist += get_dist(data, Index_D, 1, 2);
-    dist += get_dist(data, Index_D, 2, 1);
-    return dist;
-}
-
-inline Score get_dist_crown(const Data& data) {
-    Score dist = 0;
-    dist += get_dist(data, Index_U, 0, 0);
-    dist += get_dist(data, Index_U, 0, 2);
-    dist += get_dist(data, Index_U, 2, 0);
-    dist += get_dist(data, Index_U, 2, 2);
-    dist += get_dist(data, Index_U, 0, 1);
-    dist += get_dist(data, Index_U, 1, 0);
-    dist += get_dist(data, Index_U, 1, 2);
-    dist += get_dist(data, Index_U, 2, 1);
-    return dist;
-}
-
-inline Score get_dist_belt(const Data& data) {
-    Score dist = 0;
-    dist += get_dist(data, Index_F, 1, 0);
-    dist += get_dist(data, Index_R, 1, 0);
-    dist += get_dist(data, Index_B, 1, 0);
-    dist += get_dist(data, Index_L, 1, 0);
-    return dist;
-}
-
-inline Score get_dist_cross(const Data& data) {
-    Score dist = 0;
-    dist += get_dist(data, Index_D, 0, 1);
-    dist += get_dist(data, Index_D, 1, 0);
-    dist += get_dist(data, Index_D, 1, 2);
-    dist += get_dist(data, Index_D, 2, 1);
-    return dist;
-}
-
-inline Score get_dist_floor(const Data& data) {
-    Score dist = 0;
-    dist += get_dist(data, Index_D, 0, 0);
-    dist += get_dist(data, Index_D, 0, 2);
-    dist += get_dist(data, Index_D, 2, 0);
-    dist += get_dist(data, Index_D, 2, 2);
-    return dist;
 }
 
 

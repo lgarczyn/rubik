@@ -1,24 +1,20 @@
 #include <iostream>
+#include <vector>
 #include "Types.hpp"
 
-template <int length>
 class Database{
 
 public:
-    Database():data() {
 
-    }
+    Database(){}
+    Database(int length):data(length) {}
 
-    std::array<uchar, length> data;
+    std::vector<uchar> data;
 };
+std::ostream &operator<<(std::ostream& s, Database& db);
+std::istream &operator>>(std::istream& s, Database& db);
 
-template <int length>
-std::ostream &operator<<(std::ostream& s, Database<length>& db) {
-    s.write((char*)&(db.data[0]), length);
-    return s;
-}
-template <int length>
-std::istream &operator>>(std::istream& s, Database<length>& db) {
-    s.read((char*)&(db.data[0]), length);
-    return s;
+namespace Databases{
+    static Database upper_corners;
+    static Database lower_corners;
 }

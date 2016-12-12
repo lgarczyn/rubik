@@ -39,6 +39,7 @@ void State::_init() {
 
 void State::_finish() {
 	_weight = Heuristics::HeuristicFunction(*_data);
+	_weight = std::max(_weight, Heuristics::DatabaseFunction(_id));
 
 	//Data d1 = get_data();
 	deflate();

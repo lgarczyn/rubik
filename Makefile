@@ -150,6 +150,33 @@ CliOptParser.cpp.s:
 	$(MAKE) -f CMakeFiles/rubik.dir/build.make CMakeFiles/rubik.dir/CliOptParser.cpp.s
 .PHONY : CliOptParser.cpp.s
 
+Database.o: Database.cpp.o
+
+.PHONY : Database.o
+
+# target to build an object file
+Database.cpp.o:
+	$(MAKE) -f CMakeFiles/rubik.dir/build.make CMakeFiles/rubik.dir/Database.cpp.o
+.PHONY : Database.cpp.o
+
+Database.i: Database.cpp.i
+
+.PHONY : Database.i
+
+# target to preprocess a source file
+Database.cpp.i:
+	$(MAKE) -f CMakeFiles/rubik.dir/build.make CMakeFiles/rubik.dir/Database.cpp.i
+.PHONY : Database.cpp.i
+
+Database.s: Database.cpp.s
+
+.PHONY : Database.s
+
+# target to generate assembly for a file
+Database.cpp.s:
+	$(MAKE) -f CMakeFiles/rubik.dir/build.make CMakeFiles/rubik.dir/Database.cpp.s
+.PHONY : Database.cpp.s
+
 Heuristics.o: Heuristics.cpp.o
 
 .PHONY : Heuristics.o
@@ -378,6 +405,9 @@ help:
 	@echo "... CliOptParser.o"
 	@echo "... CliOptParser.i"
 	@echo "... CliOptParser.s"
+	@echo "... Database.o"
+	@echo "... Database.i"
+	@echo "... Database.s"
 	@echo "... Heuristics.o"
 	@echo "... Heuristics.i"
 	@echo "... Heuristics.s"

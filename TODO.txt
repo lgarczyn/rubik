@@ -1,114 +1,40 @@
 database http://www.cs.princeton.edu/courses/archive/fall06/cos402/papers/korfrubik.pdf
 
 optimizing
-    priority queue with id compare
-        replaces
     bidirectional astar
     multithreading
         custom solution
     swap instead of delete
-        check with StateRef
-        check with google array
+        new system should easily allow that
+    use 128bits instead of vector<Movement>
+        incrementation << 4 | m+-1
+        get size
+        translation
     check cache misses
         cachegrind
-        array instead of list
-    --forget smart insert
-    value instead of reference inside hashtable
-    array instead of list instead of list
 heuristic
-    if forget and greedy, a
-    check square don't take seperate paths
-        yeah I don't think so
     maybe relative distance instead of absolute
         that way the computer tries to place a border between corners instead of not
-        maybe for invalid
+            maybe for invalid
+            each corners has 3 corner neighbours && 3 border neighbours
+            each side has 2 corner neighbours and 2 center neighbours
+            each center has 4 borders and 4 corners
+    the ideal heuristic would realize that the square can
+        go directly to the target (center)
+        go to a friend(border/center), that can be moved to the center/
+        maybe corners try to move next to their borders instead?
+
+
+
 cleanup
     uid = cube_id * 3 + rot_id or something
+        would allow to remove uid_finder
 input
     direct color input
-        get uid
-        check if each uid is present
-        http://math.stackexchange.com/questions/127577/how-to-tell-if-a-rubiks-cube-is-solvable
-
-longest solution is exactly 20 moves
-
-
-make data a POD type
-    ID								_id;
-    Data*							_data;
-    Score							_weight;
-    Score							_distance;
-    MovementRef						_movement;
-
-    _data can be externalized, because only used occasionaly
-    _weight can ultimately be removed because only used
-        to store in the right container
-        can be obtained really easily
-    _distance && parent would ideally be found in another container?
-        does not clog cache
-        compareason to other data
-        return solution length
-        prevent self return
-    _movement is just last distance
-
-    ID
-        - current           - 96bits
-        - compact           - 65bits :(
-    Data becomes outsider   - 0bits
-    Weight
-        - temporary         - 0bits
-        - stored            - 8bits;
-    Distance
-        - deduced           - 0bits
-        - stored            - 8bits
-    _movement
-        - deduced           - 0bits
-        - stored            - 16bits
-    _movements
-        - stored away       - 64bits to 0bits
-        - stored inside
-            - dynamic       - 64bits to 64bits + 20 * 16bits
-            - static        - 128bits
-
-    //instead of universe set, universe is map to movements
-    //ordering might need smarts
-    ID 96bits
-    WE 8bits
-    DI 8bits
-    MO 16bits
-    TOTAL 128bits :D
-
-    is_alive ?
-        simply replace movement association?
-            no, because the guy is now in the wrong list
-        on loading, check if the guy has a history, and if it is different?
-            would just be one more universe check in 16 really
-google::dense_hashtable<std::__1::pair<State const, std::__1::vector<unsigned short, std::__1::allocator<unsigned short>
- >
- >
-, State, custom_hash, google::dense_hash_map<State, std::__1::vector<unsigned short, std::__1::allocator<unsigned short>
- >
-, custom_hash, std::__1::equal_to<State>
-, google::libc_allocator_with_realloc<std::__1::pair<State const, std::__1::vector<unsigned short, std::__1::allocator<unsigned short>
- >
- >
- >
- >
-::SelectKey, google::dense_hash_map<State, std::__1::vector<unsigned short, std::__1::allocator<unsigned short>
- >
-, custom_hash, std::__1::equal_to<State>
-, google::libc_allocator_with_realloc<std::__1::pair<State const, std::__1::vector<unsigned short, std::__1::allocator<unsigned short>
- >
- >
- >
- >
-::SetKey, std::__1::equal_to<State>
-, google::libc_allocator_with_realloc<std::__1::pair<State const, std::__1::vector<unsigned short, std::__1::allocator<unsigned short>
- >
- >
- >
- >
-::insert_noresize(std::__1::pair<State const, std::__1::vector<unsigned short, std::__1::allocator<unsigned short>
- >
- >
- const&) + 218
+        get cube_id
+        check presence
+        if each cubes are present, and no impossible match,
+            then
+        check if possible
+            http://math.stackexchange.com/questions/127577/how-to-tell-if-a-rubiks-cube-is-solvable
+        id_from_data

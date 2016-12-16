@@ -1,10 +1,16 @@
 #include "Database.hpp"
 
 std::ostream &operator<<(std::ostream& s, Database& db) {
-    s.write((char*)&(db.data[0]), db.data.size());
+    s.write((char*)&(db[0]), db.size());
     return s;
 }
 std::istream &operator>>(std::istream& s, Database& db) {
-    s.read((char*)&(db.data[0]), db.data.size());
+    s.read((char*)&(db[0]), db.size());
     return s;
 }
+
+
+Database Databases::upper_corners;
+Database Databases::lower_corners;
+Database Databases::corners;
+uint Databases::current_index = 0;

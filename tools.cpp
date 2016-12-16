@@ -60,26 +60,25 @@ void print_line(const Data& data, const Data& solution, int s, int l) {
 void	print_map(const State& state)
 {
     const Data& solution = State::solution;
-    Data *data = state.get_data_safe();
+    Data data = state.to_data();
 
     for (int l = 0; l < size; l++) {
         std::cout << " _ __ " << " _ __ " << " _ __ ";
-        print_line(*data, solution, 0, l);
+        print_line(data, solution, 0, l);
         std::cout << std::endl;
     }
     for (int l = 0; l < size; l++) {
-        print_line(*data, solution, 4, l);
-        print_line(*data, solution, 1, l);
-        print_line(*data, solution, 2, l);
-        print_line(*data, solution, 3, l);
+        print_line(data, solution, 4, l);
+        print_line(data, solution, 1, l);
+        print_line(data, solution, 2, l);
+        print_line(data, solution, 3, l);
         std::cout << std::endl;
     }
     for (int l = 0; l < size; l++) {
         std::cout << " _ __ " << " _ __ " << " _ __ ";
-        print_line(*data, solution, 5, l);
+        print_line(data, solution, 5, l);
         std::cout << std::endl;
     }
-    delete data;
 }
 
 void print_line_dist(Coord pos, int s, int l) {

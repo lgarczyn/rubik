@@ -6,21 +6,21 @@
 #include "Solver.hpp"
 #include "Heuristics.hpp"
 #include "tools.hpp"
+#include <string.h>
 
 
-set&	Solver::get_opened_set(StateRef state) {
+Set& Solver::get_opened_set(const State& state) {
 
-	if (state == nullptr)
-		throw std::logic_error("Storing null to set");
-
-	int index = State::get_index(*state);
+	int index = State::get_index(state);
 
 	return _opened[index];
 }
 
-StateRef 	Solver::get_smallest_state() {
-
+State Solver::get_smallest_state() {
 	auto set_it = _opened.begin();
+
+	if (_openCount > _sizeComplexity)//LOCK ?
+		_sizeComplexity = _openCount;//
 
 	//Iterate over set of lists
 	while (set_it != _opened.end()) {
@@ -30,18 +30,13 @@ StateRef 	Solver::get_smallest_state() {
 			set_it = _opened.erase(set_it);
 		}
 
-		//Iterate over list until either empty, or value was found
+		//Return and pop last element
 		auto& list = set_it->second;
+		auto value = list.back();
+		list.pop_back();
+		_openCount--;
 
-		while (list.empty() == false) {
-
-			StateRef value = list.front();
-			list.pop_front();
-
-			//If value is found, remove and return
-			if (value->is_alive())
-				return value;
-		}
+		return value;
 	}
 	throw std::logic_error("No opened state, scount is " + std::to_string(_openCount));
 }
@@ -54,18 +49,20 @@ void		Solver::print_mem() {
 	std::cout << std::flush;
 }
 
-Solver::Solver(State& initial, bool forget) : _opened(), _forget(forget) {
+Solver::Solver(){}
 
-	StateRef root = StateRef(new State(initial));
+Solver::Solver(State initial) {
+	setup(initial);
+}
 
-	State::initial_score = root->get_weight();
-	get_opened_set(root).push_front(root);
+void Solver::setup(State initial) {
+	_opened.clear();
+	get_opened_set(initial).push_back(initial);
 
-	if (!_forget) {
-		_universe.set_empty_key(nullptr);
-		_universe.set_deleted_key(StateRef(true));
-		_universe.insert(root);
-	}
+	_universe = Universe();
+	_universe.set_empty_key(State(false));
+	_universe.set_deleted_key(State(true));
+	_universe.insert(std::make_pair(initial, Movements()));
 
 	_openCount = 1;
 	_sizeComplexity = 1;
@@ -73,65 +70,64 @@ Solver::Solver(State& initial, bool forget) : _opened(), _forget(forget) {
 }
 
 Solver::Result Solver::step() {
-	Result result = Result(0, 0);
-	std::vector<StateRef > candidates;
+	Result result = Result(_timeComplexity, _sizeComplexity);
+	std::vector<State> candidates;
+
 
 	if (_openCount <= 0)
 		throw std::logic_error("No opened State");
 
 
-	StateRef e = get_smallest_state();//LOCK
+	State e = get_smallest_state();//LOCK
 	_openCount--;//LOCK
 
 	result.actual_state = e;//ONLY ON MAIN THREAD
 
-	if (e->is_final()) {//HAVE ACTUAL STATE && FINISHED STATE
+	if (e.is_final()) {//HAVE ACTUAL STATE && FINISHED STATE
 		result.finished = true;
-		result.movements = e->get_movements();
-		result.sizeComplexity = _sizeComplexity;
-		result.timeComplexity = _timeComplexity;
+		result.movements = _universe[e];
 		return result;
 	}
 
+	const Movements& moves = _universe.find(e)->second;
+	uint prev_distance = moves.size();
+	Movements childmoves = Movements(prev_distance + 1);
+	//memmove(&childmoves[0], &moves[0], prev_distance * sizeof(uint16_t));
+	if (prev_distance)
+		std::copy(moves.begin(), moves.end(), childmoves.begin());
+
+	if (moves.size() != e.get_distance())
+		return result;
+
 	//get children
-	e->get_candidates(candidates);
-
-	//update size complexity
-	if (State::stateCount > _sizeComplexity)//LOCK ?
-		_sizeComplexity = State::stateCount;//
-
+	e.get_candidates(candidates);
 	//for every children
-	for (StateRef s:candidates) {
+	for (State s:candidates) {
+		/*if (State::get_index == State::indexer_astar && Heuristics::HeuristicFunction == Heuristics::ValidFunction)
+			if (State::get_index(s) > 20 * score_multiplier)//TODO maybe 19 instead of 20?
+				continue;*/
 
-		if (State::get_index == State::indexer_astar && Heuristics::HeuristicFunction == Heuristics::ValidFunction)
-			if (State::get_index(*s) > 20 * score_multiplier)//TODO maybe 19 instead of 20?
+		/*auto position = _universe.find(s);
+
+		if (position != _universe.end()) {
+
+			const State& previous = position->first;
+			if (State::get_index(s) < State::get_index(previous)) {//replace with get_distance?
+				_universe.erase(previous);
+				_openCount--;
+			} else {
 				continue;
-
-		if (!_forget) {//LOCK THE WHOLE THING
-			auto position = _universe.find(s);
-
-			if (position != _universe.end()) {
-
-				const StateRef& previous = *position;
-				if (State::get_index(*s) < State::get_index(*previous)) {
-					previous->kill();
-					_universe.erase(previous);
-					_openCount--;
-				} else {
-					continue;
-				}
 			}
-			_universe.insert(s);
-		}
-		get_opened_set(s).push_front(s);//LOCK
+		}*/
+		childmoves[prev_distance] = s.get_movement();
+		_universe.insert(std::make_pair(s, childmoves));
+		get_opened_set(s).push_back(s);//LOCK
 
 		_openCount++;//ATOMIC
 		_timeComplexity++;//ATOMIC
 	}
 	candidates.clear();
 
-	result.sizeComplexity = _sizeComplexity;//only on main thread?
-	result.timeComplexity = _timeComplexity;
 	return (result);
 }
 
@@ -140,13 +136,13 @@ Solver::~Solver() {}
 Solver::Result::Result(int timeComplexity, int sizeComplexity):
 		timeComplexity(timeComplexity),
 		sizeComplexity(sizeComplexity),
-		actual_state(nullptr),
+		actual_state(false),
 		finished(false) {
 }
 
 Solver::Result::Result():
 		timeComplexity(0),
 		sizeComplexity(0),
-		actual_state(nullptr),
+		actual_state(false),
 		finished(false) {
 }

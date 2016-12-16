@@ -10,17 +10,15 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#pragma once
+#ifndef STATE_HPP
+# define STATE_HPP
 
-#include <vector>
-#include <array>
 #include <functional>
+#include <vector>
 #include <iostream>
 #include "Types.hpp"
 
 class State;
-
-#include "ThreadPool.hpp"
 
 using indexer = Score (*)(const State&);
 
@@ -39,9 +37,9 @@ class State {
 			Movement_Start = 1,
 			Movement_End = 7,
 
-			Mask = 15,
-			Reversed = 16,
-			Halfturn = 32,
+			Mask = 7,
+			Reversed = 8,
+			Halfturn = 16,
 
 			R_None = Reversed | None,
 			R_Up = Reversed | Up,
@@ -60,120 +58,71 @@ class State {
 			H_Back = Halfturn | Back,
 		};
 
-		struct StateRef:std::shared_ptr<State> {
-			using Ref = std::shared_ptr<State>;
+		//solution lookup
+		static const Data				solution;
+		static const Finder				solution_finder;
+		static const UIDFinder			uid_finder;
+		static const Color				solution_colors[];
 
-			StateRef():Ref(), is_del(false){}
-			StateRef(std::nullptr_t n):Ref(n), is_del(false){}
-			StateRef(State* ptr):Ref(ptr), is_del(false){}
-			StateRef(bool b):Ref(nullptr), is_del(b){}
-			StateRef(State *state, Movement m):Ref(new State(state, m)){}
-			bool is_del;
-		};
-
-		struct MovementNode;
-		using MovementRef = std::shared_ptr<MovementNode>;
-		struct MovementNode{
-
-
-				Movement value;
-				MovementRef parent;
-
-				MovementNode(Movement _m, MovementRef& _p);
-				MovementNode(Movement _m);
-		};
-
-		struct ThreadData
-		{
-			ThreadData(){};
-			ThreadData(State* _parent, State::Movement _move):
-				parent(_parent),
-				move(_move)
-			{}
-
-			~ThreadData(){};
-
-			State* parent;
-			State::Movement move;
-		};
-		using Pool = ThreadPool<ThreadData, StateRef>;
-
-		//static Pool pool;
-		static const Data solution;
-		static const Finder solution_finder;
-		static const UIDFinder uid_finder;
-		static const Color solution_colors[];
-		static int stateCount;
-		static Score initial_score;
-		static indexer	get_index;
-
+		//constructors
 		State();
+		State(bool is_del);
 		State(const State& clone);
 		State(const string& scramble);
-		State(State* parent, const Movement direction);
 		State(int scramble_count);
-		~State();
+		State(const State& parent, Movement direction);
 		State& operator=(const State& ra);
+		bool operator==(const State& ra) const;
 
-		void							kill();
-
-		std::vector<Movement>			get_movements() const;
+		//getters
 		Movement						get_movement() const;
-		Score							get_distance() const;
-		Score 							get_weight() const;
-		const Data&						get_data() const;
-		Data&							get_data();
-		Data*							get_data_safe() const;
+		uint							get_distance() const;
+		uint 							get_weight() const;
 		const ID&						get_id() const;
-		ID&								get_id();
-		void							get_candidates(std::vector<StateRef>& candidates);
 		bool 							is_final() const;
-		bool 							is_alive() const;
 
-		void							inflate();
-		void							inflate(Data& data) const;
-		void							deflate();
+		//logic wrappers
+		void							get_candidates(std::vector<State>& candidates) const;
 
+		//ID Data conversions
+		//void							inflate(Data& data) const;
+		Data							to_data() const;
+		static constexpr ID				id_from_data(const Data data);
+		static constexpr Data			data_from_id(const ID id);
+
+		//indexers
+		static indexer					get_index;
 		static Score					indexer_astar(const State&);
 		static Score					indexer_uniform(const State&);
 		static Score					indexer_greedy(const State&);
 
-		ID								_id;
+		//debug
+		ID&								_get_id();
+		void							update_weight();
 	private:
-		void							apply_scramble(const string& scramble);
-		void							apply_movement(Movement m);
+		//optimized constructor
+		State(const State& parent, Movement direction, const Data& data);
 
-		void							_init();
-		void							_finish();
-
+		//calculations
+		void							_apply_data(const Data& data);
+		static void						_apply_scramble(Data& data, const string& scramble);
+		static void						_apply_movement(Data& data, Movement m);
 		static constexpr Data			_calculate_solution();
 		static constexpr UIDFinder		_calculate_uid_finder(const Data& data);
 		static constexpr Finder			_calculate_finder(const Data& data);
 
-		Data*							_data;
-		Score							_weight;
-		Score							_distance;
-		MovementRef						_movement;
+		//members, should add up to 128bits :D
+		ID								_id;
+		uint16_t						_movement:16;
+		uchar							_weight:8;
+		uchar							_distance:8;
 };
-
-using StateRef = State::StateRef;
-
-std::ostream& operator<< (std::ostream& s, const State::Movement c);
+std::ostream&					operator<<(std::ostream& s, const State::Movement c);
 
 struct custom_hash
 {
 	public:
-		size_t operator()(const StateRef& l) const noexcept;
+		size_t operator()(const State& l) const noexcept;
 };
 
-struct custom_equal_to
-{
-	public:
-		bool operator()(const StateRef& a, const StateRef& b) const noexcept;
-};
-
-struct custom_less
-{
-	public:
-		bool operator()(const StateRef& a, const StateRef& b);
-};
+#endif

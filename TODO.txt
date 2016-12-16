@@ -1,12 +1,8 @@
 database http://www.cs.princeton.edu/courses/archive/fall06/cos402/papers/korfrubik.pdf
-    selective heuristic
-        v comparison
-        v scoring
-        v    is_final
-    loop
-        simply iterate over ids
+
 optimizing
-    priority queue instead
+    priority queue with id compare
+        replaces
     bidirectional astar
     multithreading
         custom solution
@@ -35,3 +31,84 @@ input
         http://math.stackexchange.com/questions/127577/how-to-tell-if-a-rubiks-cube-is-solvable
 
 longest solution is exactly 20 moves
+
+
+make data a POD type
+    ID								_id;
+    Data*							_data;
+    Score							_weight;
+    Score							_distance;
+    MovementRef						_movement;
+
+    _data can be externalized, because only used occasionaly
+    _weight can ultimately be removed because only used
+        to store in the right container
+        can be obtained really easily
+    _distance && parent would ideally be found in another container?
+        does not clog cache
+        compareason to other data
+        return solution length
+        prevent self return
+    _movement is just last distance
+
+    ID
+        - current           - 96bits
+        - compact           - 65bits :(
+    Data becomes outsider   - 0bits
+    Weight
+        - temporary         - 0bits
+        - stored            - 8bits;
+    Distance
+        - deduced           - 0bits
+        - stored            - 8bits
+    _movement
+        - deduced           - 0bits
+        - stored            - 16bits
+    _movements
+        - stored away       - 64bits to 0bits
+        - stored inside
+            - dynamic       - 64bits to 64bits + 20 * 16bits
+            - static        - 128bits
+
+    //instead of universe set, universe is map to movements
+    //ordering might need smarts
+    ID 96bits
+    WE 8bits
+    DI 8bits
+    MO 16bits
+    TOTAL 128bits :D
+
+    is_alive ?
+        simply replace movement association?
+            no, because the guy is now in the wrong list
+        on loading, check if the guy has a history, and if it is different?
+            would just be one more universe check in 16 really
+google::dense_hashtable<std::__1::pair<State const, std::__1::vector<unsigned short, std::__1::allocator<unsigned short>
+ >
+ >
+, State, custom_hash, google::dense_hash_map<State, std::__1::vector<unsigned short, std::__1::allocator<unsigned short>
+ >
+, custom_hash, std::__1::equal_to<State>
+, google::libc_allocator_with_realloc<std::__1::pair<State const, std::__1::vector<unsigned short, std::__1::allocator<unsigned short>
+ >
+ >
+ >
+ >
+::SelectKey, google::dense_hash_map<State, std::__1::vector<unsigned short, std::__1::allocator<unsigned short>
+ >
+, custom_hash, std::__1::equal_to<State>
+, google::libc_allocator_with_realloc<std::__1::pair<State const, std::__1::vector<unsigned short, std::__1::allocator<unsigned short>
+ >
+ >
+ >
+ >
+::SetKey, std::__1::equal_to<State>
+, google::libc_allocator_with_realloc<std::__1::pair<State const, std::__1::vector<unsigned short, std::__1::allocator<unsigned short>
+ >
+ >
+ >
+ >
+::insert_noresize(std::__1::pair<State const, std::__1::vector<unsigned short, std::__1::allocator<unsigned short>
+ >
+ >
+ const&) + 218

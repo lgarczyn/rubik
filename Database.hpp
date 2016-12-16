@@ -2,19 +2,19 @@
 #include <vector>
 #include "Types.hpp"
 
-class Database{
+class Database:public std::vector<uchar>{
 
 public:
 
     Database(){}
-    Database(int length):data(length) {}
-
-    std::vector<uchar> data;
+    Database(int length):std::vector<uchar>(length) {}
 };
 std::ostream &operator<<(std::ostream& s, Database& db);
 std::istream &operator>>(std::istream& s, Database& db);
 
 namespace Databases{
-    static Database upper_corners;
-    static Database lower_corners;
+    extern Database upper_corners;
+    extern Database lower_corners;
+    extern Database corners;
+    extern uint current_index;
 }

@@ -73,9 +73,9 @@ Parser::ParseResult	parse_args(int ac, char **av)
 	}
 }
 
-Solver::Result	solve_loop(State& initial, Parser::ParseResult& parseResult)
+Solver::Result	solve_loop(State& initial)//, Parser::ParseResult& parseResult)
 {
-	Solver			puzzle(initial, parseResult.forget);
+	Solver			puzzle(initial);
 	Solver::Result	solverResult(0, 0);
 	size_t 			it;
 
@@ -89,22 +89,16 @@ Solver::Result	solve_loop(State& initial, Parser::ParseResult& parseResult)
 		if (it % 100000 == 0)
 		{
 			//std::cout << tgetstr((char*)"cl", NULL);
-			if (solverResult.actual_state != nullptr)
-				print_map(*solverResult.actual_state);
-			else
-				std::cout << "null current state" << std::endl;
+			print_map(solverResult.actual_state);
 			std::cout << "Iteration count: " << it << std::endl;
-			std::cout << "Solution [Score: " << solverResult.actual_state->get_weight() << "]" << std::endl;
-            //std::cout << "Memory repartition:" << std::endl;
-            //puzzle.print_mem();
+			std::cout << "Solution [Score: " << solverResult.actual_state.get_weight() << "]" << std::endl;
+            std::cout << "Memory repartition:" << std::endl;
+            puzzle.print_mem();
 		}
 		++it;
 	}
 	//std::cout << tgetstr((char*)"cl", NULL);
-	if (solverResult.actual_state != nullptr)
-		print_map(*solverResult.actual_state);
-	else
-		std::cout << "null current state" << std::endl;
+	print_map(solverResult.actual_state);
 	std::cout << "Iteration count: " << it << std::endl;
 	std::cout << "Move count: " << solverResult.movements.size() << std::endl;
 
@@ -127,33 +121,22 @@ constexpr int fact(int i) {
 
 const int corner_length = pow(3, 8) * fact(8);
 
-int		                          main3(int ac, char **av)
+int		                          main2(int ac, char **av)
 {
-	{
-		std::ifstream f = std::ifstream("upper_corners.db");
-		Databases::upper_corners = Database(corner_length);
-		f >> Databases::upper_corners;
-	}
-	{
-		std::ifstream f = std::ifstream("lower_corners.db");
-		Databases::lower_corners = Database(corner_length);
-		f >> Databases::lower_corners;
-	}
-
-	StateRef					  initial;
+	State						  initial;
 	Parser::ParseResult           parseResult;
 
 	parseResult = parse_args(ac, av);
     if (parseResult.is_random)
-        initial = StateRef(new State(parseResult.iteration));
+        initial = State(parseResult.iteration);
     else
-        initial = StateRef(new State(parseResult.data));
+        initial = State(parseResult.data);
 
     std::cout << "GENERATED CUBE" << std::endl;
-    print_map(*initial);
+    print_map(initial);
     std::cout << "ATTEMPTING SOLUTION" << std::endl;
 
-	Solver::Result solverResult = solve_loop(*initial, parseResult);
+	Solver::Result solverResult = solve_loop(initial);//, parseResult);
 
 	bool displayHelp = true;
 	while (1)
@@ -174,7 +157,7 @@ int		                          main3(int ac, char **av)
 			case 'q':
 				exit(0);
 			case 'd':
-				std::cout << tgetstr((char*)"cl", NULL);
+				//std::cout << tgetstr((char*)"cl", NULL);
 				std::cout
 				<< "Total number of states ever in open set: " << solverResult.sizeComplexity << std::endl
 				<< "Max number of states concurrent in memory: " << solverResult.timeComplexity << std::endl
@@ -182,25 +165,24 @@ int		                          main3(int ac, char **av)
 				<< std::endl << std::flush;
 				break;
 			case 's':
-				std::cout << tgetstr((char*)"cl", NULL) << std::endl;
+				//std::cout << tgetstr((char*)"cl", NULL) << std::endl;
 				for (auto &l:solverResult.movements)
 					std::cout << l << std::endl;
 				std::cout << std::endl << std::flush;
 				break;
 			case 'a': {
-				StateRef current = StateRef(new State(*initial));
+				State current = State(initial);
 
-				for (auto &l:solverResult.movements) {
-					std::cout << tgetstr((char*)"cl", NULL) << std::endl;
-					print_map(*current);
+				for (uint16_t l:solverResult.movements) {
+					//std::cout << tgetstr((char*)"cl", NULL) << std::endl;
+					print_map(current);
 					std::cout << std::endl;
 					usleep(500000);
 
-					//current = StateRef(current, l);
-					current = StateRef(current.get(), l);
+					current = State(current, (State::Movement)l);
 				}
-				std::cout << tgetstr((char*)"cl", NULL) << std::endl;
-				print_map(*current);
+				//std::cout << tgetstr((char*)"cl", NULL) << std::endl;
+				print_map(current);
 				std::cout << std::endl << std::flush;
 				usleep(500000);
 
@@ -213,9 +195,19 @@ int		                          main3(int ac, char **av)
 	}
 }
 
+uint floor_index_upper_corners(uint u) {
+
+	uint p = u / pow(3, 8);
+	uint r = u % pow(3, 8);
+
+	uint pu = p / fact(4);
+	uint ru = r / pow(3, 4);
+	return (pu * fact(4) * pow(3, 8)) * (ru * pow(3, 4));
+}
+
 int main() {;
 
-	{
+	/*{
 		std::ifstream f = std::ifstream("upper_corners.db");
 		Databases::upper_corners = Database(corner_length);
 		f >> Databases::upper_corners;
@@ -225,24 +217,56 @@ int main() {;
 		Databases::lower_corners = Database(corner_length);
 		f >> Databases::lower_corners;
 	}
-	Database* d = new Database(corner_length);
+	{
+		std::ifstream f = std::ifstream("corners.db");
+		Databases::corners = Database(corner_length);
+		f >> Databases::corners;
+	}*/
+
+	/*for (int i = 0; i < corner_length; i++) {
+		uchar uc = Databases::upper_corners[i];
+		uchar lc = Databases::lower_corners[i];
+		uchar c = Databases::corners[i];
+
+		std::cerr << i << " " << (int)c << " " << (int)uc << " " << (int)lc << std::endl;
+	}*/
+
+
+	Database d = Database(corner_length);
+
+	std::cerr << d.size() << " " << Databases::upper_corners.size() << " " << Databases::lower_corners.size() << "\n";
 
 	State s = State();
-	for (int i = 0; i < corner_length; i++) {
-		s.get_id().corners = i;
-		Solver solver(s, false);
+	Solver solver;
+	for (uint i = 0; i < corner_length; i++) {
 
-		Solver::Result res;
-		while ((res = solver.step()).finished == false);
+		uint pre_i = floor_index_upper_corners(i);
 
-		d->data[i] = res.movements.size();
+		if (pre_i < i) { //if the last result is the same as the current one, use it
+			d[i] = d[pre_i];
+		} else {//else, calculate it
 
-		if (i % 100000 == 0)
-			std::cout << i << std::endl;
+			s._get_id().corners = i;
+			s.update_weight();
+			solver.setup(s);
+			Solver::Result res;
+			while (1) {
+				res = solver.step();
+				if (res.finished)
+					break;
+			}
+
+			d[i] = res.movements.size();//Store the movement solution length to the databse, and to prev_result
+			//Store the index of the last solved positon, to allow current database lookup
+		}
+		Databases::current_index = i;
+		if (i % 100 == 0)
+			std::cout << i << " " << d[i] << std::endl;
 	}
 	//f.close();
 	std::ofstream of = std::ofstream("corners.db");
-	of << *d;
+	of << d;
+	return (0);
 }
 
 

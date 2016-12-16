@@ -10,17 +10,17 @@
 #include <map>
 #include <unordered_set>
 #include "State.hpp"
-#include <sparsehash/dense_hash_set>
-#include <sparsehash/sparse_hash_set>
+#include <sparsehash/dense_hash_map>
 
 #define USE_LIST
 
 //using set = std::unordered_set<StateRef, custom_hash, custom_equal_to>;
-using set = std::list<StateRef>;
-using map = std::map<int, set>;
+using Set = std::vector<State>;
+using Map = std::map<int, Set>;
 
 //using universe = std::unordered_set<StateRef, custom_hash, custom_equal_to>;
-using universe = google::dense_hash_set<StateRef, custom_hash, custom_equal_to>;
+using Movements = std::vector<uint16_t>;
+using Universe = google::dense_hash_map<State, Movements, custom_hash>;
 
 class Solver {
 	public:
@@ -30,8 +30,8 @@ class Solver {
 			public:
 				int timeComplexity;
 				int sizeComplexity;
-				StateRef actual_state;
-				std::vector<State::Movement> movements;
+				State actual_state;
+				std::vector<uint16_t> movements;
 				bool finished;
 				Result(int timeComplexity, int sizeComplexity);
 				Result();
@@ -46,18 +46,19 @@ class Solver {
 		using NodeRef = std::unique_ptr<Node>;*/
 		//StateRef *get_universe_position(StateRef state);
 
-		Solver(State& initial, bool forget);
+		Solver();
+		Solver(State initial);
+		void setup(State initial);
 		Result step();
-		set& get_opened_set(StateRef state);
-		StateRef get_smallest_state();
+		Set& get_opened_set(const State& state);
+		State get_smallest_state();
 		void print_mem();
 		~Solver();
 
 	private:
-		map _opened;
-		universe _universe;
+		Map _opened;
+		Universe _universe;
 		int _timeComplexity;
 		int _sizeComplexity;
 		int _openCount;
-		bool _forget;
 };

@@ -92,6 +92,35 @@ constexpr Finder	State::_calculate_finder(const Cube &cube) {
 	return finder;
 }
 
+void State::_apply_scramble(Data& data, const string& scramble) {
+
+	std::stringstream ss = std::stringstream(scramble);
+
+	while (ss) {
+		Movement m;
+		int turns = 1;
+		int c = ss.get();
+
+		switch (c) {
+			case 'F': m = Front; break;
+			case 'R': m = Right; break;
+			case 'U': m = Up; break;
+			case 'B': m = Back; break;
+			case 'L': m = Left; break;
+			case 'D': m = Down; break;
+			default: continue;
+		}
+		c = ss.peek();
+		switch (c) {
+			case '\'': turns = 3; break;
+			case '2': turns  = 2; break;
+		}
+		_apply_movement(data, m, turns);
+	}
+}
+
+/*
+
 void State::_apply_scramble(Cube& cube, const string& scramble) {
 
 	std::stringstream ss = std::stringstream(scramble);
@@ -117,34 +146,6 @@ void State::_apply_scramble(Cube& cube, const string& scramble) {
 		_apply_movement(cube, m);
 	}
 }
-
-void State::_apply_scramble(Data& data, const string& scramble) {
-
-	std::stringstream ss = std::stringstream(scramble);
-
-	while (ss) {
-		Movement m;
-		int c = ss.get();
-
-		switch (c) {
-			case 'F': m = Front; break;
-			case 'R': m = Right; break;
-			case 'U': m = Up; break;
-			case 'B': m = Back; break;
-			case 'L': m = Left; break;
-			case 'D': m = Down; break;
-			default: continue;
-		}
-		c = ss.peek();
-		switch (c) {
-			case '\'': m = (Movement)(m | Reversed); break;
-			case '2': m = (Movement)(m | Halfturn); break;
-		}
-		_apply_movement(data, m);
-	}
-}
-
-
 
 void swap_s(Square& a, Square& b, Square& c, Square& d, int turns) {
 	Square t;
@@ -231,7 +232,7 @@ void State::_apply_movement(Cube& cube, Movement m) {
 	}
 }
 
-/*
+
 bool State::check_continuity() const{
 	int id;
 
@@ -318,7 +319,7 @@ constexpr inline uint get_fact_value(uchar cube_id, uchar *values, int len) {
 	move_values_down(values, cube_id, len);
     return r;
 }
-
+/*
 constexpr uint get_id_corners_pos(const Cube& cube) {
 	uchar values[8] = {0, 1, 2, 3, 4, 5, 6, 7};
 	uint s = 0;
@@ -396,7 +397,7 @@ constexpr ID State::id_from_cube(const Cube cube){
 	id.borders_pos = get_id_borders_pos(cube);
 	id.borders_rot = get_id_borders_rot(cube);
     return id;
-}
+}*/
 
 constexpr inline void move_values_left(uchar* values, uchar pos, int len) {
 
@@ -430,34 +431,30 @@ constexpr inline void set_corner_rot(uchar& up, uchar& fb, uchar& rl, uchar i) {
     }
 }
 
-constexpr void set_cube_corners_rot(Cube& cube, uint id) {
-    set_corner_rot(cube[Index_D][2][2].rot_id, cube[Index_R][2][2].rot_id, cube[Index_B][2][0].rot_id, id % 3); id /= 3;
-	set_corner_rot(cube[Index_D][2][0].rot_id, cube[Index_B][2][2].rot_id, cube[Index_L][2][0].rot_id, id % 3); id /= 3;
-	set_corner_rot(cube[Index_D][0][2].rot_id, cube[Index_F][2][2].rot_id, cube[Index_R][2][0].rot_id, id % 3); id /= 3;
-	set_corner_rot(cube[Index_D][0][0].rot_id, cube[Index_L][2][2].rot_id, cube[Index_F][2][0].rot_id, id % 3); id /= 3;
-	set_corner_rot(cube[Index_U][2][2].rot_id, cube[Index_R][0][0].rot_id, cube[Index_F][0][2].rot_id, id % 3); id /= 3;
-	set_corner_rot(cube[Index_U][2][0].rot_id, cube[Index_F][0][0].rot_id, cube[Index_L][0][2].rot_id, id % 3); id /= 3;
-	set_corner_rot(cube[Index_U][0][2].rot_id, cube[Index_B][0][0].rot_id, cube[Index_R][0][2].rot_id, id % 3); id /= 3;
-	set_corner_rot(cube[Index_U][0][0].rot_id, cube[Index_L][0][0].rot_id, cube[Index_B][0][2].rot_id, id % 3); id /= 3;//TODO remove /% 3
+constexpr void set_cube_corners_rot(Cube& cube, DataCorners& data) {
+	set_corner_rot(cube[Index_U][0][0].rot_id, cube[Index_L][0][0].rot_id, cube[Index_B][0][2].rot_id, data[0]);
+	set_corner_rot(cube[Index_U][0][2].rot_id, cube[Index_B][0][0].rot_id, cube[Index_R][0][2].rot_id, data[1]);
+	set_corner_rot(cube[Index_U][2][0].rot_id, cube[Index_F][0][0].rot_id, cube[Index_L][0][2].rot_id, data[2]);
+	set_corner_rot(cube[Index_U][2][2].rot_id, cube[Index_R][0][0].rot_id, cube[Index_F][0][2].rot_id, data[3]);
+	set_corner_rot(cube[Index_D][0][0].rot_id, cube[Index_L][2][2].rot_id, cube[Index_F][2][0].rot_id, data[4]);
+	set_corner_rot(cube[Index_D][0][2].rot_id, cube[Index_F][2][2].rot_id, cube[Index_R][2][0].rot_id, data[5]);
+	set_corner_rot(cube[Index_D][2][0].rot_id, cube[Index_B][2][2].rot_id, cube[Index_L][2][0].rot_id, data[6]);
+    set_corner_rot(cube[Index_D][2][2].rot_id, cube[Index_R][2][2].rot_id, cube[Index_B][2][0].rot_id, data[7]);
 }
 
-constexpr void set_cube_borders_rot(Cube& cube, uint id) {
-	uint s = id;
-
-	cube[Index_R][2][1].rot_id = !((cube[Index_D][1][2].rot_id = s % 2)); s /= 2;
-    cube[Index_B][2][1].rot_id = !((cube[Index_D][2][1].rot_id = s % 2)); s /= 2;
-    cube[Index_L][2][1].rot_id = !((cube[Index_D][1][0].rot_id = s % 2)); s /= 2;
-    cube[Index_F][2][1].rot_id = !((cube[Index_D][0][1].rot_id = s % 2)); s /= 2;
-
-    cube[Index_B][1][2].rot_id = !((cube[Index_L][1][0].rot_id = s % 2)); s /= 2;
-    cube[Index_R][1][2].rot_id = !((cube[Index_B][1][0].rot_id = s % 2)); s /= 2;
-    cube[Index_F][1][2].rot_id = !((cube[Index_R][1][0].rot_id = s % 2)); s /= 2;
-    cube[Index_L][1][2].rot_id = !((cube[Index_F][1][0].rot_id = s % 2)); s /= 2;
-
-    cube[Index_R][0][1].rot_id = !((cube[Index_U][1][2].rot_id = s % 2)); s /= 2;
-    cube[Index_F][0][1].rot_id = !((cube[Index_U][2][1].rot_id = s % 2)); s /= 2;
-    cube[Index_L][0][1].rot_id = !((cube[Index_U][1][0].rot_id = s % 2)); s /= 2;
-    cube[Index_B][0][1].rot_id = !((cube[Index_U][0][1].rot_id = s)); //s % 2)); s /= 2;
+constexpr void set_cube_borders_rot(Cube& cube, DataBorders& data) {
+    cube[Index_B][0][1].rot_id = !((cube[Index_U][0][1].rot_id = data[0]));
+    cube[Index_L][0][1].rot_id = !((cube[Index_U][1][0].rot_id = data[1]));
+    cube[Index_F][0][1].rot_id = !((cube[Index_U][2][1].rot_id = data[2]));
+    cube[Index_R][0][1].rot_id = !((cube[Index_U][1][2].rot_id = data[3]));
+    cube[Index_L][1][2].rot_id = !((cube[Index_F][1][0].rot_id = data[4]));
+    cube[Index_F][1][2].rot_id = !((cube[Index_R][1][0].rot_id = data[5]));
+    cube[Index_R][1][2].rot_id = !((cube[Index_B][1][0].rot_id = data[6]));
+    cube[Index_B][1][2].rot_id = !((cube[Index_L][1][0].rot_id = data[7]));
+    cube[Index_F][2][1].rot_id = !((cube[Index_D][0][1].rot_id = data[8]));
+    cube[Index_L][2][1].rot_id = !((cube[Index_D][1][0].rot_id = data[9]));
+    cube[Index_B][2][1].rot_id = !((cube[Index_D][2][1].rot_id = data[10]));
+	cube[Index_R][2][1].rot_id = !((cube[Index_D][1][2].rot_id = data[11]));
 }
 
 constexpr void set_cube_corners_pos(Cube& cube, uint id) {

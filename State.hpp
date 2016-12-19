@@ -101,10 +101,11 @@ class State {
 		//debug
 		ID&								_get_id();
 		void							update_weight();
-		static void						_apply_scramble(Cube& cube, const string& scramble);
+		//static void						_apply_scramble(Cube& cube, const string& scramble);
 		static void						_apply_movement(Cube& cube, Movement m);
 		static void						_apply_scramble(Data& data, const string& scramble);
 		static void						_apply_movement(Data& data, Movement m);
+		static void						_apply_movement(Data& data, Movement m, int turns);
 	private:
 		//optimized constructor
 		State(const State& parent, Movement direction, const Cube& cube);

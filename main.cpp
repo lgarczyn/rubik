@@ -290,11 +290,9 @@ int main10() {
 
 int main() {
 	Data d;
-	Cube c;
-
+	
 	print_map(State::solution);
 	while (1) {
-		c = State::solution;
 		d = State::data_from_id(ID());
 
 		string line;
@@ -302,11 +300,8 @@ int main() {
 		std::cin >> line;
 
 
-		State::_apply_scramble(c, line);
 		State::_apply_scramble(d, line);
 
-		print_map(c);
-		std::cout << std::endl;
 		print_map(State::cube_from_id(State::id_from_data(d)));
 
 		std::cout << std::endl;

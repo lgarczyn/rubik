@@ -3,7 +3,7 @@
 #include <iostream>
 
 bool operator==(const Square& a, const Square& b) {
-	return (a.face_id == b.face_id) && (a.cube_id == b.cube_id) && (a.rot_id == b.rot_id);
+	return (a.cube_id == b.cube_id) && (a.rot_id == b.rot_id);
 	//return a.face_id == b.face_id;
 }
 bool operator==(const Coord& ca, const Coord& cb) {
@@ -15,7 +15,7 @@ bool operator==(const ID& a, const ID& b) {
 
 bool operator!=(const Square& a, const Square& b) {
 	//return a.face_id != b.face_id;//TODO once sure of deflate/inflate, uncomment
-	return (a.face_id != b.face_id) || (a.cube_id != b.cube_id) || (a.rot_id != b.rot_id);
+	return (a.cube_id != b.cube_id) || (a.rot_id != b.rot_id);
 }
 bool operator!=(const Coord& ca, const Coord& cb) {
 	return (ca.f != cb.f) || (ca.l != cb.l) || (ca.c != cb.c);

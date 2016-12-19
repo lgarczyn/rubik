@@ -15,12 +15,10 @@
 #include "Heuristics.hpp"
 #include <iomanip>
 
-void display_square(Square c, int dist, bool correct, int id) {
+void display_square(Square sq, int dist, bool correct, Color color) {
 
     string background;
     string foreground;
-
-    Color color = State::solution_colors[State::solution_finder[c.face_id].f];
 
     switch (color) {
         case White: background = "\e[107m"; break;
@@ -37,48 +35,50 @@ void display_square(Square c, int dist, bool correct, int id) {
     else
         foreground = "\e[30m";
 
-    std::cout << foreground << background << " " << dist << " " << std::setw(2) << id << " \e[0m";
+    //std::cout << foreground << background << " " << dist << " " << std::setw(2) << id << " \e[0m";
+    std::cout << foreground << background << " " <<  std::setw(2) << (int)sq.cube_id << " " << std::setw(2) << (int)sq.rot_id << " \e[0m ";
+    //std::cout << foreground << background << " " << (int)sq.rot_id << " \e[0m ";
 }
 
-void print_line(const Data& data, const Data& solution, int s, int l) {
+void print_line(const Cube& cube, const Cube& solution, int s, int l) {
     for (int c = 0; c < size; c++)
     {
-        Square sq = data[s][l][c];
-        int dist = Heuristics::SquareDistance((Coord){s, l, c}, State::solution_finder[sq.face_id]);
+        Square sq = cube[s][l][c];
+        int uid = sq.get_uid(l, c);
+        int dist = Heuristics::SquareDistance((Coord){s, l, c}, State::solution_finder[uid]);
+        Color color = State::solution_colors[State::solution_finder[uid].f];
         bool correct = solution[s][l][c] == sq;
 
-        int cid = sq.cube_id;
-        if (c == 1 || l == 1)
-            cid += 8;
-        if (c == 1 && l == 1)
-            cid += 12;
+        display_square(sq, dist, correct, color);
+    }
+}
 
-        display_square(sq, dist, correct, cid);
+void    print_map(const Cube& cube) {
+    const Cube& solution = State::solution;
+    for (int l = 0; l < size; l++) {
+        std::cout << " __ __  " << " __ __  " << " __ __  ";
+        print_line(cube, solution, 0, l);
+        std::cout << std::endl;
+    }
+    for (int l = 0; l < size; l++) {
+        print_line(cube, solution, 4, l);
+        print_line(cube, solution, 1, l);
+        print_line(cube, solution, 2, l);
+        print_line(cube, solution, 3, l);
+        std::cout << std::endl;
+    }
+    for (int l = 0; l < size; l++) {
+        std::cout << " __ __  " << " __ __  " << " __ __  ";
+        print_line(cube, solution, 5, l);
+        std::cout << std::endl;
     }
 }
 
 void	print_map(const State& state)
 {
-    const Data& solution = State::solution;
-    Data data = state.to_data();
+    Cube cube = state.to_cube();
 
-    for (int l = 0; l < size; l++) {
-        std::cout << " _ __ " << " _ __ " << " _ __ ";
-        print_line(data, solution, 0, l);
-        std::cout << std::endl;
-    }
-    for (int l = 0; l < size; l++) {
-        print_line(data, solution, 4, l);
-        print_line(data, solution, 1, l);
-        print_line(data, solution, 2, l);
-        print_line(data, solution, 3, l);
-        std::cout << std::endl;
-    }
-    for (int l = 0; l < size; l++) {
-        std::cout << " _ __ " << " _ __ " << " _ __ ";
-        print_line(data, solution, 5, l);
-        std::cout << std::endl;
-    }
+    print_map(cube);
 }
 
 void print_line_dist(Coord pos, int s, int l) {

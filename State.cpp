@@ -16,8 +16,7 @@
 #include <limits>
 
 indexer				State::get_index = indexer_astar;
-const Data			State::solution = _calculate_solution();
-const UIDFinder		State::uid_finder = _calculate_uid_finder(solution);
+const Cube			State::solution = _calculate_solution();
 const Finder		State::solution_finder = _calculate_finder(solution);
 const Color			State::solution_colors[] = {White, Green, Red, Blue, Orange, Yellow};
 
@@ -38,18 +37,28 @@ State::State(bool is_del):
 
 
 void State::update_weight() {
-	_apply_data(data_from_id(_id));
+	_apply_cube(cube_from_id(_id));
 }
+#include <iomanip>
 
-void State::_apply_data(const Data& data) {
-	_id = id_from_data(data);
-	_weight = Heuristics::HeuristicFunction(data);
+void State::_apply_cube(const Cube& cube) {
+	_id = id_from_cube(cube);
+	Data d = data_from_id(_id);
+	ID id = id_from_data(d);
+	if (id != _id) {
+		std::cerr << "diff"<< std::endl;
+		std::cerr << (id.corners / (uint)pow(3, 8)) << " " << std::setbase(3 )<< (id.corners % (uint)pow(3, 8)) << " " << std::setbase(2) << id.borders_rot << " " << id.borders_pos << std::endl;
+		std::cerr << (_id.corners / (uint)pow(3, 8)) << " " << std::setbase(3 )<< (_id.corners % (uint)pow(3, 8)) << " " << std::setbase(2) << _id.borders_rot << " " << _id.borders_pos << std::endl;
+	}
+	//else
+	//	std::cerr << "same" << std::endl;
+	_weight = Heuristics::HeuristicFunction(cube);
 }
 
 State::State(const std::string& scramble):State(){
-	Data data = solution;
-	_apply_scramble(data, scramble);
-	_apply_data(data);
+	Cube cube = solution;
+	_apply_scramble(cube, scramble);
+	_apply_cube(cube);
 }
 
 State::State(int scramble_count):State(){
@@ -58,7 +67,7 @@ State::State(int scramble_count):State(){
 	std::uniform_int_distribution<int> uni(Movement_Start, Movement_End-1);
 	std::uniform_int_distribution<int> bo(0,2);
 
-	Data data = solution;
+	Cube cube = solution;
 	Movement previous = None;
 	for (int i = 0; i < scramble_count; i++) {
 		Movement m = (Movement)uni(rng);
@@ -70,15 +79,15 @@ State::State(int scramble_count):State(){
 		else if (c == 2)
 			m = (Movement)(m | Halfturn);
 
-		_apply_movement(data, m);
+		_apply_movement(cube, m);
 	}
-	_apply_data(data);
+	_apply_cube(cube);
 }
 
-State::State(const State& parent, State::Movement m, const Data& data) {
+State::State(const State& parent, State::Movement m, const Cube& cube) {
 	_movement = m;
 	_distance = parent._distance + 1;
-	_apply_data(data);
+	_apply_cube(cube);
 }
 
 State::State(const State& parent, State::Movement m) {
@@ -88,9 +97,9 @@ State::State(const State& parent, State::Movement m) {
 	_movement = m;
 	_distance = parent._distance + 1;
 
-	Data data = data_from_id(parent._id);
-	_apply_movement(data, m);
-	_apply_data(data);
+	Cube cube = cube_from_id(parent._id);
+	_apply_movement(cube, m);
+	_apply_cube(cube);
 }
 
 State::State(const State& clone) {
@@ -107,8 +116,8 @@ State& State::operator=(const State& ra) {
 
 void	State::get_candidates(std::vector<State>& candidates) const
 {
-	//get data of current state
-	Data data = data_from_id(_id);
+	//get cube of current state
+	Cube cube = cube_from_id(_id);
 	//get movement of current state
 	Movement m = (Movement)(_movement & Mask);
 
@@ -118,18 +127,14 @@ void	State::get_candidates(std::vector<State>& candidates) const
 		if (m == n)
 			continue;
 		//rotate 90d, build, then repeat
-		_apply_movement(data, (Movement)n);
-		candidates.push_back(State(*this, (Movement)n, data));
-		_apply_movement(data, (Movement)n);
-		candidates.push_back(State(*this, (Movement)(n | Halfturn), data));
-		_apply_movement(data, (Movement)n);
-		candidates.push_back(State(*this, (Movement)(n | Reversed), data));
-		//reset data, can be changed for stored data copy, or another data_from_id
-		_apply_movement(data, (Movement)n);
-
-
-		if (data != data_from_id(_id))//TODO remove
-			std::cerr << "bug\n";
+		_apply_movement(cube, (Movement)n);
+		candidates.push_back(State(*this, (Movement)n, cube));
+		_apply_movement(cube, (Movement)n);
+		candidates.push_back(State(*this, (Movement)(n | Halfturn), cube));
+		_apply_movement(cube, (Movement)n);
+		candidates.push_back(State(*this, (Movement)(n | Reversed), cube));
+		//reset cube, can be changed for stored cube copy, or another cube_from_id
+		_apply_movement(cube, (Movement)n);
 	}
 }
 

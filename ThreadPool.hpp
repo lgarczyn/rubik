@@ -12,10 +12,10 @@
 #include <condition_variable>
 
 
-template <typename Data, typename Value>
+template <typename Cube, typename Value>
 class ThreadPool
 {
-	typedef std::function<Value(Data)> Call;
+	typedef std::function<Value(Cube)> Call;
 	typedef std::unique_lock<std::mutex> Lock;
 
 public:
@@ -24,7 +24,7 @@ public:
 	ThreadPool(int threadCount);
 	~ThreadPool();
 
-	std::vector<Value> run(Call call, const std::vector<Data> &data);
+	std::vector<Value> run(Call call, const std::vector<Cube> &data);
 
 private:
 
@@ -49,21 +49,21 @@ private:
 
 	std::mutex _displayMutex;
 
-	std::vector<Data> _data;
+	std::vector<Cube> _data;
 	std::vector<Value> _values;
 	std::vector<std::thread*> _threads;
 };
 
-template <typename Data, typename Value>
-void ThreadPool<Data, Value>::display(std::string str)
+template <typename Cube, typename Value>
+void ThreadPool<Cube, Value>::display(std::string str)
 {
 	(void)str;
 	Lock lock(_displayMutex);
 	std::cout << str << std::endl;
 }
 
-template <typename Data, typename Value>
-ThreadPool<Data, Value>::ThreadPool(int threadCount)
+template <typename Cube, typename Value>
+ThreadPool<Cube, Value>::ThreadPool(int threadCount)
 {
 	isKill = false;
 
@@ -78,8 +78,8 @@ ThreadPool<Data, Value>::ThreadPool(int threadCount)
 	}
 }
 
-template <typename Data, typename Value>
-ThreadPool<Data, Value>::~ThreadPool()
+template <typename Cube, typename Value>
+ThreadPool<Cube, Value>::~ThreadPool()
 {
 	//set destroyed flag to true
 	isKill = true;
@@ -97,8 +97,8 @@ ThreadPool<Data, Value>::~ThreadPool()
 	display("main thread deleted children");
 }
 
-template <typename Data, typename Value>
-void ThreadPool<Data, Value>::waitForData(int i)
+template <typename Cube, typename Value>
+void ThreadPool<Cube, Value>::waitForData(int i)
 {
 	display(std::to_string(i) + ": thread starts");
 	while (1)
@@ -161,8 +161,8 @@ void ThreadPool<Data, Value>::waitForData(int i)
 	}
 }
 
-template <typename Data, typename Value>
-std::vector<Value> ThreadPool<Data, Value>::run(Call call, const std::vector<Data> &data)
+template <typename Cube, typename Value>
+std::vector<Value> ThreadPool<Cube, Value>::run(Call call, const std::vector<Cube> &data)
 {
 	//loads data
 	_call = call;

@@ -202,10 +202,10 @@ uint floor_index_upper_corners(uint u) {
 
 	uint pu = p / fact(4);
 	uint ru = r / pow(3, 4);
-	return (pu * fact(4) * pow(3, 8)) * (ru * pow(3, 4));
+	return (pu * fact(4) * pow(3, 8)) + ru *  pow(3, 4);
 }
 
-int main() {;
+int main2() {;
 
 	/*{
 		std::ifstream f = std::ifstream("upper_corners.db");
@@ -260,8 +260,12 @@ int main() {;
 			//Store the index of the last solved positon, to allow current database lookup
 		}
 		Databases::current_index = i;
-		if (i % 100 == 0)
-			std::cout << i << " " << d[i] << std::endl;
+		if (i % 100 == 0) {
+			s._get_id().corners = i;
+			s.update_weight();
+			print_map(s);
+			std::cout << i << " " << (int)d[i] << std::endl;
+		}
 	}
 	//f.close();
 	std::ofstream of = std::ofstream("corners.db");
@@ -269,12 +273,52 @@ int main() {;
 	return (0);
 }
 
+int main10() {
+	State s;
+
+	print_map(s);
+	while (1) {
+		string line;
+
+		std::cin >> line;
+
+		s = State(line);
+
+		print_map(s);
+	}
+}
+
+int main() {
+	Data d;
+	Cube c;
+
+	print_map(State::solution);
+	while (1) {
+		c = State::solution;
+		d = State::data_from_id(ID());
+
+		string line;
+
+		std::cin >> line;
+
+
+		State::_apply_scramble(c, line);
+		State::_apply_scramble(d, line);
+
+		print_map(c);
+		std::cout << std::endl;
+		print_map(State::cube_from_id(State::id_from_data(d)));
+
+		std::cout << std::endl;
+	}
+}
+
 
 /*
 int main() {
 
 	State a = State(100);
-	Data d1 = a.get_data();
+	Cube d1 = a.get_data();
 
 	uint n2 = a.get_id().borders_rot;
 	uint n1 = a.get_id().corners % pow(3, 8);
@@ -284,7 +328,7 @@ int main() {
 	a.inflate();
 
 
-	Data d2 = a.get_data();
+	Cube d2 = a.get_data();
 
 	std::cout
 	<< (int)d1[Index_U][0][0].rot_id << " "

@@ -59,9 +59,8 @@ class State {
 		};
 
 		//solution lookup
-		static const Data				solution;
+		static const Cube				solution;
 		static const Finder				solution_finder;
-		static const UIDFinder			uid_finder;
 		static const Color				solution_colors[];
 
 		//constructors
@@ -84,9 +83,12 @@ class State {
 		//logic wrappers
 		void							get_candidates(std::vector<State>& candidates) const;
 
-		//ID Data conversions
-		//void							inflate(Data& data) const;
+		//ID Cube conversions
+		//void							inflate(Cube& data) const;
 		Data							to_data() const;
+		Cube							to_cube() const;
+		static constexpr ID				id_from_cube(const Cube cube);
+		static constexpr Cube			cube_from_id(const ID id);
 		static constexpr ID				id_from_data(const Data data);
 		static constexpr Data			data_from_id(const ID id);
 
@@ -99,17 +101,25 @@ class State {
 		//debug
 		ID&								_get_id();
 		void							update_weight();
-	private:
-		//optimized constructor
-		State(const State& parent, Movement direction, const Data& data);
-
-		//calculations
-		void							_apply_data(const Data& data);
+		static void						_apply_scramble(Cube& cube, const string& scramble);
+		static void						_apply_movement(Cube& cube, Movement m);
 		static void						_apply_scramble(Data& data, const string& scramble);
 		static void						_apply_movement(Data& data, Movement m);
-		static constexpr Data			_calculate_solution();
-		static constexpr UIDFinder		_calculate_uid_finder(const Data& data);
-		static constexpr Finder			_calculate_finder(const Data& data);
+	private:
+		//optimized constructor
+		State(const State& parent, Movement direction, const Cube& cube);
+
+		//calculations
+		void							_apply_cube(const Cube& cube);
+		//static void						_apply_scramble(Cube& cube, const string& scramble);
+		//static void						_apply_movement(Cube& cube, Movement m);
+
+		void							_apply_data(const Data& data);
+		//static void						_apply_scramble(Data& data, const string& scramble);
+		//static void						_apply_movement(Data& data, Movement m);
+
+		static constexpr Cube			_calculate_solution();
+		static constexpr Finder			_calculate_finder(const Cube& Cube);
 
 		//members, should add up to 128bits :D
 		ID								_id;

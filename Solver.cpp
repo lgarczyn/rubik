@@ -88,6 +88,8 @@ Solver::Result Solver::step() {
 		result.movements = _universe[e];
 		return result;
 	}
+	//TODO remove e from _universe, put in _grave
+	//check to see if it's worth it to get from _grave too
 
 	const Movements& moves = _universe.find(e)->second;
 	uint prev_distance = moves.size();
@@ -103,11 +105,11 @@ Solver::Result Solver::step() {
 	e.get_candidates(candidates);
 	//for every children
 	for (State s:candidates) {
-		/*if (State::get_index == State::indexer_astar && Heuristics::HeuristicFunction == Heuristics::ValidFunction)
+		if (State::get_index == State::indexer_astar && Heuristics::HeuristicFunction == Heuristics::ValidFunction)
 			if (State::get_index(s) > 20 * score_multiplier)//TODO maybe 19 instead of 20?
-				continue;*/
+				continue;
 
-		/*auto position = _universe.find(s);
+		auto position = _universe.find(s);
 
 		if (position != _universe.end()) {
 
@@ -118,7 +120,7 @@ Solver::Result Solver::step() {
 			} else {
 				continue;
 			}
-		}*/
+		}
 		childmoves[prev_distance] = s.get_movement();
 		_universe.insert(std::make_pair(s, childmoves));
 		get_opened_set(s).push_back(s);//LOCK

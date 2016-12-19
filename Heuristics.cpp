@@ -1,12 +1,12 @@
 #include "Heuristics.hpp"
 
-inline int get_dist(const Data& data, Index f, int l, int c) {
-    int id = data[f][l][c].face_id;
+inline int get_dist(const Cube& data, Index f, int l, int c) {
+    int id = data[f][l][c].get_uid(l, c);//TODO smart version
     Coord sol = State::solution_finder[id];
     return Heuristics::dist_table[f][l][c][sol.f][sol.l][sol.c];
 }
 
-inline Score get_dist_borders(const Data& data) {
+inline Score get_dist_borders(const Cube& data) {
     Score dist = 0;
     dist += get_dist(data, Index_U, 0, 1);
     dist += get_dist(data, Index_U, 1, 0);
@@ -25,7 +25,7 @@ inline Score get_dist_borders(const Data& data) {
     return dist;
 }
 
-inline Score get_dist_crown(const Data& data) {
+inline Score get_dist_crown(const Cube& data) {
     Score dist = 0;
     dist += get_dist(data, Index_U, 0, 0);
     dist += get_dist(data, Index_U, 0, 2);
@@ -38,7 +38,7 @@ inline Score get_dist_crown(const Data& data) {
     return dist;
 }
 
-inline Score get_dist_belt(const Data& data) {
+inline Score get_dist_belt(const Cube& data) {
     Score dist = 0;
     dist += get_dist(data, Index_F, 1, 0);
     dist += get_dist(data, Index_R, 1, 0);
@@ -47,7 +47,7 @@ inline Score get_dist_belt(const Data& data) {
     return dist;
 }
 
-inline Score get_dist_cross(const Data& data) {
+inline Score get_dist_cross(const Cube& data) {
     Score dist = 0;
     dist += get_dist(data, Index_D, 0, 1);
     dist += get_dist(data, Index_D, 1, 0);
@@ -56,7 +56,7 @@ inline Score get_dist_cross(const Data& data) {
     return dist;
 }
 
-inline Score get_dist_floor(const Data& data) {
+inline Score get_dist_floor(const Cube& data) {
     Score dist = 0;
     dist += get_dist(data, Index_D, 0, 0);
     dist += get_dist(data, Index_D, 0, 2);
@@ -65,7 +65,7 @@ inline Score get_dist_floor(const Data& data) {
     return dist;
 }
 
-inline Score get_dist_corners(const Data& data) {
+inline Score get_dist_corners(const Cube& data) {
     Score dist = 0;
     dist += get_dist(data, Index_U, 0, 0);
     dist += get_dist(data, Index_U, 0, 2);
@@ -81,7 +81,7 @@ inline Score get_dist_corners(const Data& data) {
 
 #include "Database.hpp"
 
-Score Heuristics::ValidFunction(const Data& data)
+Score Heuristics::ValidFunction(const Cube& data)
 {
     Score corners = get_dist_corners(data);
     return corners;
@@ -106,7 +106,7 @@ Score Heuristics::DatabaseFunction(const ID& id)
     //return std::max(corners, borders);;
 }
 
-Score Heuristics::InvalidFunction(const Data& data)
+Score Heuristics::InvalidFunction(const Cube& data)
 {
     Score dist = 0;
     dist += get_dist_crown(data) * 1000000;

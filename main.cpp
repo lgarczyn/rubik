@@ -121,7 +121,7 @@ constexpr int fact(int i) {
 
 const int corner_length = pow(3, 8) * fact(8);
 
-int		                          main2(int ac, char **av)
+int		                          main(int ac, char **av)
 {
 	State						  initial;
 	Parser::ParseResult           parseResult;
@@ -167,7 +167,7 @@ int		                          main2(int ac, char **av)
 			case 's':
 				//std::cout << tgetstr((char*)"cl", NULL) << std::endl;
 				for (auto &l:solverResult.movements)
-					std::cout << l << std::endl;
+					std::cout << (State::Movement)l << std::endl;
 				std::cout << std::endl << std::flush;
 				break;
 			case 'a': {
@@ -288,7 +288,7 @@ int main10() {
 	}
 }
 
-int main() {
+int main4() {
 	Data d;
 
 	print_map(State::solution_cube);

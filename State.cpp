@@ -14,6 +14,8 @@
 #include "Heuristics.hpp"
 #include <random>
 #include <limits>
+#include <sstream>
+#include <iomanip>
 
 indexer				State::get_index = indexer_astar;
 const Data			State::solution_data = data_from_id(ID());
@@ -40,7 +42,6 @@ State::State(bool is_del):
 void State::update_weight() {
 	_apply_data(data_from_id(_id));
 }
-#include <iomanip>
 
 void State::_apply_data(const Data& data) {
 	_id = id_from_data(data);
@@ -57,6 +58,36 @@ void State::_apply_data(const Data& data) {
 	_weight = Heuristics::HeuristicFunction(data);
 }
 
+void State::_apply_scramble(Data& data, const string& scramble) {
+
+	std::stringstream ss = std::stringstream(scramble);
+
+	while (ss) {
+		Movement m;
+		int turns = 1;
+		int c = ss.get();
+
+		switch (c) {
+			case 'F': m = Front; break;
+			case 'R': m = Right; break;
+			case 'U': m = Up; break;
+			case 'B': m = Back; break;
+			case 'L': m = Left; break;
+			case 'D': m = Down; break;
+			default: continue;
+		}
+		c = ss.peek();
+		switch (c) {
+			case '\'': turns = 3; break;
+			case '2': turns  = 2; break;
+		}
+		_apply_movement(data, m, turns);
+	}
+}
+
+void State::_apply_movement(Data& data, Movement m) { Encoding::_apply_movement(data, m);}
+void State::_apply_movement(Data& data, Movement m, int turns) { Encoding::_apply_movement(data, m, turns);}
+
 State::State(const std::string& scramble):State(){
 	Data data = solution_data;
 	_apply_scramble(data, scramble);
@@ -67,7 +98,7 @@ State::State(int scramble_count):State(){
 	std::random_device rd;
 	std::mt19937 rng(rd());
 	std::uniform_int_distribution<int> uni(Movement_Start, Movement_End-1);
-	std::uniform_int_distribution<int> bo(0,2);
+	std::uniform_int_distribution<int> turns(1,3);
 
 	Data data = solution_data;
 	Movement previous = None;
@@ -75,13 +106,8 @@ State::State(int scramble_count):State(){
 		Movement m = (Movement)uni(rng);
 		while (m == previous)
 			m = (Movement)uni(rng);
-		int c = bo(rng);
-		if (c == 1)
-			m = (Movement)(m | Reversed);
-		else if (c == 2)
-			m = (Movement)(m | Halfturn);
 
-		_apply_movement(data, m);
+		_apply_movement(data, m, turns(rng));
 	}
 	_apply_data(data);
 }
@@ -100,8 +126,16 @@ State::State(const State& parent, State::Movement m) {
 	_distance = parent._distance + 1;
 
 	Data data = data_from_id(parent._id);
-	_apply_movement(data, m);
+	_apply_movement(data, m, _get_turns(m));
 	_apply_data(data);
+}
+
+int State::_get_turns(Movement m) {
+	switch (m & ~Mask) {
+		case Reversed : return 3;
+		case Halfturn : return 2;
+		default: return 1;
+	}
 }
 
 State::State(const State& clone) {
@@ -216,5 +250,3 @@ Score State::indexer_uniform(const State& state)
 {
 	return state.get_distance();
 }
-
-#include "State_Encoding.cpp"

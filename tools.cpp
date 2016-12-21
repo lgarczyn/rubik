@@ -19,7 +19,7 @@ void display_square(Square sq, int dist, bool correct, Color color) {
 
     string background;
     string foreground;
-
+    (void)dist;
     switch (color) {
         case White: background = "\e[107m"; break;
         case Red: background = "\e[41m"; break;

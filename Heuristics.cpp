@@ -72,10 +72,10 @@ inline Score get_dist_corners(const Cube& data) {
     dist += get_dist(data, Index_U, 2, 0);
     dist += get_dist(data, Index_U, 2, 2);
 
-    //dist += get_dist(data, Index_D, 0, 0);
-    //dist += get_dist(data, Index_D, 0, 2);
-    //dist += get_dist(data, Index_D, 2, 0);
-    //dist += get_dist(data, Index_D, 2, 2);
+    dist += get_dist(data, Index_D, 0, 0);
+    dist += get_dist(data, Index_D, 0, 2);
+    dist += get_dist(data, Index_D, 2, 0);
+    dist += get_dist(data, Index_D, 2, 2);
     return dist;
 }
 

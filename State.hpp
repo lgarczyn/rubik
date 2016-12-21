@@ -91,7 +91,7 @@ class State {
 		static constexpr Data			data_from_id(const ID id);
 		//static constexpr Data			data_from_cube(const Cube& cube);
 		static constexpr Cube			cube_from_data(const Data& data);
-		static constexpr ID			id_from_cube(const Cube& cube);
+		static constexpr ID				id_from_cube(const Cube& cube);
 		static constexpr Cube			cube_from_id(const ID data);
 
 		//indexers
@@ -104,8 +104,9 @@ class State {
 		ID&								_get_id();
 		void							update_weight();
 		static void						_apply_scramble(Data& data, const string& scramble);
-		static void						_apply_movement(Data& data, Movement m);
 		static void						_apply_movement(Data& data, Movement m, int turns);
+		static void						_apply_movement(Data& data, Movement m);
+		static int						_get_turns(Movement m);
 	private:
 		//optimized constructor
 		State(const State& parent, Movement direction, const Data& data);
@@ -135,5 +136,7 @@ struct custom_hash
 	public:
 		size_t operator()(const State& l) const noexcept;
 };
+
+#include "State_Encoding.cpp"
 
 #endif

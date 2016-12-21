@@ -290,10 +290,10 @@ int main10() {
 
 int main() {
 	Data d;
-	
-	print_map(State::solution);
+
+	print_map(State::solution_cube);
 	while (1) {
-		d = State::data_from_id(ID());
+		d = State::solution_data;
 
 		string line;
 

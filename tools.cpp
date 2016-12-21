@@ -40,43 +40,42 @@ void display_square(Square sq, int dist, bool correct, Color color) {
     //std::cout << foreground << background << " " << (int)sq.rot_id << " \e[0m ";
 }
 
-void print_line(const Cube& cube, const Cube& solution, int s, int l) {
+void print_line(const Cube& cube, int s, int l) {
     for (int c = 0; c < size; c++)
     {
         Square sq = cube[s][l][c];
         int uid = sq.get_uid(l, c);
         int dist = Heuristics::SquareDistance((Coord){s, l, c}, State::solution_finder[uid]);
         Color color = State::solution_colors[State::solution_finder[uid].f];
-        bool correct = solution[s][l][c] == sq;
+        bool correct = State::solution_cube[s][l][c] == sq;
 
         display_square(sq, dist, correct, color);
     }
 }
 
 void    print_map(const Cube& cube) {
-    const Cube& solution = State::solution;
     for (int l = 0; l < size; l++) {
         std::cout << " __ __  " << " __ __  " << " __ __  ";
-        print_line(cube, solution, 0, l);
+        print_line(cube, 0, l);
         std::cout << std::endl;
     }
     for (int l = 0; l < size; l++) {
-        print_line(cube, solution, 4, l);
-        print_line(cube, solution, 1, l);
-        print_line(cube, solution, 2, l);
-        print_line(cube, solution, 3, l);
+        print_line(cube, 4, l);
+        print_line(cube, 1, l);
+        print_line(cube, 2, l);
+        print_line(cube, 3, l);
         std::cout << std::endl;
     }
     for (int l = 0; l < size; l++) {
         std::cout << " __ __  " << " __ __  " << " __ __  ";
-        print_line(cube, solution, 5, l);
+        print_line(cube, 5, l);
         std::cout << std::endl;
     }
 }
 
 void	print_map(const State& state)
 {
-    Cube cube = state.to_cube();
+    Cube cube = state.get_cube();
 
     print_map(cube);
 }

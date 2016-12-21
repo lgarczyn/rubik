@@ -59,7 +59,8 @@ class State {
 		};
 
 		//solution lookup
-		static const Cube				solution;
+		static const Cube				solution_cube;
+		static const Data				solution_data;
 		static const Finder				solution_finder;
 		static const Color				solution_colors[];
 
@@ -84,13 +85,14 @@ class State {
 		void							get_candidates(std::vector<State>& candidates) const;
 
 		//ID Cube conversions
-		//void							inflate(Cube& data) const;
-		Data							to_data() const;
-		Cube							to_cube() const;
-		static constexpr ID				id_from_cube(const Cube cube);
-		static constexpr Cube			cube_from_id(const ID id);
-		static constexpr ID				id_from_data(const Data data);
+		Data							get_data() const;
+		Cube							get_cube() const;
+		static constexpr ID				id_from_data(const Data& data);
 		static constexpr Data			data_from_id(const ID id);
+		//static constexpr Data			data_from_cube(const Cube& cube);
+		static constexpr Cube			cube_from_data(const Data& data);
+		static constexpr ID			id_from_cube(const Cube& cube);
+		static constexpr Cube			cube_from_id(const ID data);
 
 		//indexers
 		static indexer					get_index;
@@ -101,17 +103,15 @@ class State {
 		//debug
 		ID&								_get_id();
 		void							update_weight();
-		//static void						_apply_scramble(Cube& cube, const string& scramble);
-		static void						_apply_movement(Cube& cube, Movement m);
 		static void						_apply_scramble(Data& data, const string& scramble);
 		static void						_apply_movement(Data& data, Movement m);
 		static void						_apply_movement(Data& data, Movement m, int turns);
 	private:
 		//optimized constructor
-		State(const State& parent, Movement direction, const Cube& cube);
+		State(const State& parent, Movement direction, const Data& data);
 
 		//calculations
-		void							_apply_cube(const Cube& cube);
+		//void							_apply_cube(const Cube& cube);
 		//static void						_apply_scramble(Cube& cube, const string& scramble);
 		//static void						_apply_movement(Cube& cube, Movement m);
 
@@ -119,7 +119,7 @@ class State {
 		//static void						_apply_scramble(Data& data, const string& scramble);
 		//static void						_apply_movement(Data& data, Movement m);
 
-		static constexpr Cube			_calculate_solution();
+		//static constexpr Cube			_calculate_solution();
 		static constexpr Finder			_calculate_finder(const Cube& Cube);
 
 		//members, should add up to 128bits :D

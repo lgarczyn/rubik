@@ -16,11 +16,11 @@ using Buffer = std::array<std::array<std::array<std::array<std::array<std::array
 
 namespace Heuristics
 {
-    typedef Score           (*HeuristicIndexer)(const Cube&);
+    typedef Score           (*HeuristicIndexer)(const Data&);
     extern HeuristicIndexer HeuristicFunction;
     extern HeuristicIndexer HeuristicFunctionUnused;
-    extern Score        	ValidFunction(const Cube& data);
-    extern Score	        InvalidFunction(const Cube& data);
+    extern Score        	ValidFunction(const Data& data);
+    extern Score	        InvalidFunction(const Data& data);
     static constexpr int  	SquareDistance(Coord a, Coord b);
 
     extern Score            DatabaseFunction(const ID&);

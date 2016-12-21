@@ -16,8 +16,9 @@
 #include <limits>
 
 indexer				State::get_index = indexer_astar;
-const Cube			State::solution = _calculate_solution();
-const Finder		State::solution_finder = _calculate_finder(solution);
+const Data			State::solution_data = data_from_id(ID());
+const Cube			State::solution_cube = cube_from_id(ID());
+const Finder		State::solution_finder = _calculate_finder(solution_cube);
 const Color			State::solution_colors[] = {White, Green, Red, Blue, Orange, Yellow};
 
 State::State():
@@ -37,12 +38,12 @@ State::State(bool is_del):
 
 
 void State::update_weight() {
-	_apply_cube(cube_from_id(_id));
+	_apply_data(data_from_id(_id));
 }
 #include <iomanip>
 
-void State::_apply_cube(const Cube& cube) {
-	_id = id_from_cube(cube);
+void State::_apply_data(const Data& data) {
+	_id = id_from_data(data);
 	Data d = data_from_id(_id);
 	ID id = id_from_data(d);
 	if (id != _id) {
@@ -50,15 +51,16 @@ void State::_apply_cube(const Cube& cube) {
 		std::cerr << (id.corners / (uint)pow(3, 8)) << " " << std::setbase(3 )<< (id.corners % (uint)pow(3, 8)) << " " << std::setbase(2) << id.borders_rot << " " << id.borders_pos << std::endl;
 		std::cerr << (_id.corners / (uint)pow(3, 8)) << " " << std::setbase(3 )<< (_id.corners % (uint)pow(3, 8)) << " " << std::setbase(2) << _id.borders_rot << " " << _id.borders_pos << std::endl;
 	}
+	//TODO remove check
 	//else
 	//	std::cerr << "same" << std::endl;
-	_weight = Heuristics::HeuristicFunction(cube);
+	_weight = Heuristics::HeuristicFunction(data);
 }
 
 State::State(const std::string& scramble):State(){
-	Cube cube = solution;
-	_apply_scramble(cube, scramble);
-	_apply_cube(cube);
+	Data data = solution_data;
+	_apply_scramble(data, scramble);
+	_apply_data(data);
 }
 
 State::State(int scramble_count):State(){
@@ -67,7 +69,7 @@ State::State(int scramble_count):State(){
 	std::uniform_int_distribution<int> uni(Movement_Start, Movement_End-1);
 	std::uniform_int_distribution<int> bo(0,2);
 
-	Cube cube = solution;
+	Data data = solution_data;
 	Movement previous = None;
 	for (int i = 0; i < scramble_count; i++) {
 		Movement m = (Movement)uni(rng);
@@ -79,27 +81,27 @@ State::State(int scramble_count):State(){
 		else if (c == 2)
 			m = (Movement)(m | Halfturn);
 
-		_apply_movement(cube, m);
+		_apply_movement(data, m);
 	}
-	_apply_cube(cube);
+	_apply_data(data);
 }
 
-State::State(const State& parent, State::Movement m, const Cube& cube) {
+State::State(const State& parent, State::Movement m, const Data& data) {
 	_movement = m;
 	_distance = parent._distance + 1;
-	_apply_cube(cube);
+	_apply_data(data);
 }
 
 State::State(const State& parent, State::Movement m) {
-	if (m == None)
+	if ((m & Mask) == None)
 		throw std::logic_error("None is not an allowed move, use copy constructor");
 
 	_movement = m;
 	_distance = parent._distance + 1;
 
-	Cube cube = cube_from_id(parent._id);
-	_apply_movement(cube, m);
-	_apply_cube(cube);
+	Data data = data_from_id(parent._id);
+	_apply_movement(data, m);
+	_apply_data(data);
 }
 
 State::State(const State& clone) {
@@ -117,7 +119,7 @@ State& State::operator=(const State& ra) {
 void	State::get_candidates(std::vector<State>& candidates) const
 {
 	//get cube of current state
-	Cube cube = cube_from_id(_id);
+	Data data = data_from_id(_id);
 	//get movement of current state
 	Movement m = (Movement)(_movement & Mask);
 
@@ -127,14 +129,14 @@ void	State::get_candidates(std::vector<State>& candidates) const
 		if (m == n)
 			continue;
 		//rotate 90d, build, then repeat
-		_apply_movement(cube, (Movement)n);
-		candidates.push_back(State(*this, (Movement)n, cube));
-		_apply_movement(cube, (Movement)n);
-		candidates.push_back(State(*this, (Movement)(n | Halfturn), cube));
-		_apply_movement(cube, (Movement)n);
-		candidates.push_back(State(*this, (Movement)(n | Reversed), cube));
-		//reset cube, can be changed for stored cube copy, or another cube_from_id
-		_apply_movement(cube, (Movement)n);
+		_apply_movement(data, (Movement)n);
+		candidates.push_back(State(*this, (Movement)n, data));
+		_apply_movement(data, (Movement)n);
+		candidates.push_back(State(*this, (Movement)(n | Halfturn), data));
+		_apply_movement(data, (Movement)n);
+		candidates.push_back(State(*this, (Movement)(n | Reversed), data));
+		//reset data, can be changed for stored data copy, or another data_from_id
+		_apply_movement(data, (Movement)n);
 	}
 }
 
@@ -144,7 +146,14 @@ bool State::is_final() const {
 
 const ID&	State::get_id(void) const
 {
-	return this->_id;
+	return _id;
+}
+
+Data State::get_data() const {
+	return data_from_id(_id);
+}
+Cube State::get_cube() const {
+	return cube_from_id(_id);
 }
 
 uint State::get_weight(void) const

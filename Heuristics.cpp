@@ -81,9 +81,10 @@ inline Score get_dist_corners(const Cube& data) {
 
 #include "Database.hpp"
 
-Score Heuristics::ValidFunction(const Cube& data)
+Score Heuristics::ValidFunction(const Data& data)
 {
-    Score corners = get_dist_corners(data);
+    Cube cube = State::cube_from_data(data);
+    Score corners = get_dist_corners(cube);
     return corners;
     //Score borders = get_dist_borders(data);
     //return std::max(corners, borders);
@@ -106,13 +107,14 @@ Score Heuristics::DatabaseFunction(const ID& id)
     //return std::max(corners, borders);;
 }
 
-Score Heuristics::InvalidFunction(const Cube& data)
+Score Heuristics::InvalidFunction(const Data& data)
 {
+    Cube cube = State::cube_from_data(data);
     Score dist = 0;
-    dist += get_dist_crown(data) * 1000000;
-    dist += get_dist_belt(data) * 10000;
-    dist += get_dist_cross(data) * 100;
-    dist += get_dist_floor(data);
+    dist += get_dist_crown(cube) * 1000000;
+    dist += get_dist_belt(cube) * 10000;
+    dist += get_dist_cross(cube) * 100;
+    dist += get_dist_floor(cube);
     return dist;
 }
 

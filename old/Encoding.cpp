@@ -3,7 +3,7 @@
 /*constexpr Cube		State::_calculate_solution() {
 	Cube			cube = Cube();
 
-    int uid = 0;
+	int uid = 0;
 	for (int s = Index_Start; s < Index_End; s++)
 		for (int l = 0; l < size; l++)
 			for (int c = 0; c < size; c++)

@@ -1,43 +1,43 @@
 database http://www.cs.princeton.edu/courses/archive/fall06/cos402/papers/korfrubik.pdf
 
 optimizing
-    bidirectional astar
-    multithreading
-        custom solution
-    swap instead of delete
-        new system should easily allow that
-    use 128bits instead of vector<Movement>
-        incrementation << 4 | m+-1
-        get size
-        translation
-    check cache misses
-        cachegrind
+	bidirectional astar
+	multithreading
+		custom solution
+	swap instead of delete
+		new system should easily allow that
+	use 128bits instead of vector<Movement>
+		incrementation << 4 | m+-1
+		get size
+		translation
+	check cache misses
+		cachegrind
 heuristic
-    maybe relative distance instead of absolute
-        that way the computer tries to place a border between corners instead of not
-            maybe for invalid
-            each corners has 3 corner neighbours && 3 border neighbours
-            each side has 2 corner neighbours and 2 center neighbours
-            each center has 4 borders and 4 corners
-    the ideal heuristic would realize that the square can
-        go directly to the target (center)
-        go to a friend(border/center), that can be moved to the center/
-        maybe corners try to move next to their borders instead?
+	maybe relative distance instead of absolute
+		that way the computer tries to place a border between corners instead of not
+			maybe for invalid
+			each corners has 3 corner neighbours && 3 border neighbours
+			each side has 2 corner neighbours and 2 center neighbours
+			each center has 4 borders and 4 corners
+	the ideal heuristic would realize that the square can
+		go directly to the target (center)
+		go to a friend(border/center), that can be moved to the center/
+		maybe corners try to move next to their borders instead?
 
 
 
 cleanup
-    uid = cube_id * 3 + rot_id or something
-        would allow to remove uid_finder
+	uid = cube_id * 3 + rot_id or something
+		would allow to remove uid_finder
 input
-    direct color input
-        get cube_id
-        check presence
-        if each cubes are present, and no impossible match,
-            then
-        check if possible
-            http://math.stackexchange.com/questions/127577/how-to-tell-if-a-rubiks-cube-is-solvable
-        id_from_data
+	direct color input
+		get cube_id
+		check presence
+		if each cubes are present, and no impossible match,
+			then
+		check if possible
+			http://math.stackexchange.com/questions/127577/how-to-tell-if-a-rubiks-cube-is-solvable
+		id_from_data
 
 store intermediary data into database
 use data for score and rotation

@@ -1,13 +1,13 @@
 /* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: edelangh <edelangh@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/03/04 14:43:29 by edelangh          #+#    #+#             */
-/*   Updated: 2016/04/07 20:16:13 by lgarczyn         ###   ########.fr       */
-/*                                                                            */
+/*																			*/
+/*														:::	  ::::::::   */
+/*   main.cpp										   :+:	  :+:	:+:   */
+/*													+:+ +:+		 +:+	 */
+/*   By: edelangh <edelangh@student.42.fr>		  +#+  +:+	   +#+		*/
+/*												+#+#+#+#+#+   +#+		   */
+/*   Created: 2016/03/04 14:43:29 by edelangh		  #+#	#+#			 */
+/*   Updated: 2016/04/07 20:16:13 by lgarczyn		 ###   ########.fr	   */
+/*																			*/
 /* ************************************************************************** */
 
 #include <iostream>
@@ -58,12 +58,12 @@ Parser::ParseResult	parse_args(int ac, char **av)
 			result.forget = true;
 		if (is_cmd_opt(av, av + ac, "-i")) {
 			result.iteration = std::stoi(get_cmd_opt(av, av + ac, "-i"));
-            result.is_random = true;
-        }
-        if (is_cmd_opt(av, av + ac, "-m")) {
-            result.data = get_cmd_opt(av, av + ac, "-m");
-            result.is_random = false;
-        }
+			result.is_random = true;
+		}
+		if (is_cmd_opt(av, av + ac, "-m")) {
+			result.data = get_cmd_opt(av, av + ac, "-m");
+			result.is_random = false;
+		}
 		return (result);
 	}
 	catch (std::exception& e)
@@ -71,6 +71,10 @@ Parser::ParseResult	parse_args(int ac, char **av)
 		std::cerr << e.what() << std::endl;
 		exit(1);
 	}
+}
+
+void clear_screen() {
+	std::cout << tgetstr((char*)"cl", NULL);
 }
 
 Solver::Result	solve_loop(State& initial)//, Parser::ParseResult& parseResult)
@@ -88,53 +92,37 @@ Solver::Result	solve_loop(State& initial)//, Parser::ParseResult& parseResult)
 
 		if (it % 100000 == 0)
 		{
-			//std::cout << tgetstr((char*)"cl", NULL);
+			clear_screen();
 			print_map(solverResult.actual_state);
 			std::cout << "Iteration count: " << it << std::endl;
 			std::cout << "Solution [Score: " << solverResult.actual_state.get_weight() << "]" << std::endl;
-            std::cout << "Memory repartition:" << std::endl;
-            puzzle.print_mem();
+			std::cout << "Memory repartition:" << std::endl;
+			puzzle.print_mem();
 		}
 		++it;
 	}
-	//std::cout << tgetstr((char*)"cl", NULL);
+	clear_screen();
 	print_map(solverResult.actual_state);
 	std::cout << "Iteration count: " << it << std::endl;
 	std::cout << "Move count: " << solverResult.movements.size() << std::endl;
 
 	return (solverResult);
 }
-constexpr int pow(int a, int b) {
-    int r = 1;
-    for (int it = 0; it < b; it++) {
-        r *= a;
-    }
-    return r;
-}
-constexpr int fact(int i) {
-    int r = 1;
-    for (int it = 1; it <= i; it++) {
-        r *= it;
-    }
-    return r;
-}
 
-const int corner_length = pow(3, 8) * fact(8);
-
-int		                          main(int ac, char **av)
+int main_main(int ac, char **av)
 {
-	State						  initial;
-	Parser::ParseResult           parseResult;
+	State					initial;
+	Parser::ParseResult		parseResult;
 
 	parseResult = parse_args(ac, av);
-    if (parseResult.is_random)
-        initial = State(parseResult.iteration);
-    else
-        initial = State(parseResult.data);
+	if (parseResult.is_random)
+		initial = State(parseResult.iteration);
+	else
+		initial = State(parseResult.data);
 
-    std::cout << "GENERATED CUBE" << std::endl;
-    print_map(initial);
-    std::cout << "ATTEMPTING SOLUTION" << std::endl;
+	std::cout << "GENERATED CUBE" << std::endl;
+	print_map(initial);
+	std::cout << "ATTEMPTING SOLUTION" << std::endl;
 
 	Solver::Result solverResult = solve_loop(initial);//, parseResult);
 
@@ -157,7 +145,7 @@ int		                          main(int ac, char **av)
 			case 'q':
 				exit(0);
 			case 'd':
-				//std::cout << tgetstr((char*)"cl", NULL);
+				
 				std::cout
 				<< "Total number of states ever in open set: " << solverResult.sizeComplexity << std::endl
 				<< "Max number of states concurrent in memory: " << solverResult.timeComplexity << std::endl
@@ -165,23 +153,25 @@ int		                          main(int ac, char **av)
 				<< std::endl << std::flush;
 				break;
 			case 's':
-				//std::cout << tgetstr((char*)"cl", NULL) << std::endl;
+				clear_screen();
 				for (auto &l:solverResult.movements)
 					std::cout << (State::Movement)l << std::endl;
 				std::cout << std::endl << std::flush;
 				break;
 			case 'a': {
 				State current = State(initial);
+				Cube old = current.get_cube();
 
 				for (uint16_t l:solverResult.movements) {
-					//std::cout << tgetstr((char*)"cl", NULL) << std::endl;
-					print_map(current);
+					clear_screen();
+					print_diff(current.get_cube(), old);
 					std::cout << std::endl;
-					usleep(500000);
-
+					usleep(5000000);
+					
+					old = current.get_cube();
 					current = State(current, (State::Movement)l);
 				}
-				//std::cout << tgetstr((char*)"cl", NULL) << std::endl;
+				clear_screen();
 				print_map(current);
 				std::cout << std::endl << std::flush;
 				usleep(500000);
@@ -195,35 +185,51 @@ int		                          main(int ac, char **av)
 	}
 }
 
-uint floor_index_upper_corners(uint u) {
+uint constexpr floor_index_upper_corners(uint u) {
 
-	uint p = u / pow(3, 8);
-	uint r = u % pow(3, 8);
+	uint pos = u / Encoding::corners_max_rot;
+	uint rot = u % Encoding::corners_max_rot;
 
-	uint pu = p / fact(4);
-	uint ru = r / pow(3, 4);
-	return (pu * fact(4) * pow(3, 8)) + ru *  pow(3, 4);
+	uint pos_upper = pos - (pos % Encoding::corners_upper_max_pos);
+	uint rot_upper = rot - (rot % Encoding::corners_upper_max_rot);
+	return pos_upper * Encoding::corners_max_rot + rot_upper;
 }
 
-int main2() {;
+void store(Database& db, uint id_corners, int len) {
+	id_corners = floor_index_upper_corners(id_corners);
+	for (uint r = 0; r < Encoding::corners_upper_max_rot; r++)
+		for (uint p = 0; p < Encoding::corners_upper_max_pos; p++)
+			db[id_corners + p * Encoding::corners_max_rot + r] = len;
+}
+
+bool exist(Database& db, uint id_corners) {
+	id_corners = floor_index_upper_corners(id_corners);
+	if (id_corners == 0)
+		return true;
+	if (db[id_corners] > 0)
+		return true;
+	return false;
+}
+
+int main() {;
 
 	/*{
 		std::ifstream f = std::ifstream("upper_corners.db");
-		Databases::upper_corners = Database(corner_length);
+		Databases::upper_corners = Database(Encoding::corners_max);
 		f >> Databases::upper_corners;
 	}
 	{
 		std::ifstream f = std::ifstream("lower_corners.db");
-		Databases::lower_corners = Database(corner_length);
+		Databases::lower_corners = Database(Encoding::corners_max);
 		f >> Databases::lower_corners;
 	}
 	{
 		std::ifstream f = std::ifstream("corners.db");
-		Databases::corners = Database(corner_length);
+		Databases::corners = Database(Encoding::corners_max);
 		f >> Databases::corners;
 	}*/
 
-	/*for (int i = 0; i < corner_length; i++) {
+	/*for (int i = 0; i < Encoding::corners_max; i++) {
 		uchar uc = Databases::upper_corners[i];
 		uchar lc = Databases::lower_corners[i];
 		uchar c = Databases::corners[i];
@@ -231,21 +237,15 @@ int main2() {;
 		std::cerr << i << " " << (int)c << " " << (int)uc << " " << (int)lc << std::endl;
 	}*/
 
-
-	Database d = Database(corner_length);
+	Database d = Database(Encoding::corners_max);
 
 	std::cerr << d.size() << " " << Databases::upper_corners.size() << " " << Databases::lower_corners.size() << "\n";
 
 	State s = State();
 	Solver solver;
-	for (uint i = 0; i < corner_length; i++) {
-
-		uint pre_i = floor_index_upper_corners(i);
-
-		if (pre_i < i) { //if the last result is the same as the current one, use it
-			d[i] = d[pre_i];
-		} else {//else, calculate it
-
+	for (uint i = 0; i < Encoding::corners_max; i++) {
+		if (exist(d, i) == false) { 
+			
 			s._get_id().corners = i;
 			s.update_weight();
 			solver.setup(s);
@@ -255,17 +255,21 @@ int main2() {;
 				if (res.finished)
 					break;
 			}
-
-			d[i] = res.movements.size();//Store the movement solution length to the databse, and to prev_result
-			//Store the index of the last solved positon, to allow current database lookup
+			s = State();
+			int len = 1;
+			for (int m:res.movements) {
+				s = State(s, (State::Movement)m);
+				store(d, s.get_id().corners, len++);
+			}
+			std::cout << i << " " << len;
 		}
-		Databases::current_index = i;
-		if (i % 100 == 0) {
-			s._get_id().corners = i;
-			s.update_weight();
-			print_map(s);
-			std::cout << i << " " << (int)d[i] << std::endl;
-		}
+		//Databases::current_index = i;
+		//if (i % 100 == 0) {
+		//	s._get_id().corners = i;
+		//	s.update_weight();
+		//	print_map(s);
+		//	std::cout << i << " " << (int)d[i] << std::endl;
+		//}
 	}
 	//f.close();
 	std::ofstream of = std::ofstream("corners.db");
@@ -288,21 +292,20 @@ int main10() {
 	}
 }
 
-int main4() {
-	Data d;
+int maintry() {
+	State s;
 
 	print_map(State::solution_cube);
 	while (1) {
-		d = State::solution_data;
 
 		string line;
 
 		std::cin >> line;
 
 
-		State::_apply_scramble(d, line);
+		s = State(s, line);
 
-		print_map(State::cube_from_id(State::id_from_data(d)));
+		print_map(s);
 
 		std::cout << std::endl;
 	}
@@ -385,7 +388,7 @@ int main() {
 	for (int s = Index_Start; s < Index_End; s++) {
 		for (int l = 0; l < size; l++) {
 			for (int c = 0; c < size; c++)
-            {
+			{
 				Square as = d1[s][l][c];
 				Square bs = d2[s][l][c];
 				std::cout << "  {" << (int)as.cube_id << "=" << (int)bs.cube_id << " " << (int)as.face_id << "=" << (int)bs.face_id << "}  ";
@@ -426,8 +429,8 @@ int main(int argc, char const *argv[]) {
 	}
 
 	//Test heuristic validity/quality
-	std::random_device rd;     // only used once to initialise (seed) engine
-	std::mt19937 rng(rd());    // random-number engine used (Mersenne-Twister in this case)
+	std::random_device rd;	 // only used once to initialise (seed) engine
+	std::mt19937 rng(rd());	// random-number engine used (Mersenne-Twister in this case)
 	std::uniform_int_distribution<int> uni(0,20); // guaranteed unbiased
 
 	for (int i = 0; i < 100000; i++) {

@@ -32,15 +32,32 @@ enum Index {
 	Index_End = 6,
 };
 
+enum SquareType {
+	st_corner,
+	st_border,
+	st_center,
+};
+
+static const int max_uid = 8 * 3 + 12 * 2 + 6;
 struct Square {
 	uchar cube_id;
 	uchar rot_id;
-	uchar get_uid(int c, int l) const{
+	inline uchar get_uid(int c, int l) const{
 		if (c == 1 && l == 1)
-			return 8 * 3 + 12 * 2 + cube_id;
+			return get_uid(st_center);
 		if (c == 1 || l == 1)
+			return get_uid(st_border);
+		return get_uid(st_corner);
+	}
+	inline uchar get_uid(SquareType type) const{
+		return get_uid(cube_id, rot_id, type);
+	}
+	static constexpr uchar get_uid(int cube_id, int rot_id, SquareType type) {
+		if (type == st_corner)
+			return cube_id * 3 + rot_id;
+		if (type == st_border)
 			return 8 * 3 + cube_id * 2 + rot_id;
-		return cube_id * 3 + rot_id;
+		return 8 * 3 + 12 * 2 + cube_id;
 	}
 };
 
@@ -56,14 +73,12 @@ struct ID {
 	uint corners;
 };
 
-using DataCorners = std::array<uchar, 8>;
-using DataBorders = std::array<uchar, 12>;
+using DataCorners = std::array<Square, 8>;
+using DataBorders = std::array<Square, 12>;
 
-struct Data {
-	DataCorners corners_pos;
-	DataCorners corners_rot;
-	DataBorders borders_pos;
-	DataBorders borders_rot;
+struct Data{
+	DataCorners corners;
+	DataBorders borders;
 };
 
 bool operator==(const ID& a, const ID& b);

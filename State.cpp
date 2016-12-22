@@ -1,13 +1,13 @@
 /* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   State.cpp                                          :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: edelangh <edelangh@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/03/04 14:18:52 by edelangh          #+#    #+#             */
-/*   Updated: 2016/03/18 19:04:49 by edelangh         ###   ########.fr       */
-/*                                                                            */
+/*																			*/
+/*														:::	  ::::::::   */
+/*   State.cpp										  :+:	  :+:	:+:   */
+/*													+:+ +:+		 +:+	 */
+/*   By: edelangh <edelangh@student.42.fr>		  +#+  +:+	   +#+		*/
+/*												+#+#+#+#+#+   +#+		   */
+/*   Created: 2016/03/04 14:18:52 by edelangh		  #+#	#+#			 */
+/*   Updated: 2016/03/18 19:04:49 by edelangh		 ###   ########.fr	   */
+/*																			*/
 /* ************************************************************************** */
 
 #include "State.hpp"
@@ -90,6 +90,12 @@ void State::_apply_movement(Data& data, Movement m, int turns) { Encoding::_appl
 
 State::State(const std::string& scramble):State(){
 	Data data = solution_data;
+	_apply_scramble(data, scramble);
+	_apply_data(data);
+}
+
+State::State(const State& parent, const std::string& scramble) {
+	Data data = data_from_id(parent._id);
 	_apply_scramble(data, scramble);
 	_apply_data(data);
 }
@@ -217,7 +223,7 @@ std::ostream& operator<<(std::ostream& s, const State::Movement c)
 	switch (c & State::Mask) {
 		case State::Left:  return s << (reversed ? "L'" : (halfturn ? "L2" : "L"));
 		case State::Right: return s << (reversed ? "R'" : (halfturn ? "R2" : "R"));
-		case State::Up:    return s << (reversed ? "U'" : (halfturn ? "U2" : "U"));
+		case State::Up:	return s << (reversed ? "U'" : (halfturn ? "U2" : "U"));
 		case State::Down:  return s << (reversed ? "D'" : (halfturn ? "D2" : "D"));
 		case State::Front: return s << (reversed ? "F'" : (halfturn ? "F2" : "F"));
 		case State::Back:  return s << (reversed ? "B'" : (halfturn ? "B2" : "B"));

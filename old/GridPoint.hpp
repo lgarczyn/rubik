@@ -9,19 +9,19 @@
 
 class GridPoint {
 private:
-    int l, c;
+	int l, c;
 public:
-    GridPoint();
+	GridPoint();
 
-    GridPoint(int l, int c);
+	GridPoint(int l, int c);
 
-    static GridPoint GetPointFromIndex(int index, int width);
+	static GridPoint GetPointFromIndex(int index, int width);
 
-    static int GetIndexFromPoint(const GridPoint &point, int width);
+	static int GetIndexFromPoint(const GridPoint &point, int width);
 
-    int ManDistance(const GridPoint &value);
-    static int ManDistance(const GridPoint &a, const GridPoint &b);
-    static int ManDistance(int a, int b, int width);
+	int ManDistance(const GridPoint &value);
+	static int ManDistance(const GridPoint &a, const GridPoint &b);
+	static int ManDistance(int a, int b, int width);
 };
 
 

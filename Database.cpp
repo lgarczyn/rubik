@@ -1,12 +1,14 @@
 #include "Database.hpp"
 
+//TODO calloc
+
 std::ostream &operator<<(std::ostream& s, Database& db) {
-    s.write((char*)&(db[0]), db.size());
-    return s;
+	s.write((char*)&(db[0]), db.size());
+	return s;
 }
 std::istream &operator>>(std::istream& s, Database& db) {
-    s.read((char*)&(db[0]), db.size());
-    return s;
+	s.read((char*)&(db[0]), db.size());
+	return s;
 }
 
 

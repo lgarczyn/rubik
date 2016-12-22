@@ -1,13 +1,13 @@
 /* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   State.hpp                                          :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: edelangh <edelangh@student.42.fr>          +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2016/03/04 14:16:53 by edelangh          #+#    #+#             */
-/*   Updated: 2016/03/18 19:03:56 by edelangh         ###   ########.fr       */
-/*                                                                            */
+/*																			*/
+/*														:::	  ::::::::   */
+/*   State.hpp										  :+:	  :+:	:+:   */
+/*													+:+ +:+		 +:+	 */
+/*   By: edelangh <edelangh@student.42.fr>		  +#+  +:+	   +#+		*/
+/*												+#+#+#+#+#+   +#+		   */
+/*   Created: 2016/03/04 14:16:53 by edelangh		  #+#	#+#			 */
+/*   Updated: 2016/03/18 19:03:56 by edelangh		 ###   ########.fr	   */
+/*																			*/
 /* ************************************************************************** */
 
 #ifndef STATE_HPP
@@ -71,6 +71,7 @@ class State {
 		State(const string& scramble);
 		State(int scramble_count);
 		State(const State& parent, Movement direction);
+		State(const State& parent, const string& scramble);
 		State& operator=(const State& ra);
 		bool operator==(const State& ra) const;
 

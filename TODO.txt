@@ -12,6 +12,10 @@ optimizing
 		translation
 	check cache misses
 		cachegrind
+	remove dupliate nodes
+		Thus, for each pair of opposite faces we
+		arbitrarily chose an order, and forbid moves that twist
+		the two faces consecutively in the opposite order
 heuristic
 	maybe relative distance instead of absolute
 		that way the computer tries to place a border between corners instead of not
@@ -23,6 +27,8 @@ heuristic
 		go directly to the target (center)
 		go to a friend(border/center), that can be moved to the center/
 		maybe corners try to move next to their borders instead?
+	considering corner parity
+		http://math.stackexchange.com/questions/127577/how-to-tell-if-a-rubiks-cube-is-solvable
 
 
 

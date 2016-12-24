@@ -97,9 +97,9 @@ Score Heuristics::ValidFunction(const Data& data)
 
 Score Heuristics::DatabaseFunction(const ID& id)
 {
-	if (id.corners < Databases::current_index)
-		return Databases::upper_corners[id.corners];
-	return 0;
+	//if (id.corners < Databases::current_index)
+	return Databases::upper_corners[id.corners];
+	//return 0;
 
 	//Score data = std::max(
 	//	Databases::upper_corners[id.corners],

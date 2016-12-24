@@ -145,7 +145,7 @@ int main_main(int ac, char **av)
 			case 'q':
 				exit(0);
 			case 'd':
-				
+
 				std::cout
 				<< "Total number of states ever in open set: " << solverResult.sizeComplexity << std::endl
 				<< "Max number of states concurrent in memory: " << solverResult.timeComplexity << std::endl
@@ -167,7 +167,7 @@ int main_main(int ac, char **av)
 					print_diff(current.get_cube(), old);
 					std::cout << std::endl;
 					usleep(5000000);
-					
+
 					old = current.get_cube();
 					current = State(current, (State::Movement)l);
 				}
@@ -185,25 +185,15 @@ int main_main(int ac, char **av)
 	}
 }
 
-uint constexpr floor_index_upper_corners(uint u) {
-
-	uint pos = u / Encoding::corners_max_rot;
-	uint rot = u % Encoding::corners_max_rot;
-
-	uint pos_upper = pos - (pos % Encoding::corners_upper_max_pos);
-	uint rot_upper = rot - (rot % Encoding::corners_upper_max_rot);
-	return pos_upper * Encoding::corners_max_rot + rot_upper;
-}
-
 void store(Database& db, uint id_corners, int len) {
-	id_corners = floor_index_upper_corners(id_corners);
+	id_corners = Encoding::floor_index_upper_corners(id_corners);
 	for (uint r = 0; r < Encoding::corners_upper_max_rot; r++)
 		for (uint p = 0; p < Encoding::corners_upper_max_pos; p++)
 			db[id_corners + p * Encoding::corners_max_rot + r] = len;
 }
 
 bool exist(Database& db, uint id_corners) {
-	id_corners = floor_index_upper_corners(id_corners);
+	id_corners = Encoding::floor_index_upper_corners(id_corners);
 	if (id_corners == 0)
 		return true;
 	if (db[id_corners] > 0)
@@ -237,18 +227,22 @@ int main() {;
 		std::cerr << i << " " << (int)c << " " << (int)uc << " " << (int)lc << std::endl;
 	}*/
 
-	Database d = Database(Encoding::corners_max);
+	Databases::upper_corners = Database(Encoding::corners_max);
+	Database& d = Databases::upper_corners;
 
 	std::cerr << d.size() << " " << Databases::upper_corners.size() << " " << Databases::lower_corners.size() << "\n";
 
 	State s = State();
-	Solver solver;
+	ID id = ID();
+	//Solver solver;
 	for (uint i = 0; i < Encoding::corners_max; i++) {
-		if (exist(d, i) == false) { 
-			
-			s._get_id().corners = i;
-			s.update_weight();
-			solver.setup(s);
+		if (exist(d, i) == false) {
+
+			std::cout << "start " << i << "\n";
+			id.corners = i;
+			s = State(id);
+			Solver solver = Solver(s);
+			//solver.setup(s);
 			Solver::Result res;
 			while (1) {
 				res = solver.step();
@@ -261,7 +255,7 @@ int main() {;
 				s = State(s, (State::Movement)m);
 				store(d, s.get_id().corners, len++);
 			}
-			std::cout << i << " " << len;
+			std::cout << "end " << len << "\n";
 		}
 		//Databases::current_index = i;
 		//if (i % 100 == 0) {

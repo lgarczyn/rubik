@@ -8,8 +8,8 @@
 #include <list>
 #include <set>
 #include <map>
-#include <unordered_set>
 #include "State.hpp"
+#include <unordered_map>
 #include <sparsehash/dense_hash_map>
 
 #define USE_LIST
@@ -18,9 +18,9 @@
 using Set = std::vector<State>;
 using Map = std::map<int, Set>;
 
-//using universe = std::unordered_set<StateRef, custom_hash, custom_equal_to>;
 using Movements = std::vector<uint16_t>;
-using Universe = google::dense_hash_map<State, Movements, custom_hash>;
+using Universe = std::unordered_map<State, Movements, custom_hash>;
+//using Universe = google::dense_hash_map<State, Movements, custom_hash>;
 
 class Solver {
 	public:

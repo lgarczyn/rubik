@@ -67,6 +67,7 @@ class State {
 		//constructors
 		State();
 		State(bool is_del);
+		State(const ID& id);
 		State(const State& clone);
 		State(const string& scramble);
 		State(int scramble_count);
@@ -100,10 +101,11 @@ class State {
 		static Score					indexer_astar(const State&);
 		static Score					indexer_uniform(const State&);
 		static Score					indexer_greedy(const State&);
+		bool							operator==(State& ra) {
+			return _id.corners == ra._id.corners;
+		}
 
 		//debug
-		ID&								_get_id();
-		void							update_weight();
 		static void						_apply_scramble(Data& data, const string& scramble);
 		static void						_apply_movement(Data& data, Movement m, int turns);
 		static void						_apply_movement(Data& data, Movement m);
@@ -129,6 +131,7 @@ class State {
 		uint16_t						_movement:16;
 		uchar							_weight:8;
 		uchar							_distance:8;
+
 };
 std::ostream&					operator<<(std::ostream& s, const State::Movement c);
 

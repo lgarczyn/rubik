@@ -15,4 +15,3 @@ std::istream &operator>>(std::istream& s, Database& db) {
 Database Databases::upper_corners;
 Database Databases::lower_corners;
 Database Databases::corners;
-uint Databases::current_index = 0;

@@ -32,11 +32,21 @@ namespace Encoding {
 		}
 		return r;
 	}
-	
+
 	const int corners_max = pow(3, 8) * fact(8);
 	const int corners_max_rot = pow(3, 8);
 	const int corners_upper_max_rot = pow(3, 4);
 	const int corners_upper_max_pos = fact(4);
+
+	uint constexpr floor_index_upper_corners(uint u) {
+
+		uint pos = u / Encoding::corners_max_rot;
+		uint rot = u % Encoding::corners_max_rot;
+
+		uint pos_upper = pos - (pos % Encoding::corners_upper_max_pos);
+		uint rot_upper = rot - (rot % Encoding::corners_upper_max_rot);
+		return pos_upper * Encoding::corners_max_rot + rot_upper;
+	}
 
 	static constexpr inline void move_values_down(uchar* values, uchar pos, int len) {
 		for (uchar i = pos + 1; i < len; i++) {
@@ -105,17 +115,17 @@ namespace Encoding {
 	}
 
 	static constexpr void set_cube_borders_rot(Cube& cube, const DataBorders& data) {
-		
+
 		cube[Index_U][0][1].rot_id = data[0].rot_id;	cube[Index_B][0][1].rot_id = !data[0].rot_id;
 		cube[Index_U][1][0].rot_id = data[1].rot_id;	cube[Index_L][0][1].rot_id = !data[1].rot_id;
 		cube[Index_U][1][2].rot_id = data[2].rot_id;	cube[Index_R][0][1].rot_id = !data[2].rot_id;
 		cube[Index_U][2][1].rot_id = data[3].rot_id;	cube[Index_F][0][1].rot_id = !data[3].rot_id;
-		
+
 		cube[Index_F][1][0].rot_id = data[4].rot_id;	cube[Index_L][1][2].rot_id = !data[4].rot_id;
 		cube[Index_R][1][0].rot_id = data[5].rot_id;	cube[Index_F][1][2].rot_id = !data[5].rot_id;
 		cube[Index_B][1][0].rot_id = data[6].rot_id;	cube[Index_R][1][2].rot_id = !data[6].rot_id;
 		cube[Index_L][1][0].rot_id = data[7].rot_id;	cube[Index_B][1][2].rot_id = !data[7].rot_id;
-		
+
 		cube[Index_D][0][1].rot_id = data[8].rot_id;	cube[Index_F][2][1].rot_id = !data[8].rot_id;
 		cube[Index_D][1][0].rot_id = data[9].rot_id;	cube[Index_L][2][1].rot_id = !data[9].rot_id;
 		cube[Index_D][1][2].rot_id = data[10].rot_id;	cube[Index_R][2][1].rot_id = !data[10].rot_id;
@@ -127,12 +137,12 @@ namespace Encoding {
 		cube[Index_U][1][0].cube_id = cube[Index_L][0][1].cube_id = data[1].cube_id;
 		cube[Index_U][1][2].cube_id = cube[Index_R][0][1].cube_id = data[2].cube_id;
 		cube[Index_U][2][1].cube_id = cube[Index_F][0][1].cube_id = data[3].cube_id;
-		
+
 		cube[Index_F][1][0].cube_id = cube[Index_L][1][2].cube_id = data[4].cube_id;
 		cube[Index_R][1][0].cube_id = cube[Index_F][1][2].cube_id = data[5].cube_id;
 		cube[Index_B][1][0].cube_id = cube[Index_R][1][2].cube_id = data[6].cube_id;
 		cube[Index_L][1][0].cube_id = cube[Index_B][1][2].cube_id = data[7].cube_id;
-		
+
 		cube[Index_D][0][1].cube_id = cube[Index_F][2][1].cube_id = data[8].cube_id;
 		cube[Index_D][1][0].cube_id = cube[Index_L][2][1].cube_id = data[9].cube_id;
 		cube[Index_D][1][2].cube_id = cube[Index_R][2][1].cube_id = data[10].cube_id;
@@ -174,7 +184,7 @@ namespace Encoding {
 		data[c] = data[b];
 		data[b] = data[a];
 		data[a] = t;
-		
+
 		data[a].rot_id = !data[a].rot_id;
 		data[b].rot_id = !data[b].rot_id;
 		//data[c].rot_id = !data[c].rot_id;
@@ -186,7 +196,7 @@ namespace Encoding {
 		data[b].rot_id = rotate_cw(data[b].rot_id);
 		data[c].rot_id = rotate_cc(data[c].rot_id);
 		data[d].rot_id = rotate_cw(data[d].rot_id);
-		
+
 		Square t = data[d];
 		data[d] = data[c];
 		data[c] = data[b];

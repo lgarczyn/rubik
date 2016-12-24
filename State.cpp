@@ -16,6 +16,7 @@
 #include <limits>
 #include <sstream>
 #include <iomanip>
+#include <algorithm>
 
 indexer				State::get_index = indexer_astar;
 const Data			State::solution_data = data_from_id(ID());
@@ -39,23 +40,14 @@ State::State(bool is_del):
 	_distance(UCHAR_MAX) {}
 
 
-void State::update_weight() {
-	_apply_data(data_from_id(_id));
+State::State(const ID& id):State() {
+	_apply_data(data_from_id(id));
 }
 
 void State::_apply_data(const Data& data) {
 	_id = id_from_data(data);
-	Data d = data_from_id(_id);
-	ID id = id_from_data(d);
-	if (id != _id) {
-		std::cerr << "diff"<< std::endl;
-		std::cerr << (id.corners / (uint)pow(3, 8)) << " " << std::setbase(3 )<< (id.corners % (uint)pow(3, 8)) << " " << std::setbase(2) << id.borders_rot << " " << id.borders_pos << std::endl;
-		std::cerr << (_id.corners / (uint)pow(3, 8)) << " " << std::setbase(3 )<< (_id.corners % (uint)pow(3, 8)) << " " << std::setbase(2) << _id.borders_rot << " " << _id.borders_pos << std::endl;
-	}
-	//TODO remove check
-	//else
-	//	std::cerr << "same" << std::endl;
 	_weight = Heuristics::HeuristicFunction(data);
+	_weight = std::max((int)_weight, Heuristics::DatabaseFunction(_id));
 }
 
 void State::_apply_scramble(Data& data, const string& scramble) {
@@ -94,7 +86,7 @@ State::State(const std::string& scramble):State(){
 	_apply_data(data);
 }
 
-State::State(const State& parent, const std::string& scramble) {
+State::State(const State& parent, const std::string& scramble):State() {
 	Data data = data_from_id(parent._id);
 	_apply_scramble(data, scramble);
 	_apply_data(data);
@@ -118,13 +110,13 @@ State::State(int scramble_count):State(){
 	_apply_data(data);
 }
 
-State::State(const State& parent, State::Movement m, const Data& data) {
+State::State(const State& parent, State::Movement m, const Data& data):State() {
 	_movement = m;
 	_distance = parent._distance + 1;
 	_apply_data(data);
 }
 
-State::State(const State& parent, State::Movement m) {
+State::State(const State& parent, State::Movement m):State() {
 	if ((m & Mask) == None)
 		throw std::logic_error("None is not an allowed move, use copy constructor");
 
@@ -211,10 +203,6 @@ uint State::get_distance() const
 	return _distance;
 }
 
-ID&	State::_get_id(void){
-	return this->_id;
-}
-
 std::ostream& operator<<(std::ostream& s, const State::Movement c)
 {
 	bool reversed = c & State::Reversed;
@@ -233,13 +221,15 @@ std::ostream& operator<<(std::ostream& s, const State::Movement c)
 
 bool State::operator==(const State& ra) const
 {
-	return (_id.corners == ra._id.corners);
+	return (Encoding::floor_index_upper_corners(_id.corners) == Encoding::floor_index_upper_corners(ra._id.corners));//TODO change ==
 }
 
 size_t custom_hash::operator()(const State& l) const noexcept {
 	const ID& id = l.get_id();
 
-	return (id.borders_rot ^ id.borders_pos) | ((size_t)id.corners << 32);
+	return Encoding::floor_index_upper_corners(id.corners);
+	//return id.corners;//TODO put bak normal hash
+	//return (id.borders_rot ^ id.borders_pos) | ((size_t)id.corners << 32);
 }
 
 Score State::indexer_astar(const State& state)

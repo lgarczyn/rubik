@@ -87,7 +87,7 @@ namespace Encoding {
 		set_corner_rot(cube[Index_D][2][2].rot_id, cube[Index_R][2][2].rot_id, cube[Index_B][2][0].rot_id, data[7].rot_id);
 	}
 
-	static constexpr void set_cube_corners_pos(Cube& cube, const DataCorners& data) {//TODO chheck order
+	static constexpr void set_cube_corners_pos(Cube& cube, const DataCorners& data) {
 		cube[Index_U][0][0].cube_id = cube[Index_L][0][0].cube_id = cube[Index_B][0][2].cube_id = data[0].cube_id;
 		cube[Index_U][0][2].cube_id = cube[Index_R][0][2].cube_id = cube[Index_B][0][0].cube_id = data[1].cube_id;
 		cube[Index_U][2][0].cube_id = cube[Index_L][0][2].cube_id = cube[Index_F][0][0].cube_id = data[2].cube_id;

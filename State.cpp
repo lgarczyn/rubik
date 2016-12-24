@@ -148,6 +148,16 @@ State& State::operator=(const State& ra) {
 	return *this;
 }
 
+constexpr bool is_move_duplicate(State::Movement a, State::Movement b) {
+	if (a == State::Down && b == State::Up)
+		return true;
+	if (a == State::Back && b == State::Front)
+		return true;
+	if (a == State::Left && b == State::Right)
+		return true;
+	return false;
+}
+
 void	State::get_candidates(std::vector<State>& candidates) const
 {
 	//get cube of current state
@@ -159,6 +169,9 @@ void	State::get_candidates(std::vector<State>& candidates) const
 	for (int n = Movement_Start; n < Movement_End; n++) {
 		//if the movement is in same family as current, skip
 		if (m == n)
+			continue;
+		//if the previous movement was opposite to the current, and had priority, ignore this one
+		if (is_move_duplicate(m, (Movement)n))
 			continue;
 		//rotate 90d, build, then repeat
 		_apply_movement(data, (Movement)n);

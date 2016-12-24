@@ -1,9 +1,9 @@
 database http://www.cs.princeton.edu/courses/archive/fall06/cos402/papers/korfrubik.pdf
 
 optimizing
-	bidirectional astar
 	multithreading
 		custom solution
+	fix Solver setup
 	swap instead of delete
 		new system should easily allow that
 	use 128bits instead of vector<Movement>
@@ -12,7 +12,7 @@ optimizing
 		translation
 	check cache misses
 		cachegrind
-	remove dupliate nodes
+	remove duplicate nodes
 		Thus, for each pair of opposite faces we
 		arbitrarily chose an order, and forbid moves that twist
 		the two faces consecutively in the opposite order
@@ -30,11 +30,6 @@ heuristic
 	considering corner parity
 		http://math.stackexchange.com/questions/127577/how-to-tell-if-a-rubiks-cube-is-solvable
 
-
-
-cleanup
-	uid = cube_id * 3 + rot_id or something
-		would allow to remove uid_finder
 input
 	direct color input
 		get cube_id

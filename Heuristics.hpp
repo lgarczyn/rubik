@@ -22,12 +22,13 @@ namespace Heuristics
 	extern HeuristicIndexer		HeuristicFunctionUnused;
 	extern Score				ValidFunction(const Data& data);
 	extern Score				InvalidFunction(const Data& data);
-	static constexpr int		SquareDistance(Coord a, Coord b);
+	static constexpr int		SquareDistance(int uid_a, int uid_b);
+    static constexpr int		SquareDistance(Coord a, Coord b);
 
 	extern Score				DatabaseFunction(const ID&);
 
-	static constexpr Buffer		get_dist_table(Cube solution);
-	static const Buffer			dist_table = get_dist_table(State::solution_cube);
+	static constexpr Buffer		get_dist_table();
+	static const Buffer			dist_table = get_dist_table();
 
 };
 
@@ -43,8 +44,13 @@ inline int _get_opposite(int a) {
 	return (-1);
 }
 
-constexpr int Heuristics::SquareDistance(Coord a, Coord b) {
+constexpr int Heuristics::SquareDistance(int uid_a, int uid_b) {
+    Coord a = Encoding::coord_from_uid(uid_a);
+    Coord b = Encoding::coord_from_uid(uid_b);
+    return SquareDistance(a, b);
+}
 
+constexpr int Heuristics::SquareDistance(Coord a, Coord b){
 	bool isborder_a = (a.c == 1 || a.l == 1);
 	bool isborder_b = (b.c == 1 || b.l == 1);
 	if (isborder_a != isborder_b)
@@ -108,24 +114,12 @@ constexpr int Heuristics::SquareDistance(Coord a, Coord b) {
 		return 2;
 }
 
-constexpr Buffer Heuristics::get_dist_table(Cube solution) {
+constexpr Buffer Heuristics::get_dist_table() {
 	Buffer buff = Buffer();
 
-	//Solution is only needed to get UID from coordinates, or the opposite
-	//TODO SquareDistance should take two UIDs
-	for (int f = Index_Start; f < Index_End; f++)
-		for (int l = 0; l < size; l++)
-			for (int c = 0; c < size; c++)
-				for (int _f = Index_Start; _f < Index_End; _f++)
-					for (int _l = 0; _l < size; _l++)
-						for (int _c = 0; _c < size; _c++)
-						{
-							Square sa = solution[f][l][c];
-							Square sb = solution[_f][_l][_c];
-							Coord ca = (Coord){f, l, c};
-							Coord cb = (Coord){_f, _l, _c};
-							buff[sa.get_uid(l, c)][sb.get_uid(_l, _c)] = SquareDistance(ca, cb);
-						}
+    for (int uid_a = 0; uid_a < max_uid; uid_a++)
+        for (int uid_b = 0; uid_b < max_uid; uid_b++)
+            buff[uid_a][uid_b] = SquareDistance(uid_a, uid_b);
 	return buff;
 }
 

@@ -45,7 +45,7 @@ void print_line(const Cube& cube, int s, int l) {
 	{
 		Square sq = cube[s][l][c];
 		int uid = sq.get_uid(l, c);
-		int dist = Heuristics::SquareDistance((Coord){s, l, c}, State::solution_finder[uid]);
+		int dist = Heuristics::SquareDistance(State::solution_cube[s][l][c].get_uid(c, l), uid);//TODO fix?
 		Color color = State::solution_colors[State::solution_finder[uid].f];
 		bool correct = State::solution_cube[s][l][c] == sq;
 

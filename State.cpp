@@ -47,6 +47,7 @@ State::State(const ID& id):State() {
 void State::_apply_data(const Data& data) {
 	_id = id_from_data(data);
 	_weight = Heuristics::HeuristicFunction(data);
+	//std::cout << "heuristics: " << (int)_weight << std::endl;
 	_weight = std::max((int)_weight, Heuristics::DatabaseFunction(_id));
 }
 

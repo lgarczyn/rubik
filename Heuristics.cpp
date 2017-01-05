@@ -12,6 +12,17 @@ inline int get_dist(const Data& data, int i, SquareType st) {
 
 	int id_src = Square::get_uid(i, 0, st);//ID of where the square was found
 
+	//SquareType type;
+
+	//Square sol = Square::get_square(id_sol, type);
+	//Square src = Square::get_square(id_src, type);
+
+	//std::cout << "distance:" << std::endl;
+	//std::cout << "sol uid: " << (int)id_sol << " cid: " << (int)sol.cube_id << " rid: " << (int)sol.rot_id << std::endl;
+	//std::cout << "src uid: " << (int)id_src << " cid: " << (int)src.cube_id << " rid: " << (int)src.rot_id << std::endl;
+    //std::cout << "dist: " << (int)Heuristics::dist_table[id_sol][id_src] << std::endl;
+    //std::cout << "dist: " << Heuristics::SquareDistance(id_sol, id_src) << std::endl;
+
 	return Heuristics::dist_table[id_sol][id_src];
 }
 
@@ -83,6 +94,7 @@ inline Score get_dist_corners(const Data& data) {
 	//dist += get_dist(data, 5, st_corner);
 	//dist += get_dist(data, 6, st_corner);
 	//dist += get_dist(data, 7, st_corner);
+	//std::cout << "distance " << (int)data.corners[0].cube_id << " " << (int)data.corners[1].cube_id << " " << (int)data.corners[2].cube_id << " " << (int)data.corners[3].cube_id << ": " << dist << "\n";
 	return dist;
 }
 

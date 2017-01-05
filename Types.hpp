@@ -4,7 +4,7 @@
 
 #include <string>
 using string = std::string;
-using uchar = unsigned char;
+using uchar = uint8_t;
 using uint = unsigned int;
 using Score = int;
 
@@ -38,10 +38,15 @@ enum SquareType {
 	st_center,
 };
 
-static const int max_uid = 8 * 3 + 12 * 2 + 6;
+static const uchar max_uid_corner = 8 * 3;
+static const uchar max_uid_border = 8 * 3 + 12 * 2;
+static const uchar max_uid = 8 * 3 + 12 * 2 + 6;
 struct Square {
 	uchar cube_id;
 	uchar rot_id;
+	constexpr Square (uchar cid, uchar rid):cube_id(cid),rot_id(rid){}
+	constexpr Square ():cube_id(0),rot_id(0){}
+
 	inline uchar get_uid(int c, int l) const{
 		if (c == 1 && l == 1)
 			return get_uid(st_center);
@@ -56,8 +61,27 @@ struct Square {
 		if (type == st_corner)
 			return cube_id * 3 + rot_id;
 		if (type == st_border)
-			return 8 * 3 + cube_id * 2 + rot_id;
-		return 8 * 3 + 12 * 2 + cube_id;
+			return max_uid_corner + cube_id * 2 + rot_id;
+		return max_uid_border + cube_id;
+	}
+	static constexpr Square get_square(uchar uid, SquareType& type) {
+		if (uid >= max_uid)
+			throw std::logic_error("uid >= max_uid");
+		if (uid >= max_uid_border) {
+			uid -= max_uid_border;
+			type = st_center;
+			return Square(uid, 0);
+		}
+		if (uid >= max_uid_corner) {
+			uid -= max_uid_corner;
+			type = st_border;
+			return Square(uid / 2, uid % 2);
+		}
+		if (uid >= 0) {
+			type = st_corner;
+			return Square(uid / 3, (uchar)uid % 3);
+		}
+		throw std::logic_error("uid < 0");
 	}
 };
 

@@ -24,8 +24,7 @@
 #include <unistd.h>
 
 
-int		display_help(const char* path = "npuzzle")
-{
+int		display_help(const char* path = "npuzzle") {
 	std::cout << "Usage: " << path << " [-h] " << std::endl
 		<< "1: [-i ITERATION]" << std::endl
 		<< "2: [-m MOVEMENTS]" << std::endl
@@ -34,8 +33,7 @@ int		display_help(const char* path = "npuzzle")
 	return (0);
 }
 
-Parser::ParseResult	parse_args(int ac, char **av)
-{
+Parser::ParseResult	parse_args(int ac, char **av) {
 	Parser::ParseResult result;
 	try {
 		char	buf[255];
@@ -250,14 +248,17 @@ int main() {;
 					break;
 			}
 			s = State();
-			int len = 1;
+			int len = 0;
 			for (int m:res.movements) {
 				s = State(s, (State::Movement)m);
 				store(d, s.get_id().corners, len++);
 			}
-			std::cout << "end " << len << "\n";
+			std::cout << "end: " << len << std::endl;
+			for (int m:res.movements)
+				std::cout << (State::Movement)m << " ";
+			std::cout << std::endl;
+			//std::cout <<  << len << "\n";
 		}
-		//Databases::current_index = i;
 		//if (i % 100 == 0) {
 		//	s._get_id().corners = i;
 		//	s.update_weight();

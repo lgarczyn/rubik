@@ -149,6 +149,85 @@ namespace Encoding {
 		cube[Index_D][2][1].cube_id = cube[Index_B][2][1].cube_id = data[11].cube_id;
 	}
 
+	static constexpr Coord coord_from_uid(int uid) {//TODO is this just solution finder?
+		SquareType type = st_corner;
+		Square sq = Square::get_square(uid, type);
+
+		switch (type) {
+			case st_center: return {sq.cube_id, 1, 1};
+			case st_border: switch (sq.rot_id) {
+				case 0: switch (sq.cube_id) {
+					case 0: return {Index_U, 0, 1};
+					case 1: return {Index_U, 1, 0};
+					case 2: return {Index_U, 1, 2};
+					case 3: return {Index_U, 2, 1};
+					case 4: return {Index_F, 1, 0};
+					case 5: return {Index_R, 1, 0};
+					case 6: return {Index_B, 1, 0};
+					case 7: return {Index_L, 1, 0};
+					case 8: return {Index_D, 0, 1};
+					case 9: return {Index_D, 1, 0};
+					case 10: return {Index_D, 1, 2};
+					case 11: return {Index_D, 2, 1};
+					default: throw std::logic_error("impossible");
+				}
+				case 1: switch (sq.cube_id) {
+					case 0: return {Index_B, 0, 1};
+					case 1: return {Index_L, 0, 1};
+					case 2: return {Index_R, 0, 1};
+					case 3: return {Index_F, 0, 1};
+					case 4: return {Index_L, 1, 2};
+					case 5: return {Index_F, 1, 2};
+					case 6: return {Index_R, 1, 2};
+					case 7: return {Index_B, 1, 2};
+					case 8: return {Index_F, 2, 1};
+					case 9: return {Index_L, 2, 1};
+					case 10: return {Index_R, 2, 1};
+					case 11: return {Index_B, 2, 1};
+					default: throw std::logic_error("impossible");
+				}
+				default: throw std::logic_error("impossible");
+			}
+			case st_corner: switch (sq.rot_id) {
+				case 0:switch (sq.cube_id) {
+					case 0: return {Index_U, 0, 0};
+					case 1: return {Index_U, 0, 2};
+					case 2: return {Index_U, 2, 0};
+					case 3: return {Index_U, 2, 2};
+					case 4: return {Index_D, 0, 0};
+					case 5: return {Index_D, 0, 2};
+					case 6: return {Index_D, 2, 0};
+					case 7: return {Index_D, 2, 2};
+					default: throw std::logic_error("impossible");
+				}
+				case 1:switch (sq.cube_id) {
+					case 0: return {Index_L, 0, 0};
+					case 1: return {Index_B, 0, 0};
+					case 2: return {Index_F, 0, 0};
+					case 3: return {Index_R, 0, 0};
+					case 4: return {Index_L, 2, 2};
+					case 5: return {Index_F, 2, 2};
+					case 6: return {Index_B, 2, 2};
+					case 7: return {Index_R, 2, 2};
+					default: throw std::logic_error("impossible");
+				}
+				case 2:switch (sq.cube_id) {
+					case 0: return {Index_B, 0, 2};
+					case 1: return {Index_R, 0, 2};
+					case 2: return {Index_L, 0, 2};
+					case 3: return {Index_F, 0, 2};
+					case 4: return {Index_F, 2, 0};
+					case 5: return {Index_R, 2, 0};
+					case 6: return {Index_L, 2, 0};
+					case 7: return {Index_B, 2, 0};
+					default: throw std::logic_error("impossible");
+				}
+				default: throw std::logic_error("impossible");
+			}
+			default: throw std::logic_error("impossible");
+		}
+	}
+
 	constexpr Cube cube_from_data(const Data& data) {
 		Cube cube = Cube();
 		set_cube_corners_pos(cube, data.corners);

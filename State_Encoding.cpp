@@ -299,27 +299,27 @@ namespace Encoding {
 			case State::None : return;
 			case State::Up ://TODO change order for buffer
 				swap_data_poles(data.corners, 1, 3, 2, 0);
-				swap_data_poles(data.borders, 3, 1, 0, 2);
+				//swap_data_poles(data.borders, 3, 1, 0, 2);
 				break;
 			case State::Front :
 				swap_data(data.corners, 5, 4, 2, 3);
-				swap_data(data.borders, 4, 3, 5, 8);
+				//swap_data(data.borders, 4, 3, 5, 8);
 				break;
 			case State::Right :
 				swap_data(data.corners, 3, 1, 7, 5);
-				swap_data(data.borders, 5, 2, 6, 10);
+				//swap_data(data.borders, 5, 2, 6, 10);
 				break;
 			case State::Back :
 				swap_data(data.corners, 1, 0, 6, 7);
-				swap_data(data.borders, 6, 0, 7, 11);
+				//swap_data(data.borders, 6, 0, 7, 11);
 				break;
 			case State::Left :
 				swap_data(data.corners, 0, 2, 4, 6);
-				swap_data(data.borders, 7, 1, 4, 9);
+				//swap_data(data.borders, 7, 1, 4, 9);
 				break;
 			case State::Down :
 				swap_data_poles(data.corners, 4, 5, 7, 6);
-				swap_data_poles(data.borders, 11, 9, 8, 10);
+				//swap_data_poles(data.borders, 11, 9, 8, 10);
 				break;
 			default: break;
 		}
@@ -421,8 +421,8 @@ namespace Encoding {
 	constexpr ID id_from_data(const Data& data){
 		ID id = ID();
 		id.corners = get_id_corners_pos(data.corners) * pow(3, 8) + get_id_corners_rot(data.corners);
-		id.borders_pos = get_id_borders_pos(data.borders);
-		id.borders_rot = get_id_borders_rot(data.borders);
+		//id.borders_pos = get_id_borders_pos(data.borders);
+		//id.borders_rot = get_id_borders_rot(data.borders);
 		return id;
 	}
 
@@ -492,8 +492,8 @@ namespace Encoding {
 		Data data = Data();
 		set_data_corners_pos(data.corners, id.corners / pow(3, 8));
 		set_data_corners_rot(data.corners, id.corners % pow(3, 8));
-		set_data_borders_pos(data.borders, id.borders_pos);
-		set_data_borders_rot(data.borders, id.borders_rot);
+		//set_data_borders_pos(data.borders, id.borders_pos);
+		//set_data_borders_rot(data.borders, id.borders_rot);
 		return data;
 	}
 

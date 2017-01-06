@@ -82,6 +82,7 @@ class State {
 		uint 							get_weight() const;
 		const ID&						get_id() const;
 		bool 							is_final() const;
+        bool                            is_solvable() const;
 
 		//logic wrappers
 		void							get_candidates(std::vector<State>& candidates) const;

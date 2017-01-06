@@ -187,7 +187,78 @@ void	State::get_candidates(std::vector<State>& candidates) const
 }
 
 bool State::is_final() const {
-	return _weight == 0;
+    return _weight == 0;
+}
+
+bool State::is_solvable() const {
+    Data data = data_from_id(_id);
+
+    //corner check
+    {
+        int sum = 0;
+        for (int i = 0; i < 8; i++)
+            sum += data.corners[i].rot_id;
+        if (sum % 3) {
+            std::cout << "co\n";
+            return false;
+        }
+    }
+    /*{
+        int sum = 0;
+        for (int i = 0; i < 12; i++)
+            sum += data.borders[i].rot_id;
+        if (sum % 2) {
+            std::cout << "bo\n";
+            return false;
+        }
+    }*/
+    /*
+    int sumparity_corner = 0;
+    {
+        for (int i = 0; i < 8; i++) {
+            if (data.corners[i].cube_id != i) {
+                int j = i + 1;
+                while (data.corners[j].cube_id != i)//find correct cube_id for current i pos
+                    j++;
+                std::swap(data.corners[i], data.corners[j]);//place correct cube_id in current i pos
+                sumparity_corner++;
+            }
+        }
+//        if (sum % 2) {
+//            std::cout << "co_pa\n";
+//            std::cout <<
+//                      (int)data.corners[0].cube_id << " " <<
+//                      (int)data.corners[1].cube_id << " " <<
+//                      (int)data.corners[2].cube_id << " " <<
+//                      (int)data.corners[3].cube_id << " " <<
+//                      (int)data.corners[4].cube_id << " " <<
+//                      (int)data.corners[5].cube_id << " " <<
+//                      (int)data.corners[6].cube_id << " " <<
+//                      (int)data.corners[7].cube_id << std::endl;
+//            return false;
+//        }
+    }
+    int sumparity_border = 0;
+    {
+        int sum = 0;
+        for (int i = 0; i < 12; i++) {
+            if (data.borders[i].cube_id != i) {
+                int j = i + 1;
+                while (data.borders[j].cube_id != i)//find correct cube_id for current i pos
+                    j++;
+                std::swap(data.borders[i], data.borders[j]);//place correct cube_id in current i pos
+                sumparity_border++;
+            }
+        }
+        //if (sum % 2) {
+        //    std::cout << "bo_pa\n";
+        //    return false;
+        //}
+    }
+    if (sumparity_border % 2 != sumparity_corner % 2)
+        return false;
+    */
+    return true;
 }
 
 const ID&	State::get_id(void) const
@@ -235,14 +306,14 @@ std::ostream& operator<<(std::ostream& s, const State::Movement c)
 
 bool State::operator==(const State& ra) const
 {
-	return (Encoding::floor_index_upper_corners(_id.corners) == Encoding::floor_index_upper_corners(ra._id.corners));//TODO change ==
+	return (_id.corners == ra._id.corners);//TODO change ==
 }
 
 size_t custom_hash::operator()(const State& l) const noexcept {
 	const ID& id = l.get_id();
 
-	return Encoding::floor_index_upper_corners(id.corners);
-	//return id.corners;//TODO put bak normal hash
+	//return Encoding::floor_index_upper_corners(id.corners);
+	return id.corners;//TODO put bak normal hash
 	//return (id.borders_rot ^ id.borders_pos) | ((size_t)id.corners << 32);
 }
 

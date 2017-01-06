@@ -60,7 +60,7 @@ void Solver::setup(State initial) {
 	_opened.clear();
 	get_opened_set(initial).push_back(initial);
 
-	_universe = Universe();
+	_universe.clear();
 	//_universe.set_empty_key(State(false));
 	//_universe.set_deleted_key(State(true));
 	_universe.insert(std::make_pair(initial, Movements()));

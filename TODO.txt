@@ -41,6 +41,4 @@ input
 			http://math.stackexchange.com/questions/127577/how-to-tell-if-a-rubiks-cube-is-solvable
 		id_from_data
 
-store intermediary data into database
-use data for score and rotation
 new array system

@@ -72,6 +72,7 @@ Parser::ParseResult	parse_args(int ac, char **av) {
 }
 
 void clear_screen() {
+    return;
 	std::cout << tgetstr((char*)"cl", NULL);
 }
 
@@ -107,7 +108,7 @@ Solver::Result	solve_loop(State& initial)//, Parser::ParseResult& parseResult)
 	return (solverResult);
 }
 
-int main_main(int ac, char **av)
+int main(int ac, char **av)
 {
 	State					initial;
 	Parser::ParseResult		parseResult;
@@ -183,15 +184,37 @@ int main_main(int ac, char **av)
 	}
 }
 
-void store(Database& db, uint id_corners, int len) {
-	id_corners = Encoding::floor_index_upper_corners(id_corners);
-	for (uint r = 0; r < Encoding::corners_upper_max_rot; r++)
-		for (uint p = 0; p < Encoding::corners_upper_max_pos; p++)
-			db[id_corners + p * Encoding::corners_max_rot + r] = len;
+int total_saved = 0;
+int total_overridden = 0;
+int total_saved_first = 0;
+int total_overridden_first = 0;
+
+void store(Database& db, uint id_corners, int len, bool is_first) {
+	uint id = id_corners;
+    if (!is_first)
+        if (db[id] > 0)
+            total_overridden++;
+        else
+            total_saved++;
+    else
+        if (db[id] > 0)
+            total_overridden_first++;
+        else
+            total_saved_first++;
+    db[id] = len;
+	//for (uint r = 0; r < Encoding::corners_upper_max_rot; r++)
+	//	for (uint p = 0; p < Encoding::corners_upper_max_pos; p++) {
+    //        int id = id_corners + p * Encoding::corners_max_rot + r;
+    //        if (db[id] > 0)
+    //            total_overridden++;
+    //        else
+    //            total_saved++;
+    //        db[id] = len;
+    //    }
 }
 
 bool exist(Database& db, uint id_corners) {
-	id_corners = Encoding::floor_index_upper_corners(id_corners);
+	//id_corners = Encoding::floor_index_upper_corners(id_corners);
 	if (id_corners == 0)
 		return true;
 	if (db[id_corners] > 0)
@@ -199,7 +222,17 @@ bool exist(Database& db, uint id_corners) {
 	return false;
 }
 
-int main() {;
+int main_check_solvable() {
+    while (1) {
+        State s(100);
+        if (s.is_solvable())
+            std::cout << "c";
+        else
+            std::cout << "\nERROR\n";
+    }
+}
+
+int main_() {;
 
 	/*{
 		std::ifstream f = std::ifstream("upper_corners.db");
@@ -225,22 +258,26 @@ int main() {;
 		std::cerr << i << " " << (int)c << " " << (int)uc << " " << (int)lc << std::endl;
 	}*/
 
-	Databases::upper_corners = Database(Encoding::corners_max);
-	Database& d = Databases::upper_corners;
+	Databases::corners = Database(Encoding::corners_max);
+	Database& d = Databases::corners;
 
 	std::cerr << d.size() << " " << Databases::upper_corners.size() << " " << Databases::lower_corners.size() << "\n";
 
 	State s = State();
 	ID id = ID();
 	//Solver solver;
+    Solver solver = Solver();
 	for (uint i = 0; i < Encoding::corners_max; i++) {
 		if (exist(d, i) == false) {
 
 			std::cout << "start " << i << "\n";
 			id.corners = i;
 			s = State(id);
-			Solver solver = Solver(s);
-			//solver.setup(s);
+            if (s.is_solvable() == false) {
+                std::cout << "end: unsolvable\n";
+                continue;
+            }
+			solver.setup(s);
 			Solver::Result res;
 			while (1) {
 				res = solver.step();
@@ -251,14 +288,21 @@ int main() {;
 			int len = 0;
 			for (int m:res.movements) {
 				s = State(s, (State::Movement)m);
-				store(d, s.get_id().corners, len++);
+				store(d, s.get_id().corners, len, len == res.movements.size() - 1);
+                len++;
 			}
-			std::cout << "end: " << len << std::endl;
+			std::cout << "end: " << len <<
+                "\ntotal saved : " << total_saved <<
+                "\ntotal overridden : " << total_overridden <<
+                "\ntotal saved first : " << total_saved_first <<
+                "\ntotal overridden first : " << total_overridden_first << std::endl;
 			for (int m:res.movements)
 				std::cout << (State::Movement)m << " ";
 			std::cout << std::endl;
 			//std::cout <<  << len << "\n";
 		}
+        else
+            std::cout << "end: already in\n";
 		//if (i % 100 == 0) {
 		//	s._get_id().corners = i;
 		//	s.update_weight();

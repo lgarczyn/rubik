@@ -23,125 +23,117 @@ class State;
 using indexer = Score (*)(const State&);
 
 class State {
-	public:
+public:
 
-		enum Movement {
-			None = 0,
-			Up = 1,
-			Right = 2,
-			Down = 3,
-			Left = 4,
-			Front = 5,
-			Back = 6,
+    enum Movement {
+        None = 0,
+        Up = 1,
+        Right = 2,
+        Down = 3,
+        Left = 4,
+        Front = 5,
+        Back = 6,
 
-			Movement_Start = 1,
-			Movement_End = 7,
+        Movement_Start = 1,
+        Movement_End = 7,
 
-			Mask = 7,
-			Reversed = 8,
-			Halfturn = 16,
+        Mask = 7,
+        Reversed = 8,
+        Halfturn = 16,
 
-			R_None = Reversed | None,
-			R_Up = Reversed | Up,
-			R_Right = Reversed | Right,
-			R_Down = Reversed | Down,
-			R_Left = Reversed | Left,
-			R_Front = Reversed | Front,
-			R_Back = Reversed | Back,
+        R_None = Reversed | None,
+        R_Up = Reversed | Up,
+        R_Right = Reversed | Right,
+        R_Down = Reversed | Down,
+        R_Left = Reversed | Left,
+        R_Front = Reversed | Front,
+        R_Back = Reversed | Back,
 
-			H_None = Halfturn | None,
-			H_Up = Halfturn | Up,
-			H_Right = Halfturn | Right,
-			H_Down = Halfturn | Down,
-			H_Left = Halfturn | Left,
-			H_Front = Halfturn | Front,
-			H_Back = Halfturn | Back,
-		};
+        H_None = Halfturn | None,
+        H_Up = Halfturn | Up,
+        H_Right = Halfturn | Right,
+        H_Down = Halfturn | Down,
+        H_Left = Halfturn | Left,
+        H_Front = Halfturn | Front,
+        H_Back = Halfturn | Back,
+    };
 
-		//solution lookup
-		static const Cube				solution_cube;
-		static const Data				solution_data;
-		static const Finder				solution_finder;
-		static const Color				solution_colors[];
+    //constructors
+    inline State();
+    inline State(bool is_del);
+    inline State(const ID& id);
+    inline State(const State& clone);
+    inline State(const string& scramble);
+    inline State(int scramble_count);
+    inline State(const State& parent, Movement direction);
+    inline State(const State& parent, const string& scramble);
+    inline State& operator=(const State& ra);
 
-		//constructors
-		State();
-		State(bool is_del);
-		State(const ID& id);
-		State(const State& clone);
-		State(const string& scramble);
-		State(int scramble_count);
-		State(const State& parent, Movement direction);
-		State(const State& parent, const string& scramble);
-		State& operator=(const State& ra);
-		bool operator==(const State& ra) const;
+    //getters
+    constexpr Movement						get_movement() const;
+    constexpr uint							get_distance() const;
+    constexpr uint 							get_weight() const;
+    constexpr const ID&						get_id() const;
+    constexpr bool 							is_final() const;
+    constexpr bool                          is_solvable() const;
 
-		//getters
-		Movement						get_movement() const;
-		uint							get_distance() const;
-		uint 							get_weight() const;
-		const ID&						get_id() const;
-		bool 							is_final() const;
-        bool                            is_solvable() const;
+    //logic wrappers
+    constexpr void							get_candidates(std::vector<State>& candidates) const;
 
-		//logic wrappers
-		void							get_candidates(std::vector<State>& candidates) const;
+    //ID Cube conversions
+    constexpr Data							get_data() const;
+    constexpr Cube							get_cube() const;
+    constexpr static ID			            id_from_data(const Data& data);
+    constexpr static Data		            data_from_id(const ID id);
+    constexpr static Cube		            cube_from_data(const Data& data);
+    constexpr static ID			            id_from_cube(const Cube& cube);
+    constexpr static Cube		            cube_from_id(const ID data);
 
-		//ID Cube conversions
-		Data							get_data() const;
-		Cube							get_cube() const;
-		static constexpr ID				id_from_data(const Data& data);
-		static constexpr Data			data_from_id(const ID id);
-		//static constexpr Data			data_from_cube(const Cube& cube);
-		static constexpr Cube			cube_from_data(const Data& data);
-		static constexpr ID				id_from_cube(const Cube& cube);
-		static constexpr Cube			cube_from_id(const ID data);
+    //indexers
+    constexpr static Score					indexer_astar(const State&);
+    constexpr static Score					indexer_uniform(const State&);
+    constexpr static Score					indexer_greedy(const State&);
+    constexpr static indexer				get_index = indexer_astar;
 
-		//indexers
-		static indexer					get_index;
-		static Score					indexer_astar(const State&);
-		static Score					indexer_uniform(const State&);
-		static Score					indexer_greedy(const State&);
-		bool							operator==(State& ra) {
-			return _id.corners == ra._id.corners;
-		}
+    constexpr bool                          operator==(const State& ra) const;
+    constexpr bool							operator==(State& ra) const {//TODO move to cpp
+        return _id.corners == ra._id.corners;
+    }
 
-		//debug
-		static void						_apply_scramble(Data& data, const string& scramble);
-		static void						_apply_movement(Data& data, Movement m, int turns);
-		static void						_apply_movement(Data& data, Movement m);
-		static int						_get_turns(Movement m);
-	private:
-		//optimized constructor
-		State(const State& parent, Movement direction, const Data& data);
+    //debug
+    inline static void					    _apply_scramble(Data& data, const string& scramble);
+    constexpr static void					_apply_movement(Data& data, Movement m, int turns);
+    constexpr static void					_apply_movement(Data& data, Movement m);
+    constexpr static int					_get_turns(Movement m);
+private:
+    //optimized constructor
+    State(const State& parent, Movement direction, const Data& data);
 
-		//calculations
-		//void							_apply_cube(const Cube& cube);
-		//static void						_apply_scramble(Cube& cube, const string& scramble);
-		//static void						_apply_movement(Cube& cube, Movement m);
+    //calculations
+    inline void						        _apply_data(const Data& data);
+    constexpr static Finder			        _calculate_finder(const Cube& Cube);
 
-		void							_apply_data(const Data& data);
-		//static void						_apply_scramble(Data& data, const string& scramble);
-		//static void						_apply_movement(Data& data, Movement m);
+    //members, should add up to 128bits :D
+    ID								        _id;
+    uint16_t						        _movement:16;
+    uchar							        _weight:8;
+    uchar							        _distance:8;
+public:
 
-		//static constexpr Cube			_calculate_solution();
-		static constexpr Finder			_calculate_finder(const Cube& Cube);
-
-		//members, should add up to 128bits :D
-		ID								_id;
-		uint16_t						_movement:16;
-		uchar							_weight:8;
-		uchar							_distance:8;
-
+    static constexpr Data			    solution_data = State::data_from_id(ID());
+    static constexpr Cube			    solution_cube = State::cube_from_id(ID());
+    static constexpr Finder		        solution_finder = State::_calculate_finder(solution_cube);
+    static constexpr Color			    solution_colors[] = {White, Green, Red, Blue, Orange, Yellow};
 };
-std::ostream&					operator<<(std::ostream& s, const State::Movement c);
+inline std::ostream&					        operator<<(std::ostream& s, const State::Movement c);
 
 struct custom_hash
 {
 	public:
-		size_t operator()(const State& l) const noexcept;
+		constexpr size_t operator()(const State& l) const noexcept;
 };
 
 #include "State_Encoding.cpp"
+#include "State.cpp"
 
 #endif

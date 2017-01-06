@@ -589,3 +589,5 @@ constexpr ID State::id_from_data(const Data& data){ return Encoding::id_from_dat
 constexpr Data State::data_from_id(const ID id) { return Encoding::data_from_id(id);}
 constexpr Cube State::cube_from_id(const ID id) { return Encoding::cube_from_id(id);}
 constexpr ID State::id_from_cube(const Cube& cube){ return Encoding::id_from_cube(cube);}
+constexpr void State::_apply_movement(Data& data, Movement m) { Encoding::_apply_movement(data, m);}
+constexpr void State::_apply_movement(Data& data, Movement m, int turns) { Encoding::_apply_movement(data, m, turns);}

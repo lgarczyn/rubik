@@ -10,7 +10,6 @@
 /*																			*/
 /* ************************************************************************** */
 
-#include "State.hpp"
 #include "Heuristics.hpp"
 #include <random>
 #include <limits>
@@ -18,20 +17,14 @@
 #include <iomanip>
 #include <algorithm>
 
-indexer				State::get_index = indexer_astar;
-const Data			State::solution_data = data_from_id(ID());
-const Cube			State::solution_cube = cube_from_id(ID());
-const Finder		State::solution_finder = _calculate_finder(solution_cube);
-const Color			State::solution_colors[] = {White, Green, Red, Blue, Orange, Yellow};
-
-State::State():
+inline State::State():
 	_id(),
 	_movement(None),
 	_weight(0),
 	_distance(0) {}
 
-State::State(bool is_del):
-	_id({
+inline State::State(bool is_del):
+	_id((ID){
 		is_del ? UINT_MAX : UINT_MAX - 1,
 		is_del ? UINT_MAX : UINT_MAX - 1,
 		is_del ? UINT_MAX : UINT_MAX - 1}),
@@ -40,18 +33,18 @@ State::State(bool is_del):
 	_distance(UCHAR_MAX) {}
 
 
-State::State(const ID& id):State() {
+inline State::State(const ID& id):State() {
 	_apply_data(data_from_id(id));
 }
 
-void State::_apply_data(const Data& data) {
+inline void State::_apply_data(const Data& data) {
 	_id = id_from_data(data);
 	_weight = Heuristics::HeuristicFunction(data);
 	//std::cout << "heuristics: " << (int)_weight << std::endl;
 	_weight = std::max((int)_weight, Heuristics::DatabaseFunction(_id));
 }
 
-void State::_apply_scramble(Data& data, const string& scramble) {
+inline void State::_apply_scramble(Data& data, const string& scramble) {
 
 	std::stringstream ss = std::stringstream(scramble);
 
@@ -78,22 +71,19 @@ void State::_apply_scramble(Data& data, const string& scramble) {
 	}
 }
 
-void State::_apply_movement(Data& data, Movement m) { Encoding::_apply_movement(data, m);}
-void State::_apply_movement(Data& data, Movement m, int turns) { Encoding::_apply_movement(data, m, turns);}
-
-State::State(const std::string& scramble):State(){
+inline State::State(const std::string& scramble):State(){
 	Data data = solution_data;
 	_apply_scramble(data, scramble);
 	_apply_data(data);
 }
 
-State::State(const State& parent, const std::string& scramble):State() {
+inline State::State(const State& parent, const std::string& scramble):State() {
 	Data data = data_from_id(parent._id);
 	_apply_scramble(data, scramble);
 	_apply_data(data);
 }
 
-State::State(int scramble_count):State(){
+inline State::State(int scramble_count):State(){
 	std::random_device rd;
 	std::mt19937 rng(rd());
 	std::uniform_int_distribution<int> uni(Movement_Start, Movement_End-1);
@@ -111,13 +101,13 @@ State::State(int scramble_count):State(){
 	_apply_data(data);
 }
 
-State::State(const State& parent, State::Movement m, const Data& data):State() {
+inline State::State(const State& parent, State::Movement m, const Data& data):State() {
 	_movement = m;
 	_distance = parent._distance + 1;
 	_apply_data(data);
 }
 
-State::State(const State& parent, State::Movement m):State() {
+inline State::State(const State& parent, State::Movement m):State() {
 	if ((m & Mask) == None)
 		throw std::logic_error("None is not an allowed move, use copy constructor");
 
@@ -129,7 +119,7 @@ State::State(const State& parent, State::Movement m):State() {
 	_apply_data(data);
 }
 
-int State::_get_turns(Movement m) {
+constexpr int State::_get_turns(Movement m) {
 	switch (m & ~Mask) {
 		case Reversed : return 3;
 		case Halfturn : return 2;
@@ -137,11 +127,11 @@ int State::_get_turns(Movement m) {
 	}
 }
 
-State::State(const State& clone) {
+inline State::State(const State& clone) {
 	*this = clone;
 }
 
-State& State::operator=(const State& ra) {
+inline State& State::operator=(const State& ra) {
 	_id = ra._id;
 	_weight = ra._weight;
 	_movement = ra._movement;
@@ -159,7 +149,7 @@ constexpr bool is_move_duplicate(State::Movement a, State::Movement b) {
 	return false;
 }
 
-void	State::get_candidates(std::vector<State>& candidates) const
+constexpr void State::get_candidates(std::vector<State>& candidates) const
 {
 	//get cube of current state
 	Data data = data_from_id(_id);
@@ -186,11 +176,11 @@ void	State::get_candidates(std::vector<State>& candidates) const
 	}
 }
 
-bool State::is_final() const {
+constexpr bool State::is_final() const {
     return _weight == 0;
 }
 
-bool State::is_solvable() const {
+constexpr bool State::is_solvable() const {
     Data data = data_from_id(_id);
 
     //corner check
@@ -261,34 +251,35 @@ bool State::is_solvable() const {
     return true;
 }
 
-const ID&	State::get_id(void) const
+constexpr const ID&	State::get_id(void) const
 {
 	return _id;
 }
 
-Data State::get_data() const {
+constexpr Data State::get_data() const {
 	return data_from_id(_id);
 }
-Cube State::get_cube() const {
+
+constexpr Cube State::get_cube() const {
 	return cube_from_id(_id);
 }
 
-uint State::get_weight(void) const
+constexpr uint State::get_weight(void) const
 {
 	return this->_weight;
 }
 
-State::Movement State::get_movement(void) const
+constexpr State::Movement State::get_movement(void) const
 {
 	return (Movement)_movement;
 }
 
-uint State::get_distance() const
+constexpr uint State::get_distance() const
 {
 	return _distance;
 }
 
-std::ostream& operator<<(std::ostream& s, const State::Movement c)
+inline std::ostream& operator<<(std::ostream& s, const State::Movement c)
 {
 	bool reversed = c & State::Reversed;
 	bool halfturn = c & State::Halfturn;
@@ -304,12 +295,12 @@ std::ostream& operator<<(std::ostream& s, const State::Movement c)
 	}
 }
 
-bool State::operator==(const State& ra) const
+constexpr bool State::operator==(const State& ra) const
 {
 	return (_id.corners == ra._id.corners);//TODO change ==
 }
 
-size_t custom_hash::operator()(const State& l) const noexcept {
+constexpr size_t custom_hash::operator()(const State& l) const noexcept {
 	const ID& id = l.get_id();
 
 	//return Encoding::floor_index_upper_corners(id.corners);
@@ -317,17 +308,17 @@ size_t custom_hash::operator()(const State& l) const noexcept {
 	//return (id.borders_rot ^ id.borders_pos) | ((size_t)id.corners << 32);
 }
 
-Score State::indexer_astar(const State& state)
+constexpr Score State::indexer_astar(const State& state)
 {
 	return state.get_weight() + state.get_distance() * score_multiplier;
 }
 
-Score State::indexer_greedy(const State& state)
+constexpr Score State::indexer_greedy(const State& state)
 {
 	return state.get_weight();
 }
 
-Score State::indexer_uniform(const State& state)
+constexpr Score State::indexer_uniform(const State& state)
 {
 	return state.get_distance();
 }

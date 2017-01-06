@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <memory>
 
+#pragma once
+
 class Database{
 
 public:

@@ -231,33 +231,6 @@ Solver.cpp.s:
 	$(MAKE) -f CMakeFiles/rubik.dir/build.make CMakeFiles/rubik.dir/Solver.cpp.s
 .PHONY : Solver.cpp.s
 
-State.o: State.cpp.o
-
-.PHONY : State.o
-
-# target to build an object file
-State.cpp.o:
-	$(MAKE) -f CMakeFiles/rubik.dir/build.make CMakeFiles/rubik.dir/State.cpp.o
-.PHONY : State.cpp.o
-
-State.i: State.cpp.i
-
-.PHONY : State.i
-
-# target to preprocess a source file
-State.cpp.i:
-	$(MAKE) -f CMakeFiles/rubik.dir/build.make CMakeFiles/rubik.dir/State.cpp.i
-.PHONY : State.cpp.i
-
-State.s: State.cpp.s
-
-.PHONY : State.s
-
-# target to generate assembly for a file
-State.cpp.s:
-	$(MAKE) -f CMakeFiles/rubik.dir/build.make CMakeFiles/rubik.dir/State.cpp.s
-.PHONY : State.cpp.s
-
 Types.o: Types.cpp.o
 
 .PHONY : Types.o
@@ -360,9 +333,6 @@ help:
 	@echo "... Solver.o"
 	@echo "... Solver.i"
 	@echo "... Solver.s"
-	@echo "... State.o"
-	@echo "... State.i"
-	@echo "... State.s"
 	@echo "... Types.o"
 	@echo "... Types.i"
 	@echo "... Types.s"

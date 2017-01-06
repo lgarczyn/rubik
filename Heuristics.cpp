@@ -207,7 +207,7 @@ inline Score Heuristics::DatabaseFunction(const ID& id)
 {
 	//if (id.corners < Databases::current_index)
     //int id_upper = Encoding::floor_index_upper_corners(id.corners);
-	//return Databases::corners[id.corners];
+	return Databases::corners[id.corners];
 	return 0;
 
 	//Score data = std::max(

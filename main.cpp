@@ -48,10 +48,10 @@ Parser::ParseResult	parse_args(int ac, char **av) {
 		// 	Heuristics::HeuristicFunction = Heuristics::LinearConflict;
 		// if (is_cmd_opt(av, av + ac, "-f3"))
 		// 	Heuristics::HeuristicFunction = Heuristics::SuperSmartDistance;
-		if (is_cmd_opt(av, av + ac, "--uniform"))
-			State::get_index = State::indexer_uniform;
-		if (is_cmd_opt(av, av + ac, "--greedy"))
-			State::get_index = State::indexer_greedy;
+		//if (is_cmd_opt(av, av + ac, "--uniform"))
+		//	State::get_index = State::indexer_uniform;
+		//if (is_cmd_opt(av, av + ac, "--greedy"))
+		//	State::get_index = State::indexer_greedy;
 		if (is_cmd_opt(av, av + ac, "--forget"))
 			result.forget = true;
 		if (is_cmd_opt(av, av + ac, "-i")) {
@@ -108,7 +108,7 @@ Solver::Result	solve_loop(State& initial)//, Parser::ParseResult& parseResult)
 	return (solverResult);
 }
 
-int main(int ac, char **av)
+int main_main(int ac, char **av)
 {
 	State					initial;
 	Parser::ParseResult		parseResult;
@@ -232,7 +232,7 @@ int main_check_solvable() {
     }
 }
 
-int main_() {;
+int main() {;
 
 	/*{
 		std::ifstream f = std::ifstream("upper_corners.db");

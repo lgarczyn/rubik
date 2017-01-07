@@ -288,7 +288,7 @@ int main() {;
 			int len = 0;
 			for (int m:res.movements) {
 				s = State(s, (State::Movement)m);
-				store(d, s.get_id().corners, len, len == res.movements.size() - 1);
+				store(d, s.get_id().corners, len, (uint)len == res.movements.size() - 1);
                 len++;
 			}
 			std::cout << "end: " << len <<
@@ -334,7 +334,7 @@ int main10() {
 int maintry() {
 	State s;
 
-	print_map(State::solution_cube);
+	print_map(Encoding::cube_from_id(ID()));
 	while (1) {
 
 		string line;

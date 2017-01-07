@@ -96,9 +96,6 @@ public:
     constexpr static indexer				get_index = indexer_astar;
 
     constexpr bool                          operator==(const State& ra) const;
-    constexpr bool							operator==(State& ra) const {//TODO move to cpp
-        return _id.corners == ra._id.corners;
-    }
 
     //debug
     inline static void					    _apply_scramble(Data& data, const string& scramble);
@@ -120,10 +117,10 @@ private:
     uchar							        _distance:8;
 public:
 
-    static constexpr Data			    solution_data = State::data_from_id(ID());
-    static constexpr Cube			    solution_cube = State::cube_from_id(ID());
-    static constexpr Finder		        solution_finder = State::_calculate_finder(solution_cube);
-    static constexpr Color			    solution_colors[] = {White, Green, Red, Blue, Orange, Yellow};
+    static const Data			       solution_data;
+    static const Cube			       solution_cube;
+    static const Finder		           solution_finder;
+    static const Color			       solution_colors[];
 };
 inline std::ostream&					        operator<<(std::ostream& s, const State::Movement c);
 
@@ -134,6 +131,6 @@ struct custom_hash
 };
 
 #include "State_Encoding.cpp"
-#include "State.cpp"
+#include "State_Header.cpp"
 
 #endif

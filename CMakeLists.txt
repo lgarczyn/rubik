@@ -7,6 +7,5 @@ add_executable (rubik
       Database.cpp
       Parser.cpp
       Solver.cpp
-      Types.cpp
       main.cpp
-      tools.cpp)
+      tools.cpp State_Const.cpp)

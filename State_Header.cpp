@@ -72,7 +72,7 @@ inline void State::_apply_scramble(Data& data, const string& scramble) {
 }
 
 inline State::State(const std::string& scramble):State(){
-	Data data = solution_data;
+	Data data = data_from_id(ID());
 	_apply_scramble(data, scramble);
 	_apply_data(data);
 }
@@ -89,7 +89,7 @@ inline State::State(int scramble_count):State(){
 	std::uniform_int_distribution<int> uni(Movement_Start, Movement_End-1);
 	std::uniform_int_distribution<int> turns(1,3);
 
-	Data data = solution_data;
+	Data data = data_from_id(ID());
 	Movement previous = None;
 	for (int i = 0; i < scramble_count; i++) {
 		Movement m = (Movement)uni(rng);

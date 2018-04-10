@@ -1,8 +1,0 @@
-{Index_U, 0, 0} {Index_L, 0, 0} {Index_B, 0, 2} 0
-{Index_U, 0, 2} {Index_B, 0, 0} {Index_R, 0, 2} 1
-{Index_U, 2, 0} {Index_F, 0, 0} {Index_L, 0, 2} 2
-{Index_U, 2, 2} {Index_R, 0, 0} {Index_F, 0, 2} 3
-{Index_D, 0, 0} {Index_L, 2, 2} {Index_F, 2, 0} 4
-{Index_D, 0, 2} {Index_F, 2, 2} {Index_R, 2, 0} 5
-{Index_D, 2, 0} {Index_B, 2, 2} {Index_L, 2, 0} 6
-{Index_D, 2, 2} {Index_R, 2, 2} {Index_B, 2, 0} 7

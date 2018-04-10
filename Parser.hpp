@@ -1,13 +1,13 @@
 /* ************************************************************************** */
-/*																			*/
-/*														:::	  ::::::::   */
-/*   Parser.hpp										 :+:	  :+:	:+:   */
-/*													+:+ +:+		 +:+	 */
-/*   By: edelangh <edelangh@student.42.fr>		  +#+  +:+	   +#+		*/
-/*												+#+#+#+#+#+   +#+		   */
-/*   Created: 2016/03/04 14:52:37 by edelangh		  #+#	#+#			 */
-/*   Updated: 2016/03/18 16:21:45 by edelangh		 ###   ########.fr	   */
-/*																			*/
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Parser.hpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2018/04/09 21:44:52 by lgarczyn          #+#    #+#             */
+/*   Updated: 2018/04/09 23:06:22 by lgarczyn         ###   ########.fr       */
+/*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
@@ -16,21 +16,19 @@
 #include <fstream>
 #include "State.hpp"
 
-class	Parser
-{
-	private:
-	public:
-		class ParseResult
-		{
-		public:
-			bool		is_random;
-			std::string	data;
-			int			iteration;
-			bool 		forget;
-			size_t 		search_step;
+class Parser {
+   private:
+   public:
+    class ParseResult {
+       public:
+	bool is_random;
+	std::string data;
+	int iteration;
+	bool forget;
+	size_t search_step;
 
-			ParseResult();
-		};
+	ParseResult();
+    };
 
-		Parser() {}
+    Parser() {}
 };

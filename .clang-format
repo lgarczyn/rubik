@@ -1,4 +1,9 @@
-BasedOnStyle: Google
-UseTab: Always
+UseTab: ForIndentation
+TabWidth: 4
 IndentWidth: 4
 NamespaceIndentation: All
+AlignAfterOpenBracket: DontAlign
+ColumnLimit: 0
+BreakBeforeBraces: Attach
+AllowShortIfStatementsOnASingleLine: false
+

@@ -1,7 +1,6 @@
-CMakeC*
-CMakeF*
 rubik*
+build
+.vscode
 *.swp
 .DS_Store
 ._*
-

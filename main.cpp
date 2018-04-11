@@ -6,180 +6,185 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/04/09 21:41:57 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/04/09 23:06:17 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/04/11 20:15:01 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
 
-#include <termcap.h>
-#include <unistd.h>
-#include <unistd.h>
-#include <random>
 #include "Database.hpp"
 #include "OptParser.hpp"
 #include "Parser.hpp"
 #include "Solver.hpp"
 #include "Types.hpp"
 #include "tools.hpp"
+#include <random>
+#include <termcap.h>
+#include <unistd.h>
+#include <unistd.h>
 
-int display_help(const char* path = "npuzzle") {
-    std::cout << "Usage: " << path << " [-h] " << std::endl
-	      << "1: [-i ITERATION]" << std::endl
-	      << "2: [-m MOVEMENTS]" << std::endl
-	      << "[-f1] [-f2] [-f3]" << std::endl
-	      << "[--greedy] [--uniform]" << std::endl;
-    return (0);
+int display_help(const char *path = "npuzzle") {
+	std::cout << "Usage: " << path << " [-h] " << std::endl
+	          << "1: [-i ITERATION]" << std::endl
+	          << "2: [-m MOVEMENTS]" << std::endl
+	          << "[-f1] [-f2] [-f3]" << std::endl
+	          << "[--greedy] [--uniform]" << std::endl;
+	return (0);
 }
 
-Parser::ParseResult parse_args(unsigned int ac, char** av) {
-    Parser::ParseResult result;
-    try {
-	char buf[255];
-	tgetent(buf, getenv("TERM"));
+Parser::ParseResult parse_args(unsigned int ac, char **av) {
+	Parser::ParseResult result;
+	try {
+		char buf[255];
+		tgetent(buf, getenv("TERM"));
 
-	// ARGS
-	// skipping first arg
-	ac--;
-	av++;
-	if (is_cmd_opt(av, ac, "-h")) exit(display_help(av[0]));
-	// if (is_cmd_opt(av, ac, "-f1"))
-	// 	Heuristics::HeuristicFunction = Heuristics::ManhattanDistance;
-	// if (is_cmd_opt(av, ac, "-f2"))
-	// 	Heuristics::HeuristicFunction = Heuristics::LinearConflict;
-	// if (is_cmd_opt(av, ac, "-f3"))
-	// 	Heuristics::HeuristicFunction = Heuristics::SuperSmartDistance;
-	// if (is_cmd_opt(av, ac, "--uniform"))
-	//	State::get_index = State::indexer_uniform;
-	// if (is_cmd_opt(av, ac, "--greedy"))
-	//	State::get_index = State::indexer_greedy;
-	if (is_cmd_opt(av, ac, "--forget")) result.forget = true;
-	if (is_cmd_opt(av, ac, "-i")) {
-	    result.iteration = std::stoi(get_cmd_opt(av, ac, "-i"));
-	    result.is_random = true;
+		// ARGS
+		// skipping first arg
+		ac--;
+		av++;
+		if (is_cmd_opt(av, ac, "-h"))
+			exit(display_help(av[0]));
+		// if (is_cmd_opt(av, ac, "-f1"))
+		// 	Heuristics::HeuristicFunction = Heuristics::ManhattanDistance;
+		// if (is_cmd_opt(av, ac, "-f2"))
+		// 	Heuristics::HeuristicFunction = Heuristics::LinearConflict;
+		// if (is_cmd_opt(av, ac, "-f3"))
+		// 	Heuristics::HeuristicFunction = Heuristics::SuperSmartDistance;
+		// if (is_cmd_opt(av, ac, "--uniform"))
+		//	State::get_index = State::indexer_uniform;
+		// if (is_cmd_opt(av, ac, "--greedy"))
+		//	State::get_index = State::indexer_greedy;
+		if (is_cmd_opt(av, ac, "--forget"))
+			result.forget = true;
+		if (is_cmd_opt(av, ac, "-i")) {
+			result.iteration = std::stoi(get_cmd_opt(av, ac, "-i"));
+			result.is_random = true;
+		}
+		if (is_cmd_opt(av, ac, "-m")) {
+			result.data = get_cmd_opt(av, ac, "-m");
+			result.is_random = false;
+		}
+		return (result);
+	} catch (std::exception &e) {
+		std::cerr << e.what() << std::endl;
+		exit(1);
 	}
-	if (is_cmd_opt(av, ac, "-m")) {
-	    result.data = get_cmd_opt(av, ac, "-m");
-	    result.is_random = false;
-	}
-	return (result);
-    } catch (std::exception& e) {
-	std::cerr << e.what() << std::endl;
-	exit(1);
-    }
 }
 
 void clear_screen() {
-    return;
-    std::cout << tgetstr((char*)"cl", NULL);
+	return;
+	std::cout << tgetstr((char *)"cl", NULL);
 }
 
-Solver::Result solve_loop(State& initial)  //, Parser::ParseResult& parseResult)
+Solver::Result solve_loop(State &initial) //, Parser::ParseResult& parseResult)
 {
-    Solver puzzle(initial);
-    Solver::Result solverResult(0, 0);
-    size_t it;
+	Solver puzzle(initial);
+	Solver::Result solverResult(0, 0);
+	size_t it;
 
-    it = 0;
-    while (1) {
-	solverResult = puzzle.step();
-	if (solverResult.finished) break;
+	it = 0;
+	while (1) {
+		solverResult = puzzle.step();
+		if (solverResult.finished)
+			break;
 
-	if (it % 100000 == 0) {
-	    clear_screen();
-	    print_map(solverResult.actual_state);
-	    std::cout << "Iteration count: " << it << std::endl;
-	    std::cout << "Solution [Score: "
-		      << solverResult.actual_state.get_weight() << "]"
-		      << std::endl;
-	    std::cout << "Memory repartition:" << std::endl;
-	    puzzle.print_mem();
+		if (it % 100000 == 0) {
+			clear_screen();
+			print_map(solverResult.actual_state);
+			std::cout << "Iteration count: " << it << std::endl;
+			std::cout << "Solution [Score: "
+			          << solverResult.actual_state.get_weight() << "]"
+			          << std::endl;
+			std::cout << "Memory repartition:" << std::endl;
+			puzzle.print_mem();
+		}
+		++it;
 	}
-	++it;
-    }
-    clear_screen();
-    print_map(solverResult.actual_state);
-    std::cout << "Iteration count: " << it << std::endl;
-    std::cout << "Move count: " << solverResult.movements.size() << std::endl;
+	clear_screen();
+	print_map(solverResult.actual_state);
+	std::cout << "Iteration count: " << it << std::endl;
+	std::cout << "Move count: " << solverResult.movements.size() << std::endl;
 
-    return (solverResult);
+	return (solverResult);
 }
 
-int main_main(unsigned int ac, char** av) {
-    State initial;
-    Parser::ParseResult parseResult;
+int main_main(unsigned int ac, char **av) {
+	State initial;
+	Parser::ParseResult parseResult;
 
-    parseResult = parse_args(ac, av);
-    if (parseResult.is_random)
-	initial = State(parseResult.iteration);
-    else
-	initial = State(parseResult.data);
+	parseResult = parse_args(ac, av);
+	if (parseResult.is_random)
+		initial = State(parseResult.iteration);
+	else
+		initial = State(parseResult.data);
 
-    std::cout << "GENERATED CUBE" << std::endl;
-    print_map(initial);
-    std::cout << "ATTEMPTING SOLUTION" << std::endl;
+	std::cout << "GENERATED CUBE" << std::endl;
+	print_map(initial);
+	std::cout << "ATTEMPTING SOLUTION" << std::endl;
 
-    Solver::Result solverResult = solve_loop(initial);  //, parseResult);
+	Solver::Result solverResult = solve_loop(initial); //, parseResult);
 
-    bool displayHelp = true;
-    while (1) {
-	char c;
-	if (displayHelp)
-	    std::cout << "Press:" << std::endl
-		      << "\t[q] to quit" << std::endl
-		      << "\t[d] to display data" << std::endl
-		      << "\t[s] to display solution" << std::endl
-		      << "\t[a] to display animation" << std::endl
-		      << std::endl
-		      << std::flush;
+	bool displayHelp = true;
+	while (1) {
+		char c;
+		if (displayHelp)
+			std::cout << "Press:" << std::endl
+			          << "\t[q] to quit" << std::endl
+			          << "\t[d] to display data" << std::endl
+			          << "\t[s] to display solution" << std::endl
+			          << "\t[a] to display animation" << std::endl
+			          << std::endl
+			          << std::flush;
 
-	displayHelp = true;
-	c = std::getchar();
-	switch (c) {
-	    case 'q':
-		exit(0);
-	    case 'd':
+		displayHelp = true;
+		c = std::getchar();
+		switch (c) {
+		case 'q':
+			exit(0);
+		case 'd':
 
-		std::cout << "Total number of states ever in open set: "
-			  << solverResult.sizeComplexity << std::endl
-			  << "Max number of states concurrent in memory: "
-			  << solverResult.timeComplexity << std::endl
-			  << "Solution move count: "
-			  << solverResult.movements.size() << std::endl
-			  << std::endl
-			  << std::flush;
-		break;
-	    case 's':
-		clear_screen();
-		for (auto& l : solverResult.movements)
-		    std::cout << (State::Movement)l << std::endl;
-		std::cout << std::endl << std::flush;
-		break;
-	    case 'a': {
-		State current = State(initial);
-		Cube old = current.get_cube();
+			std::cout << "Total number of states ever in open set: "
+			          << solverResult.sizeComplexity << std::endl
+			          << "Max number of states concurrent in memory: "
+			          << solverResult.timeComplexity << std::endl
+			          << "Solution move count: "
+			          << solverResult.movements.size() << std::endl
+			          << std::endl
+			          << std::flush;
+			break;
+		case 's':
+			clear_screen();
+			for (auto &l : solverResult.movements)
+				std::cout << (State::Movement)l << std::endl;
+			std::cout << std::endl
+			          << std::flush;
+			break;
+		case 'a': {
+			State current = State(initial);
+			Cube old = current.get_cube();
 
-		for (uint16_t l : solverResult.movements) {
-		    clear_screen();
-		    print_diff(current.get_cube(), old);
-		    std::cout << std::endl;
-		    usleep(5000000);
+			for (uint16_t l : solverResult.movements) {
+				clear_screen();
+				print_diff(current.get_cube(), old);
+				std::cout << std::endl;
+				usleep(5000000);
 
-		    old = current.get_cube();
-		    current = State(current, (State::Movement)l);
+				old = current.get_cube();
+				current = State(current, (State::Movement)l);
+			}
+			clear_screen();
+			print_map(current);
+			std::cout << std::endl
+			          << std::flush;
+			usleep(500000);
+
+			break;
 		}
-		clear_screen();
-		print_map(current);
-		std::cout << std::endl << std::flush;
-		usleep(500000);
-
-		break;
-	    }
-	    default:
-		displayHelp = false;
-		break;
+		default:
+			displayHelp = false;
+			break;
+		}
 	}
-    }
 }
 
 int total_saved = 0;
@@ -187,50 +192,52 @@ int total_overridden = 0;
 int total_saved_first = 0;
 int total_overridden_first = 0;
 
-void store(Database& db, uint id_corners, int len, bool is_first) {
-    uint id = id_corners;
-    if (!is_first)
-	if (db[id] > 0)
-	    total_overridden++;
+void store(Database &db, uint id_corners, int len, bool is_first) {
+	uint id = id_corners;
+	if (!is_first)
+		if (db[id] > 0)
+			total_overridden++;
+		else
+			total_saved++;
+	else if (db[id] > 0)
+		total_overridden_first++;
 	else
-	    total_saved++;
-    else if (db[id] > 0)
-	total_overridden_first++;
-    else
-	total_saved_first++;
-    db[id] = len;
-    // for (uint r = 0; r < Encoding::corners_upper_max_rot; r++)
-    //	for (uint p = 0; p < Encoding::corners_upper_max_pos; p++) {
-    //        int id = id_corners + p * Encoding::corners_max_rot + r;
-    //        if (db[id] > 0)
-    //            total_overridden++;
-    //        else
-    //            total_saved++;
-    //        db[id] = len;
-    //    }
+		total_saved_first++;
+	db[id] = len;
+	// for (uint r = 0; r < Encoding::corners_upper_max_rot; r++)
+	//	for (uint p = 0; p < Encoding::corners_upper_max_pos; p++) {
+	//        int id = id_corners + p * Encoding::corners_max_rot + r;
+	//        if (db[id] > 0)
+	//            total_overridden++;
+	//        else
+	//            total_saved++;
+	//        db[id] = len;
+	//    }
 }
 
-bool exist(Database& db, uint id_corners) {
-    // id_corners = Encoding::floor_index_upper_corners(id_corners);
-    if (id_corners == 0) return true;
-    if (db[id_corners] > 0) return true;
-    return false;
+bool exist(Database &db, uint id_corners) {
+	// id_corners = Encoding::floor_index_upper_corners(id_corners);
+	if (id_corners == 0)
+		return true;
+	if (db[id_corners] > 0)
+		return true;
+	return false;
 }
 
 int main_check_solvable() {
-    while (1) {
-	State s(100);
-	if (s.is_solvable())
-	    std::cout << "c";
-	else
-	    std::cout << "\nERROR\n";
-    }
+	while (1) {
+		State s(100);
+		if (s.is_solvable())
+			std::cout << "c";
+		else
+			std::cout << "\nERROR\n";
+	}
 }
 
 int main() {
-    ;
+	;
 
-    /*{
+	/*{
 	    std::ifstream f = std::ifstream("upper_corners.db");
 	    Databases::upper_corners = Database(Encoding::corners_max);
 	    f >> Databases::upper_corners;
@@ -246,7 +253,7 @@ int main() {
 	    f >> Databases::corners;
     }*/
 
-    /*for (int i = 0; i < Encoding::corners_max; i++) {
+	/*for (int i = 0; i < Encoding::corners_max; i++) {
 	    uchar uc = Databases::upper_corners[i];
 	    uchar lc = Databases::lower_corners[i];
 	    uchar c = Databases::corners[i];
@@ -255,92 +262,94 @@ int main() {
     << std::endl;
     }*/
 
-    Databases::corners = Database(Encoding::corners_max);
-    Database& d = Databases::corners;
+	Databases::corners = Database(Encoding::corners_max);
+	Database &d = Databases::corners;
 
-    std::cerr << d.size() << " " << Databases::upper_corners.size() << " "
-	      << Databases::lower_corners.size() << "\n";
+	std::cerr << d.size() << " " << Databases::upper_corners.size() << " "
+	          << Databases::lower_corners.size() << "\n";
 
-    State s = State();
-    ID id = ID();
-    // Solver solver;
-    Solver solver = Solver();
-    for (uint i = 0; i < Encoding::corners_max; i++) {
-	if (exist(d, i) == false) {
-	    std::cout << "start " << i << "\n";
-	    id.corners = i;
-	    s = State(id);
-	    if (s.is_solvable() == false) {
-		std::cout << "end: unsolvable\n";
-		continue;
-	    }
-	    solver.setup(s);
-	    Solver::Result res;
-	    while (1) {
-		res = solver.step();
-		if (res.finished) break;
-	    }
-	    s = State();
-	    int len = 0;
-	    for (int m : res.movements) {
-		s = State(s, (State::Movement)m);
-		store(d, s.get_id().corners, len,
-		      (uint)len == res.movements.size() - 1);
-		len++;
-	    }
-	    std::cout << "end: " << len << "\ntotal saved : " << total_saved
-		      << "\ntotal overridden : " << total_overridden
-		      << "\ntotal saved first : " << total_saved_first
-		      << "\ntotal overridden first : " << total_overridden_first
-		      << std::endl;
-	    for (int m : res.movements) std::cout << (State::Movement)m << " ";
-	    std::cout << std::endl;
-	    // std::cout <<  << len << "\n";
-	} else
-	    std::cout << "end: already in\n";
-	// if (i % 100 == 0) {
-	//	s._get_id().corners = i;
-	//	s.update_weight();
-	//	print_map(s);
-	//	std::cout << i << " " << (int)d[i] << std::endl;
-	//}
-    }
-    // f.close();
-    std::ofstream of = std::ofstream("corners.db");
-    of << d;
-    return (0);
+	State s = State();
+	ID id = ID();
+	// Solver solver;
+	Solver solver = Solver();
+	for (uint i = 0; i < Encoding::corners_max; i++) {
+		if (exist(d, i) == false) {
+			std::cout << "start " << i << "\n";
+			id.corners = i;
+			s = State(id);
+			if (s.is_solvable() == false) {
+				std::cout << "end: unsolvable\n";
+				continue;
+			}
+			solver.setup(s);
+			Solver::Result res;
+			while (1) {
+				res = solver.step();
+				if (res.finished)
+					break;
+			}
+			s = State();
+			int len = 0;
+			for (int m : res.movements) {
+				s = State(s, (State::Movement)m);
+				store(d, s.get_id().corners, len,
+				    (uint)len == res.movements.size() - 1);
+				len++;
+			}
+			std::cout << "end: " << len << "\ntotal saved : " << total_saved
+			          << "\ntotal overridden : " << total_overridden
+			          << "\ntotal saved first : " << total_saved_first
+			          << "\ntotal overridden first : " << total_overridden_first
+			          << std::endl;
+			for (int m : res.movements)
+				std::cout << (State::Movement)m << " ";
+			std::cout << std::endl;
+			// std::cout <<  << len << "\n";
+		} else
+			std::cout << "end: already in\n";
+		// if (i % 100 == 0) {
+		//	s._get_id().corners = i;
+		//	s.update_weight();
+		//	print_map(s);
+		//	std::cout << i << " " << (int)d[i] << std::endl;
+		//}
+	}
+	// f.close();
+	std::ofstream of = std::ofstream("corners.db");
+	of << d;
+	return (0);
 }
 
 int main10() {
-    State s;
-
-    print_map(s);
-    while (1) {
-	string line;
-
-	std::cin >> line;
-
-	s = State(line);
+	State s;
 
 	print_map(s);
-    }
+	while (1) {
+		string line;
+
+		std::cin >> line;
+
+		s = State(line);
+
+		print_map(s);
+	}
 }
 
 int maintry() {
-    State s;
+	State s;
 
-    print_map(Encoding::cube_from_id(ID()));
-    while (1) {
-	string line;
+	print_map(Encoding::cube_from_id(ID()));
+	while (1) {
+		string line;
 
-	std::cin >> line;
+		std::cin >> line;
 
-	s = State(s, line);
+		s = State(s, line);
 
-	print_map(s);
+		print_map(s);
 
-	std::cout << std::endl;
-    }
+		std::cout << std::endl;
+	}
 }
 
 /*

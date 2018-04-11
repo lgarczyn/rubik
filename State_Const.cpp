@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/04/09 21:39:17 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/04/09 23:06:27 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/04/11 20:15:20 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,5 +15,5 @@
 const Data State::solution_data = State::data_from_id(ID());
 const Cube State::solution_cube = State::cube_from_id(ID());
 const Finder State::solution_finder = State::_calculate_finder(solution_cube);
-const Color State::solution_colors[] = {White, Green,  Red,
-					Blue,  Orange, Yellow};
+const Color State::solution_colors[] = {White, Green, Red,
+    Blue, Orange, Yellow};

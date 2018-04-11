@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/04/09 21:39:39 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/04/10 23:17:55 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/04/11 20:15:23 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -311,7 +311,7 @@ constexpr size_t custom_hash::operator()(const State &l) const noexcept {
 
 	// return Encoding::floor_index_upper_corners(id.corners);
 	return id.corners; // TODO put bak normal hash
-	// return (id.borders_rot ^ id.borders_pos) | ((size_t)id.corners << 32);
+	                   // return (id.borders_rot ^ id.borders_pos) | ((size_t)id.corners << 32);
 }
 
 constexpr Score State::indexer_astar(const State &state) {

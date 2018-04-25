@@ -18,6 +18,8 @@
 #include "Solver.hpp"
 #include "Types.hpp"
 #include "tools.hpp"
+#include <chrono>
+#include <ctime>
 #include <random>
 #include <termcap.h>
 #include <unistd.h>
@@ -25,6 +27,11 @@
 
 void clear_screen() {
 	//std::cout << tgetstr((char *)"cl", NULL);
+}
+
+void print_timediff(const char *prefix, const struct timespec &start, const struct timespec &end) {
+	double milliseconds = (end.tv_nsec - start.tv_nsec) / 1e6 + (end.tv_sec - start.tv_sec) * 1e3;
+	printf("%s: %lf seconds\n", prefix, milliseconds / 1000.0f);
 }
 
 int display_help(const char *path = "npuzzle") {
@@ -114,7 +121,10 @@ Solver::Result solve_loop(State &initial, int clean_steps) {
 	Solver puzzle(initial, clean_steps == 0);
 	Solver::Result solverResult(0, 0);
 	size_t it;
+	struct timespec start, end;
 
+	// Test stopwatch
+	clock_gettime(CLOCK_MONOTONIC, &start);
 	it = 1;
 	while (1) {
 		solverResult = puzzle.step();
@@ -146,6 +156,8 @@ Solver::Result solve_loop(State &initial, int clean_steps) {
 	print_map(solverResult.actual_state);
 	std::cout << "Iteration count: " << it << std::endl;
 	std::cout << "Move count: " << solverResult.movements.size() << std::endl;
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	print_timediff("Time elapsed", start, end);
 
 	return solverResult;
 }

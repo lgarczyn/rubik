@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/04/09 21:44:52 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/04/11 20:15:14 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/04/16 01:23:59 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,10 @@ class Parser {
 		bool is_random;
 		std::string data;
 		int iteration;
-		bool forget;
-		size_t search_step;
 
+		int clean_steps;
+
+		size_t search_step;
 		ParseResult();
 	};
 

@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/04/09 21:41:57 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/04/11 20:15:01 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/04/21 01:49:59 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,13 +23,44 @@
 #include <unistd.h>
 #include <unistd.h>
 
+void clear_screen() {
+	//std::cout << tgetstr((char *)"cl", NULL);
+}
+
 int display_help(const char *path = "npuzzle") {
 	std::cout << "Usage: " << path << " [-h] " << std::endl
 	          << "1: [-i ITERATION]" << std::endl
 	          << "2: [-m MOVEMENTS]" << std::endl
+	          << "[-c CLEAN_STEPS]" << std::endl
 	          << "[-f1] [-f2] [-f3]" << std::endl
 	          << "[--greedy] [--uniform]" << std::endl;
-	return (0);
+	return 0;
+}
+
+void display_animation(State state, Movements &movements) {
+	Cube old_cube = state.get_cube();
+	Cube new_cube = old_cube;
+
+	for (uint16_t l : movements) {
+
+		clear_screen();
+		print_diff(old_cube, new_cube);
+		usleep(1000000);
+
+		clear_screen();
+		print_diff(new_cube, old_cube);
+		usleep(1000000);
+
+		state = State(state, (State::Movement)l);
+		old_cube = new_cube;
+		new_cube = state.get_cube();
+	}
+	clear_screen();
+	print_diff(old_cube, new_cube);
+	usleep(1000000);
+	clear_screen();
+	print_map(new_cube);
+	usleep(1000000);
 }
 
 Parser::ParseResult parse_args(unsigned int ac, char **av) {
@@ -37,6 +68,8 @@ Parser::ParseResult parse_args(unsigned int ac, char **av) {
 	try {
 		char buf[255];
 		tgetent(buf, getenv("TERM"));
+
+		char *cmd;
 
 		// ARGS
 		// skipping first arg
@@ -54,46 +87,55 @@ Parser::ParseResult parse_args(unsigned int ac, char **av) {
 		//	State::get_index = State::indexer_uniform;
 		// if (is_cmd_opt(av, ac, "--greedy"))
 		//	State::get_index = State::indexer_greedy;
-		if (is_cmd_opt(av, ac, "--forget"))
-			result.forget = true;
-		if (is_cmd_opt(av, ac, "-i")) {
-			result.iteration = std::stoi(get_cmd_opt(av, ac, "-i"));
+		//if (is_cmd_opt(av, ac, "--forget"))
+		//	result.forget = true;
+		cmd = get_cmd_opt(av, ac, "-i");
+		if (cmd) {
+			result.iteration = std::stoi(cmd);
 			result.is_random = true;
 		}
-		if (is_cmd_opt(av, ac, "-m")) {
-			result.data = get_cmd_opt(av, ac, "-m");
+		cmd = get_cmd_opt(av, ac, "-m");
+		if (cmd) {
+			result.data = cmd;
 			result.is_random = false;
 		}
-		return (result);
+		cmd = get_cmd_opt(av, ac, "-c");
+		if (cmd) {
+			result.clean_steps = std::stoi(cmd);
+		}
+		return result;
 	} catch (std::exception &e) {
 		std::cerr << e.what() << std::endl;
 		exit(1);
 	}
 }
 
-void clear_screen() {
-	return;
-	std::cout << tgetstr((char *)"cl", NULL);
-}
-
-Solver::Result solve_loop(State &initial) //, Parser::ParseResult& parseResult)
-{
-	Solver puzzle(initial);
+Solver::Result solve_loop(State &initial, int clean_steps) {
+	Solver puzzle(initial, clean_steps == 0);
 	Solver::Result solverResult(0, 0);
 	size_t it;
 
-	it = 0;
+	it = 1;
 	while (1) {
 		solverResult = puzzle.step();
 		if (solverResult.finished)
 			break;
 
-		if (it % 100000 == 0) {
+		/*if (clean_steps > 1 && it % clean_steps == 0) {
+			std::cout << "cleaning duplicates:\n";
+			int c = puzzle.clean_duplicates();
+			std::cout << c << "/" << puzzle._openCount << std::endl;
+		}*/
+
+		if (it % 10000 == 0) {
 			clear_screen();
 			print_map(solverResult.actual_state);
 			std::cout << "Iteration count: " << it << std::endl;
 			std::cout << "Solution [Score: "
-			          << solverResult.actual_state.get_weight() << "]"
+			          << solverResult.actual_state.get_weight()
+			          << "] [ Distance: "
+			          << solverResult.actual_state.get_distance()
+			          << "]"
 			          << std::endl;
 			std::cout << "Memory repartition:" << std::endl;
 			puzzle.print_mem();
@@ -105,12 +147,14 @@ Solver::Result solve_loop(State &initial) //, Parser::ParseResult& parseResult)
 	std::cout << "Iteration count: " << it << std::endl;
 	std::cout << "Move count: " << solverResult.movements.size() << std::endl;
 
-	return (solverResult);
+	return solverResult;
 }
 
-int main_main(unsigned int ac, char **av) {
+int main(int ac, char **av) {
 	State initial;
 	Parser::ParseResult parseResult;
+
+	clear_screen();
 
 	parseResult = parse_args(ac, av);
 	if (parseResult.is_random)
@@ -122,7 +166,7 @@ int main_main(unsigned int ac, char **av) {
 	print_map(initial);
 	std::cout << "ATTEMPTING SOLUTION" << std::endl;
 
-	Solver::Result solverResult = solve_loop(initial); //, parseResult);
+	Solver::Result solverResult = solve_loop(initial, parseResult.clean_steps); //, parseResult);
 
 	bool displayHelp = true;
 	while (1) {
@@ -160,24 +204,7 @@ int main_main(unsigned int ac, char **av) {
 			          << std::flush;
 			break;
 		case 'a': {
-			State current = State(initial);
-			Cube old = current.get_cube();
-
-			for (uint16_t l : solverResult.movements) {
-				clear_screen();
-				print_diff(current.get_cube(), old);
-				std::cout << std::endl;
-				usleep(5000000);
-
-				old = current.get_cube();
-				current = State(current, (State::Movement)l);
-			}
-			clear_screen();
-			print_map(current);
-			std::cout << std::endl
-			          << std::flush;
-			usleep(500000);
-
+			display_animation(initial, solverResult.movements);
 			break;
 		}
 		default:
@@ -186,345 +213,3 @@ int main_main(unsigned int ac, char **av) {
 		}
 	}
 }
-
-int total_saved = 0;
-int total_overridden = 0;
-int total_saved_first = 0;
-int total_overridden_first = 0;
-
-void store(Database &db, uint id_corners, int len, bool is_first) {
-	uint id = id_corners;
-	if (!is_first)
-		if (db[id] > 0)
-			total_overridden++;
-		else
-			total_saved++;
-	else if (db[id] > 0)
-		total_overridden_first++;
-	else
-		total_saved_first++;
-	db[id] = len;
-	// for (uint r = 0; r < Encoding::corners_upper_max_rot; r++)
-	//	for (uint p = 0; p < Encoding::corners_upper_max_pos; p++) {
-	//        int id = id_corners + p * Encoding::corners_max_rot + r;
-	//        if (db[id] > 0)
-	//            total_overridden++;
-	//        else
-	//            total_saved++;
-	//        db[id] = len;
-	//    }
-}
-
-bool exist(Database &db, uint id_corners) {
-	// id_corners = Encoding::floor_index_upper_corners(id_corners);
-	if (id_corners == 0)
-		return true;
-	if (db[id_corners] > 0)
-		return true;
-	return false;
-}
-
-int main_check_solvable() {
-	while (1) {
-		State s(100);
-		if (s.is_solvable())
-			std::cout << "c";
-		else
-			std::cout << "\nERROR\n";
-	}
-}
-
-int main() {
-	;
-
-	/*{
-	    std::ifstream f = std::ifstream("upper_corners.db");
-	    Databases::upper_corners = Database(Encoding::corners_max);
-	    f >> Databases::upper_corners;
-    }
-    {
-	    std::ifstream f = std::ifstream("lower_corners.db");
-	    Databases::lower_corners = Database(Encoding::corners_max);
-	    f >> Databases::lower_corners;
-    }
-    {
-	    std::ifstream f = std::ifstream("corners.db");
-	    Databases::corners = Database(Encoding::corners_max);
-	    f >> Databases::corners;
-    }*/
-
-	/*for (int i = 0; i < Encoding::corners_max; i++) {
-	    uchar uc = Databases::upper_corners[i];
-	    uchar lc = Databases::lower_corners[i];
-	    uchar c = Databases::corners[i];
-
-	    std::cerr << i << " " << (int)c << " " << (int)uc << " " << (int)lc
-    << std::endl;
-    }*/
-
-	Databases::corners = Database(Encoding::corners_max);
-	Database &d = Databases::corners;
-
-	std::cerr << d.size() << " " << Databases::upper_corners.size() << " "
-	          << Databases::lower_corners.size() << "\n";
-
-	State s = State();
-	ID id = ID();
-	// Solver solver;
-	Solver solver = Solver();
-	for (uint i = 0; i < Encoding::corners_max; i++) {
-		if (exist(d, i) == false) {
-			std::cout << "start " << i << "\n";
-			id.corners = i;
-			s = State(id);
-			if (s.is_solvable() == false) {
-				std::cout << "end: unsolvable\n";
-				continue;
-			}
-			solver.setup(s);
-			Solver::Result res;
-			while (1) {
-				res = solver.step();
-				if (res.finished)
-					break;
-			}
-			s = State();
-			int len = 0;
-			for (int m : res.movements) {
-				s = State(s, (State::Movement)m);
-				store(d, s.get_id().corners, len,
-				    (uint)len == res.movements.size() - 1);
-				len++;
-			}
-			std::cout << "end: " << len << "\ntotal saved : " << total_saved
-			          << "\ntotal overridden : " << total_overridden
-			          << "\ntotal saved first : " << total_saved_first
-			          << "\ntotal overridden first : " << total_overridden_first
-			          << std::endl;
-			for (int m : res.movements)
-				std::cout << (State::Movement)m << " ";
-			std::cout << std::endl;
-			// std::cout <<  << len << "\n";
-		} else
-			std::cout << "end: already in\n";
-		// if (i % 100 == 0) {
-		//	s._get_id().corners = i;
-		//	s.update_weight();
-		//	print_map(s);
-		//	std::cout << i << " " << (int)d[i] << std::endl;
-		//}
-	}
-	// f.close();
-	std::ofstream of = std::ofstream("corners.db");
-	of << d;
-	return (0);
-}
-
-int main10() {
-	State s;
-
-	print_map(s);
-	while (1) {
-		string line;
-
-		std::cin >> line;
-
-		s = State(line);
-
-		print_map(s);
-	}
-}
-
-int maintry() {
-	State s;
-
-	print_map(Encoding::cube_from_id(ID()));
-	while (1) {
-		string line;
-
-		std::cin >> line;
-
-		s = State(s, line);
-
-		print_map(s);
-
-		std::cout << std::endl;
-	}
-}
-
-/*
-int main() {
-
-	State a = State(100);
-	Cube d1 = a.get_data();
-
-	uint n2 = a.get_id().borders_rot;
-	uint n1 = a.get_id().corners % pow(3, 8);
-
-
-	a.deflate();
-	a.inflate();
-
-
-	Cube d2 = a.get_data();
-
-	std::cout
-	<< (int)d1[Index_U][0][0].rot_id << " "
-	<< (int)d1[Index_U][0][2].rot_id << " "
-	<< (int)d1[Index_U][2][0].rot_id << " "
-	<< (int)d1[Index_U][2][2].rot_id << " "
-	<< (int)d1[Index_D][0][0].rot_id << " "
-	<< (int)d1[Index_D][0][2].rot_id << " "
-	<< (int)d1[Index_D][2][0].rot_id << " "
-	<< (int)d1[Index_D][2][2].rot_id << std::endl;
-
-	for (int i = 7; i >= 0; i--)
-		std::cout << (n1 / pow(3, i)) % 3 << " ";
-	std::cout << std::endl;
-
-	std::cout
-	<< (int)d2[Index_U][0][0].rot_id << " "
-	<< (int)d2[Index_U][0][2].rot_id << " "
-	<< (int)d2[Index_U][2][0].rot_id << " "
-	<< (int)d2[Index_U][2][2].rot_id << " "
-	<< (int)d2[Index_D][0][0].rot_id << " "
-	<< (int)d2[Index_D][0][2].rot_id << " "
-	<< (int)d2[Index_D][2][0].rot_id << " "
-	<< (int)d2[Index_D][2][2].rot_id << std::endl;
-
-	std::cout
-	<< (int)d1[Index_U][0][1].rot_id << " "
-	<< (int)d1[Index_U][1][0].rot_id << " "
-	<< (int)d1[Index_U][2][1].rot_id << " "
-	<< (int)d1[Index_U][1][2].rot_id << " "
-	<< (int)d1[Index_F][1][0].rot_id << " "
-	<< (int)d1[Index_R][1][0].rot_id << " "
-	<< (int)d1[Index_B][1][0].rot_id << " "
-	<< (int)d1[Index_L][1][0].rot_id << " "
-	<< (int)d1[Index_D][0][1].rot_id << " "
-	<< (int)d1[Index_D][1][0].rot_id << " "
-	<< (int)d1[Index_D][2][1].rot_id << " "
-	<< (int)d1[Index_D][1][2].rot_id << std::endl;
-
-	for (int i = 11; i >= 0; i--)
-		std::cout << (n2 / pow(2, i)) % 2 << " ";
-	std::cout << std::endl;
-
-	std::cout
-	<< (int)d2[Index_U][0][1].rot_id << " "
-	<< (int)d2[Index_U][1][0].rot_id << " "
-	<< (int)d2[Index_U][2][1].rot_id << " "
-	<< (int)d2[Index_U][1][2].rot_id << " "
-	<< (int)d2[Index_F][1][0].rot_id << " "
-	<< (int)d2[Index_R][1][0].rot_id << " "
-	<< (int)d2[Index_B][1][0].rot_id << " "
-	<< (int)d2[Index_L][1][0].rot_id << " "
-	<< (int)d2[Index_D][0][1].rot_id << " "
-	<< (int)d2[Index_D][1][0].rot_id << " "
-	<< (int)d2[Index_D][2][1].rot_id << " "
-	<< (int)d2[Index_D][1][2].rot_id << std::endl;
-
-
-	for (int s = Index_Start; s < Index_End; s++) {
-		for (int l = 0; l < size; l++) {
-			for (int c = 0; c < size; c++)
-			{
-				Square as = d1[s][l][c];
-				Square bs = d2[s][l][c];
-				std::cout << "  {" << (int)as.cube_id << "=" <<
-(int)bs.cube_id << " " << (int)as.face_id << "=" << (int)bs.face_id << "}  ";
-			}
-			std::cout << std::endl;
-		}
-		std::cout << std::endl;
-	}
-
-	if (d1 == d2)
-		std::cout << "FUCK YES" << std::endl;
-}*/
-
-/*
-int main(int argc, char const *argv[]) {
-
-	if (argc != 2)
-		return (1);
-
-	string scramble = string(argv[1]);
-	State initial = State(scramble);
-	solve_loop(initial);
-
-
-	(void)argc;
-	(void)argv;
-
-	State s;
-
-	while (1) {
-		string line;
-
-		std::cin >> line;
-
-		s.applyScramble(line);
-
-		print_map(s);
-	}
-
-	//Test heuristic validity/quality
-	std::random_device rd;	 // only used once to initialise (seed) engine
-	std::mt19937 rng(rd());	// random-number engine used
-(Mersenne-Twister in this case)
-	std::uniform_int_distribution<int> uni(0,20); // guaranteed unbiased
-
-	for (int i = 0; i < 100000; i++) {
-
-		if (i % 1000 == 0)
-			std::cout << i << std::endl;
-		int s_count = uni(rng);
-
-		State *s = get_random_state(s_count);
-		int r = Heuristics::HeuristicFunction(s->get_data(),
-s->get_finder());
-
-		if (r > s_count)
-			std::cout << "Error, heuristic result is bigger than
-solution" << std::endl;
-
-	}
-
-	//Test every Movement
-	check_movement("");
-	check_movement("U");
-	check_movement("D");
-	check_movement("R");
-	check_movement("L");
-	check_movement("F");
-	check_movement("B");
-	check_movement("U'");
-	check_movement("D'");
-	check_movement("R'");
-	check_movement("L'");
-	check_movement("F'");
-	check_movement("B'");
-	check_movement("U2");
-	check_movement("D2");
-	check_movement("R2");
-	check_movement("L2");
-	check_movement("F2");
-	check_movement("B2");
-
-	//isplay distance for entry position and every other
-	while (1) {
-		int f;
-		int l;
-		int c;
-
-		std::cin >> f;
-		std::cin >> l;
-		std::cin >> c;
-
-		print_dist((Coord){f, l, c});
-	}
-
-
-	return 0;
-}*/

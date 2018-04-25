@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/04/09 21:35:29 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/04/11 20:15:07 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/04/21 01:38:07 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ inline int _get_opposite(int a) {
 	case Index_L:
 		return Index_R;
 	}
-	return (-1);
+	return -1;
 }
 
 constexpr int Heuristics::SquareDistance(int uid_a, int uid_b) {
@@ -133,23 +133,6 @@ constexpr int get_dist(const Data &data, int i, SquareType st) {
 
 	int id_src = Square::get_uid(i, 0, st); // ID of where the square was found
 
-	// SquareType type;
-
-	// Square sol = Square::get_square(id_sol, type);
-	// Square src = Square::get_square(id_src, type);
-
-	// std::cout << "distance:" << std::endl;
-	// std::cout << "sol uid: " << (int)id_sol << " cid: " << (int)sol.cube_id
-	// <<
-	// " rid: " << (int)sol.rot_id << std::endl;
-	// std::cout << "src uid: " << (int)id_src << " cid: " << (int)src.cube_id
-	// <<
-	// " rid: " << (int)src.rot_id << std::endl;
-	// std::cout << "dist: " << (int)Heuristics::dist_table[id_sol][id_src] <<
-	// std::endl;
-	// std::cout << "dist: " << Heuristics::SquareDistance(id_sol, id_src) <<
-	// std::endl;
-
 	return Heuristics::dist_table[id_sol][id_src];
 }
 
@@ -221,18 +204,24 @@ constexpr Score get_dist_corners(const Data &data) {
 	dist += get_dist(data, 5, st_corner);
 	dist += get_dist(data, 6, st_corner);
 	dist += get_dist(data, 7, st_corner);
-	// std::cout << "distance " << (int)data.corners[0].cube_id << " " <<
-	// (int)data.corners[1].cube_id << " " << (int)data.corners[2].cube_id << "
-	// "
-	// << (int)data.corners[3].cube_id << ": " << dist << "\n";
 	return dist;
 }
 
 constexpr Score Heuristics::ValidFunction(const Data &data) {
 	Score corners = get_dist_corners(data);
+	Score borders = get_dist_borders(data);
+	//TODO: figure out WTF I should do with score_multiplier
+	return std::max(corners, borders);
+}
+
+constexpr Score Heuristics::CornerFunction(const Data &data) {
+	Score corners = get_dist_corners(data);
 	return corners;
-	// Score borders = get_dist_borders(data);
-	// return std::max(corners, borders);
+}
+
+constexpr Score Heuristics::BorderFunction(const Data &data) {
+	Score borders = get_dist_borders(data);
+	return borders;
 }
 
 constexpr Score Heuristics::HeuristicFunction(const Data &data) {

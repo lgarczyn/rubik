@@ -6,13 +6,14 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/04/09 21:41:03 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/04/11 20:15:30 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/04/21 20:25:10 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #pragma once
 
 #include <array>
+#include <cstdio>
 #include <limits.h>
 #include <stdint.h>
 #include <string>

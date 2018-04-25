@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/04/09 21:35:33 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/04/11 20:15:08 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/04/13 21:18:46 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 #include <string>
 
 #define MAX_SOLUTION_LENGTH ((int)10000)
-static const int score_multiplier = 4;
+static const int score_multiplier = 8;
 
 using Buffer = std::array<std::array<uchar, max_uid>, max_uid>;
 
@@ -26,6 +26,8 @@ namespace Heuristics {
 	constexpr Score HeuristicFunction(const Data &data);
 	constexpr Score ValidFunction(const Data &data);
 	constexpr Score InvalidFunction(const Data &data);
+	constexpr Score CornerFunction(const Data &data);
+	constexpr Score BorderFunction(const Data &data);
 	Score DatabaseFunction(const ID &);
 
 	constexpr int SquareDistance(int uid_a, int uid_b);

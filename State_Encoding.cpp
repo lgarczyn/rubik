@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/04/09 21:39:25 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/04/11 20:15:21 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/04/21 01:50:05 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,34 +176,22 @@ namespace Encoding {
 		cube[Index_B][2][1].rot_id = !data[11].rot_id;
 	}
 
-	static constexpr void set_cube_borders_pos(Cube &cube,
+	static constexpr void set_cube_borders_pos(Cube &c,
 	    const DataBorders &data) {
-		cube[Index_U][0][1].cube_id = cube[Index_B][0][1].cube_id =
-		    data[0].cube_id;
-		cube[Index_U][1][0].cube_id = cube[Index_L][0][1].cube_id =
-		    data[1].cube_id;
-		cube[Index_U][1][2].cube_id = cube[Index_R][0][1].cube_id =
-		    data[2].cube_id;
-		cube[Index_U][2][1].cube_id = cube[Index_F][0][1].cube_id =
-		    data[3].cube_id;
+		c[Index_U][0][1].cube_id = c[Index_B][0][1].cube_id = data[0].cube_id;
+		c[Index_U][1][0].cube_id = c[Index_L][0][1].cube_id = data[1].cube_id;
+		c[Index_U][1][2].cube_id = c[Index_R][0][1].cube_id = data[2].cube_id;
+		c[Index_U][2][1].cube_id = c[Index_F][0][1].cube_id = data[3].cube_id;
 
-		cube[Index_F][1][0].cube_id = cube[Index_L][1][2].cube_id =
-		    data[4].cube_id;
-		cube[Index_R][1][0].cube_id = cube[Index_F][1][2].cube_id =
-		    data[5].cube_id;
-		cube[Index_B][1][0].cube_id = cube[Index_R][1][2].cube_id =
-		    data[6].cube_id;
-		cube[Index_L][1][0].cube_id = cube[Index_B][1][2].cube_id =
-		    data[7].cube_id;
+		c[Index_F][1][0].cube_id = c[Index_L][1][2].cube_id = data[4].cube_id;
+		c[Index_R][1][0].cube_id = c[Index_F][1][2].cube_id = data[5].cube_id;
+		c[Index_B][1][0].cube_id = c[Index_R][1][2].cube_id = data[6].cube_id;
+		c[Index_L][1][0].cube_id = c[Index_B][1][2].cube_id = data[7].cube_id;
 
-		cube[Index_D][0][1].cube_id = cube[Index_F][2][1].cube_id =
-		    data[8].cube_id;
-		cube[Index_D][1][0].cube_id = cube[Index_L][2][1].cube_id =
-		    data[9].cube_id;
-		cube[Index_D][1][2].cube_id = cube[Index_R][2][1].cube_id =
-		    data[10].cube_id;
-		cube[Index_D][2][1].cube_id = cube[Index_B][2][1].cube_id =
-		    data[11].cube_id;
+		c[Index_D][0][1].cube_id = c[Index_F][2][1].cube_id = data[8].cube_id;
+		c[Index_D][1][0].cube_id = c[Index_L][2][1].cube_id = data[9].cube_id;
+		c[Index_D][1][2].cube_id = c[Index_R][2][1].cube_id = data[10].cube_id;
+		c[Index_D][2][1].cube_id = c[Index_B][2][1].cube_id = data[11].cube_id;
 	}
 
 	static constexpr Coord coord_from_uid(
@@ -381,16 +369,14 @@ namespace Encoding {
 
 	static constexpr inline void swap_data(DataBorders &data, int a, int b,
 	    int c, int d) {
-		Square t = data[d]; // TODO change order
+		Square t = data[a];
+		data[a] = data[d];
 		data[d] = data[c];
 		data[c] = data[b];
-		data[b] = data[a];
-		data[a] = t;
+		data[b] = t;
 
 		data[a].rot_id = !data[a].rot_id;
 		data[b].rot_id = !data[b].rot_id;
-		// data[c].rot_id = !data[c].rot_id;
-		// data[d].rot_id = !data[d].rot_id;
 	}
 
 	static constexpr inline void swap_data(DataCorners &data, int a, int b,
@@ -400,52 +386,52 @@ namespace Encoding {
 		data[c].rot_id = rotate_cc(data[c].rot_id);
 		data[d].rot_id = rotate_cw(data[d].rot_id);
 
-		Square t = data[d];
+		Square t = data[a];
+		data[a] = data[d];
 		data[d] = data[c];
 		data[c] = data[b];
-		data[b] = data[a];
-		data[a] = t;
+		data[b] = t;
 	}
 
 	template <size_t T>
 	static constexpr inline void swap_data_poles(std::array<Square, T> &data,
 	    int a, int b, int c, int d) {
-		Square t = data[d];
+		Square t = data[a];
+		data[a] = data[d];
 		data[d] = data[c];
 		data[c] = data[b];
-		data[b] = data[a];
-		data[a] = t;
+		data[b] = t;
 	}
 
 	void constexpr _apply_movement(Data &data, int m) {
 		if (m & ~State::Mask)
-			throw std::logic_error("fuck");
+			throw std::logic_error("apply_movement doesn't handle combined Movement");
 		switch (m) {
 		case State::None:
 			return;
-		case State::Up: // TODO change order for buffer
+		case State::Up:
 			swap_data_poles(data.corners, 1, 3, 2, 0);
-			// swap_data_poles(data.borders, 3, 1, 0, 2);
+			swap_data_poles(data.borders, 3, 1, 0, 2);
 			break;
 		case State::Front:
 			swap_data(data.corners, 5, 4, 2, 3);
-			// swap_data(data.borders, 4, 3, 5, 8);
+			swap_data(data.borders, 4, 3, 5, 8);
 			break;
 		case State::Right:
 			swap_data(data.corners, 3, 1, 7, 5);
-			// swap_data(data.borders, 5, 2, 6, 10);
+			swap_data(data.borders, 5, 2, 6, 10);
 			break;
 		case State::Back:
 			swap_data(data.corners, 1, 0, 6, 7);
-			// swap_data(data.borders, 6, 0, 7, 11);
+			swap_data(data.borders, 6, 0, 7, 11);
 			break;
 		case State::Left:
 			swap_data(data.corners, 0, 2, 4, 6);
-			// swap_data(data.borders, 7, 1, 4, 9);
+			swap_data(data.borders, 7, 1, 4, 9);
 			break;
 		case State::Down:
 			swap_data_poles(data.corners, 4, 5, 7, 6);
-			// swap_data_poles(data.borders, 11, 9, 8, 10);
+			swap_data_poles(data.borders, 11, 9, 8, 10);
 			break;
 		default:
 			break;
@@ -467,7 +453,7 @@ namespace Encoding {
 	static constexpr inline uchar get_value_fact(uint s, uchar *values,
 	    uchar pos, uchar len) {
 		if (pos == 1)
-			return (values[0]);
+			return values[0];
 		uchar c = (s / fact(pos - 1)) % pos;
 		uchar r = values[c];
 		move_values_left(values, c, len);
@@ -485,6 +471,7 @@ namespace Encoding {
 		s = get_fact_value(data[4].cube_id, values, 8) + s * 4;
 		s = get_fact_value(data[5].cube_id, values, 8) + s * 3;
 		s = get_fact_value(data[6].cube_id, values, 8) + s * 2;
+		// implied but useless line, since it always returns 0;
 		// s = get_fact_value(data[7], values, 8) + s * 1;
 		return s;
 	}
@@ -506,6 +493,7 @@ namespace Encoding {
 		s = get_fact_value(data[8].cube_id, values, 12) + s * 4;
 		s = get_fact_value(data[9].cube_id, values, 12) + s * 3;
 		s = get_fact_value(data[10].cube_id, values, 12) + s * 2;
+		// implied but useless line, since it always returns 0;
 		// s = get_fact_value(data[11], values, 12) + s * 1;
 		return s;
 	}
@@ -549,8 +537,8 @@ namespace Encoding {
 		ID id = ID();
 		id.corners = get_id_corners_pos(data.corners) * pow(3, 8) +
 		             get_id_corners_rot(data.corners);
-		// id.borders_pos = get_id_borders_pos(data.borders);
-		// id.borders_rot = get_id_borders_rot(data.borders);
+		id.borders_pos = get_id_borders_pos(data.borders);
+		id.borders_rot = get_id_borders_rot(data.borders);
 		return id;
 	}
 
@@ -639,8 +627,8 @@ namespace Encoding {
 		Data data = Data();
 		set_data_corners_pos(data.corners, id.corners / pow(3, 8));
 		set_data_corners_rot(data.corners, id.corners % pow(3, 8));
-		// set_data_borders_pos(data.borders, id.borders_pos);
-		// set_data_borders_rot(data.borders, id.borders_rot);
+		set_data_borders_pos(data.borders, id.borders_pos);
+		set_data_borders_rot(data.borders, id.borders_rot);
 		return data;
 	}
 

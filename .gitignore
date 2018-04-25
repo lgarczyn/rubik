@@ -1,5 +1,7 @@
 rubik*
 build
+debug
+lib
 .vscode
 *.swp
 .DS_Store

@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/04/09 21:40:00 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/04/11 20:15:26 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/04/21 01:41:35 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ void display_square(Square sq, int dist, bool correct, Color color) {
 		background = "\e[44m";
 		break;
 	case Orange:
-		background = "\e[43m";
+		background = "\e[45m";
 		break;
 	case Green:
 		background = "\e[42m";
@@ -43,16 +43,21 @@ void display_square(Square sq, int dist, bool correct, Color color) {
 		return;
 	}
 
-	if (correct)
-		foreground = "\e[35m";
-	else
-		foreground = "\e[30m";
+	(void)sq;
+	(void)correct;
 
+	/* if (correct)
+		foreground = "\e[92m";
+	else
+		foreground = "\e[30m"; */
+
+	std::cout << background << "  "
+	          << "\e[0m";
 	// std::cout << foreground << background << " " << dist << " " <<
 	// std::setw(2) << id << " \e[0m";
-	std::cout << foreground << background << " " << std::setw(2)
-	          << (int)sq.cube_id << " " << std::setw(2) << (int)sq.rot_id
-	          << " \e[0m ";
+	// std::cout << foreground << background << " " << std::setw(2)
+	//           << (int)sq.cube_id << " " << std::setw(2) << (int)sq.rot_id
+	//           << " \e[0m ";
 	// std::cout << foreground << background << " " << (int)sq.rot_id << " \e[0m
 	// ";
 }
@@ -62,8 +67,8 @@ void print_line(const Cube &cube, int s, int l) {
 		Square sq = cube[s][l][c];
 		int uid = sq.get_uid(l, c);
 		int dist = Heuristics::SquareDistance(
-		    State::cube_from_id(ID())[s][l][c].get_uid(c, l),
-		    uid); // TODO fix? uid_from_coord?
+		    State::solution_cube[s][l][c].get_uid(c, l),
+		    uid);
 		Color color = State::solution_colors[Encoding::coord_from_uid(uid).f];
 
 		bool correct = State::cube_from_id(ID())[s][l][c] == sq;
@@ -74,9 +79,9 @@ void print_line(const Cube &cube, int s, int l) {
 
 void print_map(const Cube &cube) {
 	for (int l = 0; l < size; l++) {
-		std::cout << " __ __  "
-		          << " __ __  "
-		          << " __ __  ";
+		std::cout << "  "
+		          << "  "
+		          << "  ";
 		print_line(cube, 0, l);
 		std::cout << std::endl;
 	}
@@ -88,9 +93,9 @@ void print_map(const Cube &cube) {
 		std::cout << std::endl;
 	}
 	for (int l = 0; l < size; l++) {
-		std::cout << " __ __  "
-		          << " __ __  "
-		          << " __ __  ";
+		std::cout << "  "
+		          << "  "
+		          << "  ";
 		print_line(cube, 5, l);
 		std::cout << std::endl;
 	}
@@ -125,9 +130,9 @@ void display_square_diff(bool correct, Color color) {
 	}
 
 	if (correct)
-		foreground = " - ";
+		foreground = "  ";
 	else
-		foreground = "\e[30m X ";
+		foreground = "\e[30m><";
 
 	std::cout << background << foreground << "\e[0m";
 }
@@ -149,9 +154,9 @@ void print_line_diff(const Cube &cube, const Cube &old, int s, int l) {
 
 void print_diff(const Cube &cube, const Cube &old) {
 	for (int l = 0; l < size; l++) {
-		std::cout << " _ "
-		          << " _ "
-		          << " _ ";
+		std::cout << "  "
+		          << "  "
+		          << "  ";
 		print_line_diff(cube, old, 0, l);
 		std::cout << std::endl;
 	}
@@ -163,9 +168,9 @@ void print_diff(const Cube &cube, const Cube &old) {
 		std::cout << std::endl;
 	}
 	for (int l = 0; l < size; l++) {
-		std::cout << " _ "
-		          << " _ "
-		          << " _ ";
+		std::cout << "  "
+		          << "  "
+		          << "  ";
 		print_line_diff(cube, old, 5, l);
 		std::cout << std::endl;
 	}

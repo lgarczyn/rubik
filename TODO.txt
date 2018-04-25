@@ -3,6 +3,7 @@ database http://www.cs.princeton.edu/courses/archive/fall06/cos402/papers/korfru
 optimizing
 	google array
 	multithreading
+		clean_duplicates
 		custom solution
 	fix Solver setup
 	swap instead of delete
@@ -13,12 +14,12 @@ optimizing
 		translation
 	check cache misses
 		cachegrind
-	remove duplicate nodes
-		Thus, for each pair of opposite faces we
-		arbitrarily chose an order, and forbid moves that twist
-		the two faces consecutively in the opposite order
-		more ?
 heuristic
+	figure out htf do I divide the distance
+		if 7 are out of lines, it's actually worse than 8
+		sometimes
+		is the multiplier really 8 ?
+		I mean seriously, maybe it's 4 considering the max
 	maybe relative distance instead of absolute
 		that way the computer tries to place a border between corners instead of not
 			maybe for invalid

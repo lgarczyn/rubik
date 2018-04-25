@@ -2,32 +2,28 @@
 // Created by Louis GARCZYNSKI on 4/30/16.
 //
 
-
 #pragma once
 
+#include <atomic>
+#include <condition_variable>
+#include <iostream>
 #include <thread>
 #include <vector>
-#include <atomic>
-#include <iostream>
-#include <condition_variable>
-
 
 template <typename Cube, typename Value>
-class ThreadPool
-{
+class ThreadPool {
 	typedef std::function<Value(Cube)> Call;
 	typedef std::unique_lock<std::mutex> Lock;
 
-public:
-	ThreadPool(const ThreadPool& cpy);
+  public:
+	ThreadPool(const ThreadPool &cpy);
 
 	ThreadPool(int threadCount);
 	~ThreadPool();
 
 	std::vector<Value> run(Call call, const std::vector<Cube> &data);
 
-private:
-
+  private:
 	void waitForData(int i);
 	void display(std::string str);
 
@@ -41,46 +37,41 @@ private:
 	std::mutex _activeCounterMutex;
 	int _activeCounter;
 
-
-	std::mutex _condMutexFinished;//mutex for _finished
-	std::mutex _condMutexStarted;//mutex for _started
-	std::condition_variable _finished;//allow run to wait for threads
-	std::condition_variable _started;//allow threads to zait for run
+	std::mutex _condMutexFinished;     //mutex for _finished
+	std::mutex _condMutexStarted;      //mutex for _started
+	std::condition_variable _finished; //allow run to wait for threads
+	std::condition_variable _started;  //allow threads to zait for run
 
 	std::mutex _displayMutex;
 
 	std::vector<Cube> _data;
 	std::vector<Value> _values;
-	std::vector<std::thread*> _threads;
+	std::vector<std::thread *> _threads;
 };
 
 template <typename Cube, typename Value>
-void ThreadPool<Cube, Value>::display(std::string str)
-{
+void ThreadPool<Cube, Value>::display(std::string str) {
 	(void)str;
 	Lock lock(_displayMutex);
 	std::cout << str << std::endl;
 }
 
 template <typename Cube, typename Value>
-ThreadPool<Cube, Value>::ThreadPool(int threadCount)
-{
+ThreadPool<Cube, Value>::ThreadPool(int threadCount) {
 	isKill = false;
 
 	//creates threads
 	_resetCounter = 0;
 	_threads.resize(threadCount);
 	display("main thread creating children");
-	for (int i = 0; i < threadCount; i++)
-	{
+	for (int i = 0; i < threadCount; i++) {
 		auto functor = std::bind(&ThreadPool::waitForData, this, i);
 		_threads[i] = new std::thread(functor);
 	}
 }
 
 template <typename Cube, typename Value>
-ThreadPool<Cube, Value>::~ThreadPool()
-{
+ThreadPool<Cube, Value>::~ThreadPool() {
 	//set destroyed flag to true
 	isKill = true;
 
@@ -89,8 +80,7 @@ ThreadPool<Cube, Value>::~ThreadPool()
 	//creates threads
 
 	display("main thread deleting children");
-	for (size_t i = 0; i < _threads.size(); i++)
-	{
+	for (size_t i = 0; i < _threads.size(); i++) {
 		_threads[i]->join();
 		delete _threads[i];
 	}
@@ -98,11 +88,9 @@ ThreadPool<Cube, Value>::~ThreadPool()
 }
 
 template <typename Cube, typename Value>
-void ThreadPool<Cube, Value>::waitForData(int i)
-{
+void ThreadPool<Cube, Value>::waitForData(int i) {
 	display(std::to_string(i) + ": thread starts");
-	while (1)
-	{
+	while (1) {
 		//wait for started thread
 		{
 			Lock lock(_condMutexStarted);
@@ -115,14 +103,12 @@ void ThreadPool<Cube, Value>::waitForData(int i)
 			display(std::to_string(i) + ": thread wake up");
 		}
 		//kill if thread started by destructor
-		if (isKill)
-		{
+		if (isKill) {
 			display(std::to_string(i) + ": thread returns");
 			return;
 		}
 
-		while (1)
-		{
+		while (1) {
 			//will contain the thread data/values index for this loop
 			uint index = _dataCounter++;
 			display(std::to_string(i) + ": thread assigned work id: " + std::to_string(index) + ", id is " + (index < _data.size() ? "correct" : "incorrect"));
@@ -131,14 +117,11 @@ void ThreadPool<Cube, Value>::waitForData(int i)
 			// calculate data/values couple
 			//else
 			// set thread as finished
-			if (index < _data.size())
-			{
+			if (index < _data.size()) {
 				display(std::to_string(i) + ": thread starts working on id: " + std::to_string(index));
 				_values[index] = _call(_data[index]);
 				display(std::to_string(i) + ": thread ends work on id: " + std::to_string(index));
-			}
-			else
-			{
+			} else {
 				//set another thread as finished
 				//if all of them are, notify main thread to stop waiting
 				{
@@ -162,8 +145,7 @@ void ThreadPool<Cube, Value>::waitForData(int i)
 }
 
 template <typename Cube, typename Value>
-std::vector<Value> ThreadPool<Cube, Value>::run(Call call, const std::vector<Cube> &data)
-{
+std::vector<Value> ThreadPool<Cube, Value>::run(Call call, const std::vector<Cube> &data) {
 	//loads data
 	_call = call;
 	_data = data;
@@ -182,14 +164,14 @@ std::vector<Value> ThreadPool<Cube, Value>::run(Call call, const std::vector<Cub
 		//make main thread wait until notify_one is called from waitForData
 		Lock lock(_condMutexFinished);
 		display("main thread waiting for finish");
-		_finished.wait(lock);//BUG possible: wait after notify
+		_finished.wait(lock); //BUG possible: wait after notify
 	}
 
-	while((uint)_resetCounter != _threads.size())
+	while ((uint)_resetCounter != _threads.size())
 		;
 
 	_resetCounter = 0;
 
 	display("main thread data marked as finished");
-	return (_values);
+	return _values;
 }

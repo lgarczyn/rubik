@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/04/09 21:36:02 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/04/11 20:15:17 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/04/20 21:06:11 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 #include "tools.hpp"
 #include <set>
 #include <string.h>
+#include <unordered_set>
 
 Set &Solver::get_opened_set(const State &state) {
 	int index = State::get_index(state);
@@ -23,15 +24,11 @@ Set &Solver::get_opened_set(const State &state) {
 }
 
 State Solver::get_smallest_state() {
-	if (_openCount > _sizeComplexity) // LOCK ?
-		_sizeComplexity = _openCount; //
-
-	// Iterate over set of lists
-	// while (set_it != _opened.end()) {
+	if (_openCount > _sizeComplexity)
+		_sizeComplexity = _openCount;
 
 	auto set_it = _opened.begin();
 	// while iterator list is empty and iterator has not reached end, remove
-	// list
 	while (set_it != _opened.end() && set_it->second.empty())
 		set_it = _opened.erase(set_it);
 	// if iterator has reached end, shout
@@ -49,7 +46,16 @@ State Solver::get_smallest_state() {
 	return value;
 }
 
+int Solver::get_real_open_count() {
+	int count = 0;
+	std::cerr << "debug function called" << std::endl;
+	for (auto vec : _opened)
+		count += vec.second.size();
+	return count;
+}
+
 void Solver::print_mem() {
+	std::cout << "universe: " << _universe.size() << std::endl;
 	for (auto pair : _opened) {
 		std::cout << pair.first << ": " << pair.second.size() << std::endl;
 	}
@@ -58,9 +64,9 @@ void Solver::print_mem() {
 
 Solver::Solver() {}
 
-Solver::Solver(State initial) { setup(initial); }
+Solver::Solver(State initial, bool forget) { setup(initial, forget); }
 
-void Solver::setup(State initial) {
+void Solver::setup(State initial, bool forget) {
 	_opened.clear();
 	get_opened_set(initial).push_back(initial);
 
@@ -69,11 +75,10 @@ void Solver::setup(State initial) {
 	//_universe.set_deleted_key(State(true));
 	_universe.insert(std::make_pair(initial, Movements()));
 
+	_forget = forget;
 	_openCount = 1;
 	_sizeComplexity = 1;
 	_timeComplexity = 1;
-
-	// std::cout << "setup" << std::endl;
 }
 
 Movements get_movement_clone(Movements &moves) {
@@ -84,92 +89,83 @@ Movements get_movement_clone(Movements &moves) {
 	return childmoves;
 }
 
+int Solver::clean_duplicates() {
+	std::cerr << "debug function called" << std::endl;
+	static Universe universe;
+
+	universe.clear();
+	for (auto vec : _opened)
+		for (auto st : vec.second)
+			universe[st] = Movements();
+
+	int prevCount = _openCount;
+	_openCount = universe.size();
+
+	_opened.clear();
+	for (auto k : universe)
+		get_opened_set(k.first).push_back(k.first);
+
+	return prevCount - _openCount;
+}
+
 Solver::Result Solver::step() {
-	// std::cout << "wat\n";
 	Result result = Result(_timeComplexity, _sizeComplexity);
 	if (_openCount <= 0)
 		throw std::logic_error("A No opened state, scount is " +
 		                       std::to_string(_openCount));
-
 	// pop best state
 	State e = get_smallest_state(); // LOCK
 	result.actual_state = e;        // ONLY ON MAIN THREAD
 
-	// if final, stop step and signal full stop
-	if (e.is_final()) { // HAVE ACTUAL STATE && FINISHED STATE
-		// std::cout << "final" << std::endl;
-		result.finished = true;
-		result.movements = _universe[e];
-		return result;
-	}
-
 	// get pos in universe, to get movement and check if state is still relevant
 	auto it = _universe.find(e);
-	// std::cout << e.get_id().corners << "\n";
 	// if not in universe, shout loud
 	if (it == _universe.end())
 		throw std::logic_error("could not find e in universe");
 
-	// clone movement for later use, remove from universe?
-	//	if there are similar ids with insuficient scores, they will get ignored
-	// but
-	//	if the nodes are found again, they will be explored if no progress has
-	// been made
-	size_t distance = it->second.size();
-	Movements childmoves = get_movement_clone(it->second);
-	//_universe.erase(it);
-
-	// if a better path to this node has been found, stop step
-	if (distance < e.get_distance()) {
-		// std::cout << distance << "<" << e.get_distance() << std::endl;
+	// if final, stop step and signal full stop
+	if (e.is_final()) { // HAVE ACTUAL STATE && FINISHED STATE
+		result.finished = true;
+		result.movements = it->second;
 		return result;
 	}
-	if (distance > e.get_distance())
-		throw std::logic_error(
-		    "stored distance is greater than node distance: " +
-		    std::to_string(distance) + ">" + std::to_string(e.get_distance()));
+
+	// if it was deleted but stayed inside _opened
+	// simply ignore this state
+	if (it->second.size() < e.get_distance()) {
+		return result;
+	}
+
+	size_t distance = it->second.size();
+	Movements childmoves = get_movement_clone(it->second);
+	_universe.erase(it);
 
 	// get children
 	std::vector<State> candidates;
 	e.get_candidates(candidates);
 	// for every children
 	for (State s : candidates) {
-		// if (State::get_index == State::indexer_astar &&
-		// Heuristics::HeuristicFunction == Heuristics::ValidFunction)
-		if (State::get_index(s) > 20 * score_multiplier) // TODO maybe 19
-			// instead of 20?
-			// //TODO 11 instead
-			// of 20 for corners?
-			continue;
-
 		auto position = _universe.find(s);
 
 		if (position != _universe.end()) {
 			const State &previous = position->first;
-			if (State::get_index(s) <
-			    State::get_index(previous)) { // replace with get_distance?
+			if (s.get_distance() < previous.get_distance()) {
 				_universe.erase(previous);
-				// std::cout << "deleting: " << previous.get_id().corners <<
-				// std::endl;
-				_openCount--;
+				std::cout << "deleting: " << previous.get_id().corners << std::endl;
 			} else {
 				continue;
 			}
 		}
-		// std::cout << "storing: " << s.get_id().corners << ":" <<
-		// childmoves.size() << std::endl;
 
 		childmoves[distance] = s.get_movement();
 		_universe.insert(std::make_pair(s, childmoves));
 		get_opened_set(s).push_back(s); // LOCK
 
-		_openCount++;      // ATOMIC
-		_timeComplexity++; // ATOMIC
+		_openCount++;
+		_timeComplexity++;
 	}
 	candidates.clear();
-
-	// std::cout << "R<\n";
-	return (result);
+	return result;
 }
 
 Solver::~Solver() {}

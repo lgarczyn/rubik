@@ -6,7 +6,7 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/04/10 22:24:12 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/04/11 20:15:25 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/04/25 03:39:55 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,7 +126,7 @@ inline std::ostream &operator<<(std::ostream &s, const State::Movement c);
 
 struct custom_hash {
   public:
-	constexpr size_t operator()(const State &l) const noexcept;
+	size_t operator()(const State &l) const noexcept;
 };
 
 #include "State_Encoding.cpp"

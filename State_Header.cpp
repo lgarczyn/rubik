@@ -6,16 +6,18 @@
 /*   By: lgarczyn <lgarczyn@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/04/09 21:39:39 by lgarczyn          #+#    #+#             */
-/*   Updated: 2018/04/11 20:15:23 by lgarczyn         ###   ########.fr       */
+/*   Updated: 2018/04/25 03:38:47 by lgarczyn         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Heuristics.hpp"
+#include "tools.hpp"
 #include <algorithm>
 #include <iomanip>
 #include <limits>
 #include <random>
 #include <sstream>
+#include <tr1/functional>
 
 constexpr State::State() : _id(), _movement(None), _weight(0), _distance(0) {}
 
@@ -31,9 +33,9 @@ inline State::State(const ID &id) : State() { _apply_data(data_from_id(id)); }
 
 inline void State::_apply_data(const Data &data) {
 	_id = id_from_data(data);
-	_weight = Heuristics::HeuristicFunction(data);
+	_weight = Heuristics::ValidFunction(data);
 	// std::cout << "heuristics: " << (int)_weight << std::endl;
-	_weight = std::max((int)_weight, Heuristics::DatabaseFunction(_id));
+	//_weight = std::max((int)_weight, Heuristics::ValidFunction(data));
 }
 
 inline void State::_apply_scramble(Data &data, const string &scramble) {
@@ -87,6 +89,9 @@ inline State::State(const std::string &scramble) : State() {
 
 inline State::State(const State &parent, const std::string &scramble)
     : State() {
+	print_map(parent);
+	print_map(parent);
+	print_map(parent);
 	Data data = data_from_id(parent._id);
 	_apply_scramble(data, scramble);
 	_apply_data(data);
@@ -98,15 +103,26 @@ inline State::State(int scramble_count) : State() {
 	std::uniform_int_distribution<int> uni(Movement_Start, Movement_End - 1);
 	std::uniform_int_distribution<int> turns(1, 3);
 
-	Data data = data_from_id(ID());
-	Movement previous = None;
-	for (int i = 0; i < scramble_count; i++) {
-		Movement m = (Movement)uni(rng);
-		while (m == previous)
-			m = (Movement)uni(rng);
+	std::cout << "GENERATING CUBE WITH PATTERN:" << std::endl;
 
-		_apply_movement(data, m, turns(rng));
+	Data data = data_from_id(ID());
+	int previous = None;
+	for (int i = 0; i < scramble_count; i++) {
+		int m = uni(rng);
+		while (m == previous)
+			m = uni(rng);
+		previous = m;
+		int t = turns(rng);
+
+		_apply_movement(data, (Movement)m, t);
+
+		if (t == 2)
+			m |= Halfturn;
+		else if (t == 3)
+			m |= Reversed;
+		std::cout << (Movement)m;
 	}
+	std::cout << std::endl;
 	_apply_data(data);
 }
 
@@ -200,69 +216,42 @@ constexpr bool State::is_solvable() const {
 		for (int i = 0; i < 8; i++)
 			sum += data.corners[i].rot_id;
 		if (sum % 3) {
-			std::cout << "co\n";
 			return false;
 		}
 	}
-	/*{
-	int sum = 0;
-	for (int i = 0; i < 12; i++)
-	    sum += data.borders[i].rot_id;
-	if (sum % 2) {
-	    std::cout << "bo\n";
-	    return false;
+	//TODO use count_ones
+	{
+		int sum = 0;
+		for (int i = 0; i < 12; i++)
+			sum += data.borders[i].rot_id;
+		if (sum % 2) {
+			return false;
+		}
 	}
-    }*/
-	/*
-    int sumparity_corner = 0;
-    {
-	for (int i = 0; i < 8; i++) {
-	    if (data.corners[i].cube_id != i) {
-		int j = i + 1;
-		while (data.corners[j].cube_id != i)//find correct cube_id for
-current i pos
-		    j++;
-		std::swap(data.corners[i], data.corners[j]);//place correct
-cube_id in current i pos
-		sumparity_corner++;
-	    }
+	int sumparity_corner = 0;
+	{
+		{
+			for (int i = 0; i < 8; i++) {
+				int j = data.corners[i].cube_id;
+				if (j != i) {
+					std::swap(data.corners[i], data.corners[j]);
+					sumparity_corner++;
+				}
+			}
+		}
 	}
-//        if (sum % 2) {
-//            std::cout << "co_pa\n";
-//            std::cout <<
-//                      (int)data.corners[0].cube_id << " " <<
-//                      (int)data.corners[1].cube_id << " " <<
-//                      (int)data.corners[2].cube_id << " " <<
-//                      (int)data.corners[3].cube_id << " " <<
-//                      (int)data.corners[4].cube_id << " " <<
-//                      (int)data.corners[5].cube_id << " " <<
-//                      (int)data.corners[6].cube_id << " " <<
-//                      (int)data.corners[7].cube_id << std::endl;
-//            return false;
-//        }
-    }
-    int sumparity_border = 0;
-    {
-	int sum = 0;
-	for (int i = 0; i < 12; i++) {
-	    if (data.borders[i].cube_id != i) {
-		int j = i + 1;
-		while (data.borders[j].cube_id != i)//find correct cube_id for
-current i pos
-		    j++;
-		std::swap(data.borders[i], data.borders[j]);//place correct
-cube_id in current i pos
-		sumparity_border++;
-	    }
+	int sumparity_border = 0;
+	{
+		for (int i = 0; i < 12; i++) {
+			int j = data.borders[i].cube_id;
+			if (j != i) {
+				std::swap(data.borders[i], data.borders[j]);
+				sumparity_border++;
+			}
+		}
 	}
-	//if (sum % 2) {
-	//    std::cout << "bo_pa\n";
-	//    return false;
-	//}
-    }
-    if (sumparity_border % 2 != sumparity_corner % 2)
-	return false;
-    */
+	if (sumparity_border % 2 != sumparity_corner % 2)
+		return false;
 	return true;
 }
 
@@ -303,15 +292,9 @@ inline std::ostream &operator<<(std::ostream &s, const State::Movement c) {
 }
 
 constexpr bool State::operator==(const State &ra) const {
-	return (_id.corners == ra._id.corners); // TODO change ==
-}
-
-constexpr size_t custom_hash::operator()(const State &l) const noexcept {
-	const ID &id = l.get_id();
-
-	// return Encoding::floor_index_upper_corners(id.corners);
-	return id.corners; // TODO put bak normal hash
-	                   // return (id.borders_rot ^ id.borders_pos) | ((size_t)id.corners << 32);
+	return (_id.corners == ra._id.corners) &&
+	       (_id.borders_pos == ra._id.borders_pos) &&
+	       (_id.borders_rot == ra._id.borders_rot);
 }
 
 constexpr Score State::indexer_astar(const State &state) {

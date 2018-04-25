@@ -2,3 +2,4 @@
 -Wall
 -Wextra
 -I/Users/lgarczyn/p/local/include
+-Ilib/sparsepp

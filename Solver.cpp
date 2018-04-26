@@ -147,7 +147,7 @@ Solver::Result Solver::step() {
 
 	size_t distance = it->first.get_distance();
 	Movements childmoves = get_movement_clone(it->second);
-	_universe.erase(it);
+	//_universe.erase(it);
 
 	// get children
 	std::vector<State> candidates;

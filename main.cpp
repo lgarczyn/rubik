@@ -27,7 +27,7 @@
 #include <unistd.h>
 
 void clear_screen() {
-	system("clear");
+	//system("clear");
 	//std::cout << tgetstr((char *)"cl", NULL);
 }
 

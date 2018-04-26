@@ -19,6 +19,7 @@
 #include "Types.hpp"
 #include "tools.hpp"
 #include <chrono>
+#include <cstdlib>
 #include <ctime>
 #include <random>
 #include <termcap.h>
@@ -26,6 +27,7 @@
 #include <unistd.h>
 
 void clear_screen() {
+	system("clear");
 	//std::cout << tgetstr((char *)"cl", NULL);
 }
 
@@ -44,29 +46,32 @@ int display_help(const char *path = "npuzzle") {
 	return 0;
 }
 
-void display_animation(State state, Movements &movements) {
-	Cube old_cube = state.get_cube();
-	Cube new_cube = old_cube;
+void display_animation(State state, std::vector<uchar> &movements) {
+	Cube old_cube, cube;
+	old_cube = cube = state.get_cube();
 
 	for (uint16_t l : movements) {
+		Cube new_cube;
 
 		clear_screen();
-		print_diff(old_cube, new_cube);
-		usleep(1000000);
-
-		clear_screen();
-		print_diff(new_cube, old_cube);
+		print_diff(cube, old_cube);
 		usleep(1000000);
 
 		state = State(state, (State::Movement)l);
-		old_cube = new_cube;
 		new_cube = state.get_cube();
+
+		clear_screen();
+		print_diff(cube, new_cube);
+		usleep(1000000);
+
+		old_cube = cube;
+		cube = new_cube;
 	}
 	clear_screen();
-	print_diff(old_cube, new_cube);
+	print_diff(cube, old_cube);
 	usleep(1000000);
 	clear_screen();
-	print_map(new_cube);
+	print_map(cube);
 	usleep(1000000);
 }
 
@@ -78,24 +83,12 @@ Parser::ParseResult parse_args(unsigned int ac, char **av) {
 
 		char *cmd;
 
-		// ARGS
 		// skipping first arg
 		ac--;
 		av++;
+
 		if (is_cmd_opt(av, ac, "-h"))
 			exit(display_help(av[0]));
-		// if (is_cmd_opt(av, ac, "-f1"))
-		// 	Heuristics::HeuristicFunction = Heuristics::ManhattanDistance;
-		// if (is_cmd_opt(av, ac, "-f2"))
-		// 	Heuristics::HeuristicFunction = Heuristics::LinearConflict;
-		// if (is_cmd_opt(av, ac, "-f3"))
-		// 	Heuristics::HeuristicFunction = Heuristics::SuperSmartDistance;
-		// if (is_cmd_opt(av, ac, "--uniform"))
-		//	State::get_index = State::indexer_uniform;
-		// if (is_cmd_opt(av, ac, "--greedy"))
-		//	State::get_index = State::indexer_greedy;
-		//if (is_cmd_opt(av, ac, "--forget"))
-		//	result.forget = true;
 		cmd = get_cmd_opt(av, ac, "-i");
 		if (cmd) {
 			result.iteration = std::stoi(cmd);
@@ -123,7 +116,6 @@ Solver::Result solve_loop(State &initial, int clean_steps) {
 	size_t it;
 	struct timespec start, end;
 
-	// Test stopwatch
 	clock_gettime(CLOCK_MONOTONIC, &start);
 	it = 1;
 	while (1) {
@@ -137,7 +129,7 @@ Solver::Result solve_loop(State &initial, int clean_steps) {
 			std::cout << c << "/" << puzzle._openCount << std::endl;
 		}*/
 
-		if (it % 10000 == 0) {
+		if (it % 20000 == 0) {
 			clear_screen();
 			print_map(solverResult.actual_state);
 			std::cout << "Iteration count: " << it << std::endl;
@@ -147,8 +139,8 @@ Solver::Result solve_loop(State &initial, int clean_steps) {
 			          << solverResult.actual_state.get_distance()
 			          << "]"
 			          << std::endl;
-			std::cout << "Memory repartition:" << std::endl;
-			puzzle.print_mem();
+			//std::cout << "Memory repartition:" << std::endl;
+			//puzzle.print_mem();
 		}
 		++it;
 	}

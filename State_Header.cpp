@@ -19,15 +19,15 @@
 #include <sstream>
 #include <tr1/functional>
 
-constexpr State::State() : _id(), _movement(None), _weight(0), _distance(0) {}
+constexpr State::State() : _id(), _weight(0), _distance(0), _movement(None) {}
 
 constexpr State::State(bool is_del)
     : _id((ID){is_del ? UINT_MAX : UINT_MAX - 1,
           is_del ? UINT_MAX : UINT_MAX - 1,
           is_del ? UINT_MAX : UINT_MAX - 1}),
-      _movement(None),
       _weight(UCHAR_MAX),
-      _distance(UCHAR_MAX) {}
+      _distance(UCHAR_MAX),
+      _movement(None) {}
 
 inline State::State(const ID &id) : State() { _apply_data(data_from_id(id)); }
 

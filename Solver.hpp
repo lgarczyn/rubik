@@ -16,17 +16,27 @@
 #include <list>
 #include <map>
 #include <set>
-#include <sparsehash/sparse_hash_map>
 #include <string>
-#include <unordered_map>
 
 // using set = std::unordered_set<StateRef, custom_hash, custom_equal_to>;
 using Set = std::vector<State>;
 using Map = std::map<int, Set>;
 
-using Movements = std::vector<uint16_t>;
-//using Universe = std::unordered_map<State, Movements, custom_hash>;
+using Movements = std::array<uchar, 32>;
+
+//#define DENSE_MAP
+//#define SPARSE_MAP
+
+#ifdef DENSE_MAP
+#include <sparsehash/dense_hash_map>
+using Universe = google::dense_hash_map<State, Movements, custom_hash>;
+#elif defined SPARSE_MAP
+#include <sparsehash/sparse_hash_map>
 using Universe = google::sparse_hash_map<State, Movements, custom_hash>;
+#else
+#include <unordered_map>
+using Universe = std::unordered_map<State, Movements, custom_hash>;
+#endif
 
 class Solver {
   public:
@@ -35,7 +45,7 @@ class Solver {
 		int timeComplexity;
 		int sizeComplexity;
 		State actual_state;
-		std::vector<uint16_t> movements;
+		std::vector<uint8_t> movements;
 		bool finished;
 		Result(int timeComplexity, int sizeComplexity);
 		Result();

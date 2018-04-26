@@ -112,9 +112,9 @@ class State {
 
 	// members, should add up to 128bits :D
 	ID _id;
-	uint16_t _movement : 16;
-	uchar _weight : 8;
+	uint16_t _weight : 16;
 	uchar _distance : 8;
+	uchar _movement : 8;
 
   public:
 	static const Data solution_data;

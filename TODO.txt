@@ -1,14 +1,15 @@
 database http://www.cs.princeton.edu/courses/archive/fall06/cos402/papers/korfrubik.pdf
 
+bugs
+	error.sh
 optimizing
-	google array
 	multithreading
 		clean_duplicates
 		custom solution
 	fix Solver setup
 	swap instead of delete
 		new system should easily allow that
-	use 128bits instead of vector<Movement>
+	use 128bits instead of array char
 		incrementation << 4 | m+-1
 		get size
 		translation
@@ -42,8 +43,6 @@ input
 		check if possible
 			http://math.stackexchange.com/questions/127577/how-to-tell-if-a-rubiks-cube-is-solvable
 		id_from_data
-
-new array system
 
 is it getcube id ?
 	{Index_U, 0, 0} {Index_L, 0, 0} {Index_B, 0, 2} 0

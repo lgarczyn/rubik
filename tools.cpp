@@ -15,34 +15,29 @@
 #include "State.hpp"
 #include <iomanip>
 
-void display_square(Square sq, int dist, bool correct, Color color) {
-	string background;
-	string foreground;
-	(void)dist;
+const char *get_color(Color color) {
 	switch (color) {
 	case White:
-		background = "\e[107m";
-		break;
+		return "\e[107m";
 	case Red:
-		background = "\e[41m";
-		break;
+		return "\e[41m";
 	case Blue:
-		background = "\e[44m";
-		break;
+		return "\e[44m";
 	case Orange:
-		background = "\e[45m";
-		break;
+		return "\e[45m";
 	case Green:
-		background = "\e[42m";
-		break;
+		return "\e[42m";
 	case Yellow:
-		background = "\e[103m";
-		break;
+		return "\e[103m";
 	default:
-		std::cout << "\e[32mERR\e[0m";
-		return;
+		return "\e[32mERR\e[0m";
 	}
+}
 
+void display_square(Square sq, int dist, bool correct, Color color) {
+	string background;
+	//string foreground;
+	(void)dist;
 	(void)sq;
 	(void)correct;
 
@@ -51,7 +46,7 @@ void display_square(Square sq, int dist, bool correct, Color color) {
 	else
 		foreground = "\e[30m"; */
 
-	std::cout << background << "  "
+	std::cout << get_color(color) << "  "
 	          << "\e[0m";
 	// std::cout << foreground << background << " " << dist << " " <<
 	// std::setw(2) << id << " \e[0m";
@@ -105,29 +100,7 @@ void display_square_diff(bool correct, Color color) {
 	string background;
 	string foreground;
 
-	switch (color) {
-	case White:
-		background = "\e[107m";
-		break;
-	case Red:
-		background = "\e[41m";
-		break;
-	case Blue:
-		background = "\e[44m";
-		break;
-	case Orange:
-		background = "\e[43m";
-		break;
-	case Green:
-		background = "\e[42m";
-		break;
-	case Yellow:
-		background = "\e[103m";
-		break;
-	default:
-		std::cout << "\e[32mERR\e[0m";
-		return;
-	}
+	background = get_color(color);
 
 	if (correct)
 		foreground = "  ";

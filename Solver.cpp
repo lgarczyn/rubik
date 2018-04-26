@@ -71,8 +71,12 @@ void Solver::setup(State initial, bool forget) {
 	get_opened_set(initial).push_back(initial);
 
 	_universe.clear();
-	//_universe.set_empty_key(State(false));
-	//_universe.set_deleted_key(State(true));
+#ifdef DENSE_HASH
+	_universe.set_empty_key(State(false));
+#endif
+#if defined(DENSE_HASH) || defined(SPARSE_HASH)
+	_universe.set_deleted_key(State(true));
+#endif
 	_universe.insert(std::make_pair(initial, Movements()));
 
 	_forget = forget;
@@ -83,7 +87,7 @@ void Solver::setup(State initial, bool forget) {
 
 Movements get_movement_clone(Movements &moves) {
 	uint prev_distance = moves.size();
-	Movements childmoves = Movements(prev_distance + 1);
+	Movements childmoves = {};
 	if (prev_distance)
 		std::copy(moves.begin(), moves.end(), childmoves.begin());
 	return childmoves;
@@ -126,17 +130,22 @@ Solver::Result Solver::step() {
 	// if final, stop step and signal full stop
 	if (e.is_final()) { // HAVE ACTUAL STATE && FINISHED STATE
 		result.finished = true;
-		result.movements = it->second;
+		result.movements.resize(it->first.get_distance());
+		std::copy(
+		    it->second.begin(),
+		    it->second.begin() + it->first.get_distance(),
+		    result.movements.begin());
 		return result;
 	}
 
 	// if it was deleted but stayed inside _opened
 	// simply ignore this state
-	if (it->second.size() < e.get_distance()) {
+	if (it->first.get_distance() < e.get_distance()) {
+		std::cout << "ignoring: " << (e.get_id().corners ^ e.get_id().borders_pos ^ e.get_id().borders_rot) << std::endl;
 		return result;
 	}
 
-	size_t distance = it->second.size();
+	size_t distance = it->first.get_distance();
 	Movements childmoves = get_movement_clone(it->second);
 	_universe.erase(it);
 
@@ -151,7 +160,7 @@ Solver::Result Solver::step() {
 			const State &previous = position->first;
 			if (s.get_distance() < previous.get_distance()) {
 				_universe.erase(previous);
-				std::cout << "deleting: " << previous.get_id().corners << std::endl;
+				std::cout << "deleting: " << (previous.get_id().corners ^ previous.get_id().borders_pos ^ previous.get_id().borders_rot) << std::endl;
 			} else {
 				continue;
 			}

@@ -129,7 +129,7 @@ Solver::Result solve_loop(State &initial, int clean_steps) {
 			std::cout << c << "/" << puzzle._openCount << std::endl;
 		}*/
 
-		if (it % 20000 == 0) {
+		if (it % 100000 == 0) {
 			clear_screen();
 			print_map(solverResult.actual_state);
 			std::cout << "Iteration count: " << it << std::endl;

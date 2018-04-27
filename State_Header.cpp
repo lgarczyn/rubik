@@ -89,9 +89,6 @@ inline State::State(const std::string &scramble) : State() {
 
 inline State::State(const State &parent, const std::string &scramble)
     : State() {
-	print_map(parent);
-	print_map(parent);
-	print_map(parent);
 	Data data = data_from_id(parent._id);
 	_apply_scramble(data, scramble);
 	_apply_data(data);
@@ -134,10 +131,6 @@ inline State::State(const State &parent, State::Movement m, const Data &data)
 }
 
 inline State::State(const State &parent, State::Movement m) : State() {
-	if ((m & Mask) == None)
-		throw std::logic_error(
-		    "None is not an allowed move, use copy constructor");
-
 	_movement = m;
 	_distance = parent._distance + 1;
 
@@ -203,6 +196,17 @@ constexpr void State::get_candidates(std::vector<State> &candidates) const {
 		// data_from_id
 		_apply_movement(data, (Movement)n);
 	}
+}
+
+inline State State::get_parent() const {
+	// get cube of current state
+	Data data = data_from_id(_id);
+	// get movement of current state
+	Movement m = (Movement)_movement;
+	_apply_movement(data, m, 4 - _get_turns(m));
+	State r = State(*this, None, data);
+	r._distance = _distance - 1;
+	return r;
 }
 
 constexpr bool State::is_final() const { return _weight == 0; }
@@ -291,20 +295,38 @@ inline std::ostream &operator<<(std::ostream &s, const State::Movement c) {
 	}
 }
 
-constexpr bool State::operator==(const State &ra) const {
-	return (_id.corners == ra._id.corners) &&
-	       (_id.borders_pos == ra._id.borders_pos) &&
-	       (_id.borders_rot == ra._id.borders_rot);
+constexpr Score State::get_index() const {
+	return get_weight() + get_distance() * score_multiplier;
 }
 
-constexpr Score State::indexer_astar(const State &state) {
-	return state.get_weight() + state.get_distance() * score_multiplier;
+constexpr bool State::operator==(const State &ra) const noexcept {
+	const ID &lid = this->get_id();
+	const ID &rid = ra.get_id();
+
+	return (lid.corners == rid.corners) &&
+	       (lid.borders_pos == rid.borders_pos) &&
+	       (lid.borders_rot == rid.borders_rot);
 }
 
-constexpr Score State::indexer_greedy(const State &state) {
-	return state.get_weight();
+inline bool custom_pred::operator()(const State &la, const State &ra) const noexcept {
+	return (la == ra);
 }
 
-constexpr Score State::indexer_uniform(const State &state) {
-	return state.get_distance();
+inline bool custom_cmp::operator()(const State &la, const State &ra) const noexcept {
+	const ID &lid = la.get_id();
+	const ID &rid = ra.get_id();
+
+	if (lid.corners != rid.corners)
+		return lid.corners < rid.corners;
+	if (lid.borders_pos != rid.borders_pos)
+		return lid.borders_pos < rid.borders_pos;
+	return lid.borders_rot < lid.borders_rot;
+}
+
+inline size_t custom_hash::operator()(const State &l) const noexcept {
+	const ID &id = l.get_id();
+
+	//TODO: check which is better
+	//std::tr1::hash<size_t> hash;
+	return (id.borders_rot ^ id.borders_pos) | ((size_t)id.corners << 32);
 }

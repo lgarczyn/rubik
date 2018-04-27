@@ -18,7 +18,7 @@
 #include <string>
 
 #define MAX_SOLUTION_LENGTH ((int)10000)
-static const int score_multiplier = 8;
+static const int score_multiplier = 4;
 
 using Buffer = std::array<std::array<uchar, max_uid>, max_uid>;
 

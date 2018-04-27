@@ -17,8 +17,9 @@
 #include <map>
 #include <set>
 #include <string>
+#include <unordered_set>
 
-// using set = std::unordered_set<StateRef, custom_hash, custom_equal_to>;
+//using set = std::unordered_set<State, custom_hash>;
 using Set = std::vector<State>;
 using Map = std::map<int, Set>;
 
@@ -26,16 +27,20 @@ using Movements = std::array<uchar, 32>;
 
 //#define DENSE_MAP
 //#define SPARSE_MAP
+//#define BTREE_MAP
 
 #ifdef DENSE_MAP
-#include <sparsehash/dense_hash_map>
-using Universe = google::dense_hash_map<State, Movements, custom_hash>;
+#include <sparsehash/dense_hash_set>
+using Universe = google::dense_hash_set<State, Movements, custom_hash>;
 #elif defined SPARSE_MAP
-#include <sparsehash/sparse_hash_map>
-using Universe = google::sparse_hash_map<State, Movements, custom_hash>;
+#include <sparsehash/sparse_hash_set>
+using Universe = google::sparse_hash_set<State, Movements, custom_hash>;
+#elif defined BTREE_MAP
+#include "lib/cpp-btree/btree_set.h"
+using Universe = btree::btree_set<State, custom_cmp>;
 #else
 #include <unordered_map>
-using Universe = std::unordered_map<State, Movements, custom_hash>;
+using Universe = std::unordered_set<State, custom_hash, custom_pred>;
 #endif
 
 class Solver {
@@ -50,15 +55,6 @@ class Solver {
 		Result(int timeComplexity, int sizeComplexity);
 		Result();
 	};
-
-	/*struct Node
-    {
-	    StateRef value;
-	    std::unique_ptr<Node> left;
-	    std::unique_ptr<Node> right;
-    };
-    using NodeRef = std::unique_ptr<Node>;*/
-	// StateRef *get_universe_position(StateRef state);
 
 	Solver();
 	Solver(State initial, bool forget);

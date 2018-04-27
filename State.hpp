@@ -72,12 +72,14 @@ class State {
 	constexpr Movement get_movement() const;
 	constexpr uint get_distance() const;
 	constexpr uint get_weight() const;
+	constexpr Score get_index() const;
 	constexpr const ID &get_id() const;
 	constexpr bool is_final() const;
 	constexpr bool is_solvable() const;
 
 	// logic wrappers
 	constexpr void get_candidates(std::vector<State> &candidates) const;
+	inline State get_parent() const;
 
 	// ID Cube conversions
 	constexpr Data get_data() const;
@@ -88,13 +90,7 @@ class State {
 	constexpr static ID id_from_cube(const Cube &cube);
 	constexpr static Cube cube_from_id(const ID data);
 
-	// indexers
-	constexpr static Score indexer_astar(const State &);
-	constexpr static Score indexer_uniform(const State &);
-	constexpr static Score indexer_greedy(const State &);
-	constexpr static indexer get_index = indexer_astar;
-
-	constexpr bool operator==(const State &ra) const;
+	constexpr bool operator==(const State &ra) const noexcept;
 
 	// debug
 	inline static void _apply_scramble(Data &data, const string &scramble);
@@ -122,11 +118,22 @@ class State {
 	static const Finder solution_finder;
 	static const Color solution_colors[];
 };
+
 inline std::ostream &operator<<(std::ostream &s, const State::Movement c);
 
 struct custom_hash {
   public:
 	size_t operator()(const State &l) const noexcept;
+};
+
+struct custom_pred {
+  public:
+	bool operator()(const State &la, const State &ra) const noexcept;
+};
+
+struct custom_cmp {
+  public:
+	bool operator()(const State &la, const State &ra) const noexcept;
 };
 
 #include "State_Encoding.cpp"

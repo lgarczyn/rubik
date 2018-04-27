@@ -1,18 +1,22 @@
 database http://www.cs.princeton.edu/courses/archive/fall06/cos402/papers/korfrubik.pdf
 
-bugs
-	error.sh
+cleanup
+	too many constructors
+		SCRAMBLE
+		RANDOM
+		apply_scramble
+		should probably all be
+			applyscramble
+	movement should be own class
+		output
+		conversion
+		inversion
+
 optimizing
 	multithreading
 		clean_duplicates
 		custom solution
 	fix Solver setup
-	swap instead of delete
-		new system should easily allow that
-	use 128bits instead of array char
-		incrementation << 4 | m+-1
-		get size
-		translation
 	check cache misses
 		cachegrind
 heuristic

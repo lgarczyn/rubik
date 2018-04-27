@@ -2,6 +2,7 @@ rubik*
 build
 debug
 lib
+db
 .vscode
 *.swp
 .DS_Store

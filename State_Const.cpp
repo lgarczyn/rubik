@@ -17,10 +17,3 @@ const Cube State::solution_cube = State::cube_from_id(ID());
 const Finder State::solution_finder = State::_calculate_finder(solution_cube);
 const Color State::solution_colors[] = {White, Green, Red,
     Blue, Orange, Yellow};
-
-size_t custom_hash::operator()(const State &l) const noexcept {
-	const ID &id = l.get_id();
-
-	std::tr1::hash<size_t> hash;
-	return hash((id.borders_rot ^ id.borders_pos) | ((size_t)id.corners << 32));
-}

@@ -18,7 +18,7 @@
 #include <unordered_set>
 
 Set &Solver::get_opened_set(const State &state) {
-	int index = State::get_index(state);
+	int index = state.get_index();
 
 	return _opened[index];
 }
@@ -77,7 +77,7 @@ void Solver::setup(State initial, bool forget) {
 #if defined(DENSE_HASH) || defined(SPARSE_HASH)
 	_universe.set_deleted_key(State(true));
 #endif
-	_universe.insert(std::make_pair(initial, Movements()));
+	//_universe.insert(initial, Movements()));
 
 	_forget = forget;
 	_openCount = 1;
@@ -93,6 +93,8 @@ Movements get_movement_clone(Movements &moves) {
 	return childmoves;
 }
 
+/*
+DO NOT USE
 int Solver::clean_duplicates() {
 	std::cerr << "debug function called" << std::endl;
 	static Universe universe;
@@ -110,6 +112,19 @@ int Solver::clean_duplicates() {
 		get_opened_set(k.first).push_back(k.first);
 
 	return prevCount - _openCount;
+}*/
+#include <vector>
+static std::vector<uchar> get_path(Universe &u, State e) {
+	std::vector<uchar> moves;
+
+	moves.reserve(e.get_distance());
+	while (e.get_movement() != 0) {
+		moves.push_back((uchar)e.get_movement());
+		e = e.get_parent();
+		e = *u.find(e);
+	}
+	std::reverse(moves.begin(), moves.end());
+	return moves;
 }
 
 Solver::Result Solver::step() {
@@ -118,57 +133,28 @@ Solver::Result Solver::step() {
 		throw std::logic_error("A No opened state, scount is " +
 		                       std::to_string(_openCount));
 	// pop best state
-	State e = get_smallest_state(); // LOCK
-	result.actual_state = e;        // ONLY ON MAIN THREAD
-
-	// get pos in universe, to get movement and check if state is still relevant
-	auto it = _universe.find(e);
-	// if not in universe, shout loud
-	if (it == _universe.end())
-		throw std::logic_error("could not find e in universe");
+	State e = get_smallest_state();
+	result.actual_state = e;
 
 	// if final, stop step and signal full stop
-	if (e.is_final()) { // HAVE ACTUAL STATE && FINISHED STATE
+	if (e.is_final()) {
 		result.finished = true;
-		result.movements.resize(it->first.get_distance());
-		std::copy(
-		    it->second.begin(),
-		    it->second.begin() + it->first.get_distance(),
-		    result.movements.begin());
+		result.movements = get_path(_universe, e);
 		return result;
 	}
 
-	// if it was deleted but stayed inside _opened
-	// simply ignore this state
-	if (it->first.get_distance() < e.get_distance()) {
-		std::cout << "ignoring: " << (e.get_id().corners ^ e.get_id().borders_pos ^ e.get_id().borders_rot) << std::endl;
+	// check if node was already expanded
+	auto pair = _universe.insert(e);
+	if (pair.second == false) {
 		return result;
 	}
-
-	size_t distance = it->first.get_distance();
-	Movements childmoves = get_movement_clone(it->second);
-	//_universe.erase(it);
 
 	// get children
 	std::vector<State> candidates;
 	e.get_candidates(candidates);
 	// for every children
 	for (State s : candidates) {
-		auto position = _universe.find(s);
-
-		if (position != _universe.end()) {
-			const State &previous = position->first;
-			if (s.get_distance() < previous.get_distance()) {
-				_universe.erase(previous);
-				std::cout << "deleting: " << (previous.get_id().corners ^ previous.get_id().borders_pos ^ previous.get_id().borders_rot) << std::endl;
-			} else {
-				continue;
-			}
-		}
-
-		childmoves[distance] = s.get_movement();
-		_universe.insert(std::make_pair(s, childmoves));
-		get_opened_set(s).push_back(s); // LOCK
+		get_opened_set(s).push_back(s);
 
 		_openCount++;
 		_timeComplexity++;

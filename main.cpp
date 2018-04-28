@@ -13,102 +13,12 @@
 #include <iostream>
 
 #include "Database.hpp"
-#include "OptParser.hpp"
 #include "Parser.hpp"
 #include "Solver.hpp"
 #include "Types.hpp"
 #include "tools.hpp"
 #include <chrono>
-#include <cstdlib>
 #include <ctime>
-#include <random>
-#include <termcap.h>
-#include <unistd.h>
-#include <unistd.h>
-
-void clear_screen() {
-	//system("clear");
-	//std::cout << tgetstr((char *)"cl", NULL);
-}
-
-void print_timediff(const char *prefix, const struct timespec &start, const struct timespec &end) {
-	double milliseconds = (end.tv_nsec - start.tv_nsec) / 1e6 + (end.tv_sec - start.tv_sec) * 1e3;
-	printf("%s: %lf seconds\n", prefix, milliseconds / 1000.0f);
-}
-
-int display_help(const char *path = "npuzzle") {
-	std::cout << "Usage: " << path << " [-h] " << std::endl
-	          << "1: [-i ITERATION]" << std::endl
-	          << "2: [-m MOVEMENTS]" << std::endl
-	          << "[-c CLEAN_STEPS]" << std::endl
-	          << "[-f1] [-f2] [-f3]" << std::endl
-	          << "[--greedy] [--uniform]" << std::endl;
-	return 0;
-}
-
-void display_animation(State state, std::vector<uchar> &movements) {
-	Cube old_cube, cube;
-	old_cube = cube = state.get_cube();
-
-	for (uint16_t l : movements) {
-		Cube new_cube;
-
-		clear_screen();
-		print_diff(cube, old_cube);
-		usleep(1000000);
-
-		state = State(state, (State::Movement)l);
-		new_cube = state.get_cube();
-
-		clear_screen();
-		print_diff(cube, new_cube);
-		usleep(1000000);
-
-		old_cube = cube;
-		cube = new_cube;
-	}
-	clear_screen();
-	print_diff(cube, old_cube);
-	usleep(1000000);
-	clear_screen();
-	print_map(cube);
-	usleep(1000000);
-}
-
-Parser::ParseResult parse_args(unsigned int ac, char **av) {
-	Parser::ParseResult result;
-	try {
-		char buf[255];
-		tgetent(buf, getenv("TERM"));
-
-		char *cmd;
-
-		// skipping first arg
-		ac--;
-		av++;
-
-		if (is_cmd_opt(av, ac, "-h"))
-			exit(display_help(av[0]));
-		cmd = get_cmd_opt(av, ac, "-i");
-		if (cmd) {
-			result.iteration = std::stoi(cmd);
-			result.is_random = true;
-		}
-		cmd = get_cmd_opt(av, ac, "-m");
-		if (cmd) {
-			result.data = cmd;
-			result.is_random = false;
-		}
-		cmd = get_cmd_opt(av, ac, "-c");
-		if (cmd) {
-			result.clean_steps = std::stoi(cmd);
-		}
-		return result;
-	} catch (std::exception &e) {
-		std::cerr << e.what() << std::endl;
-		exit(1);
-	}
-}
 
 Solver::Result solve_loop(State &initial, int clean_steps) {
 	Solver puzzle(initial, clean_steps == 0);
@@ -160,11 +70,9 @@ int main(int ac, char **av) {
 
 	clear_screen();
 
-	parseResult = parse_args(ac, av);
-	if (parseResult.is_random)
-		initial = State(parseResult.iteration);
-	else
-		initial = State(parseResult.data);
+	parseResult = Parser::parse_args(ac, av);
+	vector<Move> scramble = parseResult.get_data();
+	initial = initial.get_scrambled(scramble);
 
 	std::cout << "GENERATED CUBE" << std::endl;
 	print_map(initial);
@@ -203,12 +111,12 @@ int main(int ac, char **av) {
 		case 's':
 			clear_screen();
 			for (auto &l : solverResult.movements)
-				std::cout << (State::Movement)l << std::endl;
+				std::cout << l << std::endl;
 			std::cout << std::endl
 			          << std::flush;
 			break;
 		case 'a': {
-			display_animation(initial, solverResult.movements);
+			print_animation(initial, solverResult.movements);
 			break;
 		}
 		default:

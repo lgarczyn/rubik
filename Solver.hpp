@@ -20,10 +20,8 @@
 #include <unordered_set>
 
 //using set = std::unordered_set<State, custom_hash>;
-using Set = std::vector<State>;
+using Set = vector<State>;
 using Map = std::map<int, Set>;
-
-using Movements = std::array<uchar, 32>;
 
 //#define DENSE_MAP
 //#define SPARSE_MAP
@@ -31,10 +29,10 @@ using Movements = std::array<uchar, 32>;
 
 #ifdef DENSE_MAP
 #include <sparsehash/dense_hash_set>
-using Universe = google::dense_hash_set<State, Movements, custom_hash>;
+using Universe = google::dense_hash_set<State, custom_hash>;
 #elif defined SPARSE_MAP
 #include <sparsehash/sparse_hash_set>
-using Universe = google::sparse_hash_set<State, Movements, custom_hash>;
+using Universe = google::sparse_hash_set<State, custom_hash>;
 #elif defined BTREE_MAP
 #include "lib/cpp-btree/btree_set.h"
 using Universe = btree::btree_set<State, custom_cmp>;
@@ -50,7 +48,7 @@ class Solver {
 		int timeComplexity;
 		int sizeComplexity;
 		State actual_state;
-		std::vector<uint8_t> movements;
+		vector<Move> movements;
 		bool finished;
 		Result(int timeComplexity, int sizeComplexity);
 		Result();

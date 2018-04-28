@@ -15,144 +15,26 @@
 #include <algorithm>
 #include <iomanip>
 #include <limits>
-#include <random>
-#include <sstream>
-#include <tr1/functional>
 
-constexpr State::State() : _id(), _weight(0), _distance(0), _movement(None) {}
+constexpr State::State() : _id(), _weight(0), _distance(0), _movement(Move::None) {}
 
-constexpr State::State(bool is_del)
-    : _id((ID){is_del ? UINT_MAX : UINT_MAX - 1,
-          is_del ? UINT_MAX : UINT_MAX - 1,
-          is_del ? UINT_MAX : UINT_MAX - 1}),
-      _weight(UCHAR_MAX),
-      _distance(UCHAR_MAX),
-      _movement(None) {}
+constexpr State::State(const ID &id, Score score, Distance distance, Move move)
+    : _id(id), _weight(score), _distance(distance), _movement(move) {}
 
-inline State::State(const ID &id) : State() { _apply_data(data_from_id(id)); }
+constexpr State::State(const Data &data, Distance distance, Move move) : State() {
+	_distance = distance;
+	_movement = move;
+	_apply_data(data);
+}
 
-inline void State::_apply_data(const Data &data) {
+constexpr void State::_apply_data(const Data &data) {
 	_id = id_from_data(data);
 	_weight = Heuristics::ValidFunction(data);
-	// std::cout << "heuristics: " << (int)_weight << std::endl;
-	//_weight = std::max((int)_weight, Heuristics::ValidFunction(data));
 }
 
-inline void State::_apply_scramble(Data &data, const string &scramble) {
-	std::stringstream ss = std::stringstream(scramble);
+constexpr State::State(const State &clone) : State() { *this = clone; }
 
-	while (ss) {
-		Movement m;
-		int turns = 1;
-		int c = ss.get();
-
-		switch (c) {
-		case 'F':
-			m = Front;
-			break;
-		case 'R':
-			m = Right;
-			break;
-		case 'U':
-			m = Up;
-			break;
-		case 'B':
-			m = Back;
-			break;
-		case 'L':
-			m = Left;
-			break;
-		case 'D':
-			m = Down;
-			break;
-		default:
-			continue;
-		}
-		c = ss.peek();
-		switch (c) {
-		case '\'':
-			turns = 3;
-			break;
-		case '2':
-			turns = 2;
-			break;
-		}
-		_apply_movement(data, m, turns);
-	}
-}
-
-inline State::State(const std::string &scramble) : State() {
-	Data data = data_from_id(ID());
-	_apply_scramble(data, scramble);
-	_apply_data(data);
-}
-
-inline State::State(const State &parent, const std::string &scramble)
-    : State() {
-	Data data = data_from_id(parent._id);
-	_apply_scramble(data, scramble);
-	_apply_data(data);
-}
-
-inline State::State(int scramble_count) : State() {
-	std::random_device rd;
-	std::mt19937 rng(rd());
-	std::uniform_int_distribution<int> uni(Movement_Start, Movement_End - 1);
-	std::uniform_int_distribution<int> turns(1, 3);
-
-	std::cout << "GENERATING CUBE WITH PATTERN:" << std::endl;
-
-	Data data = data_from_id(ID());
-	int previous = None;
-	for (int i = 0; i < scramble_count; i++) {
-		int m = uni(rng);
-		while (m == previous)
-			m = uni(rng);
-		previous = m;
-		int t = turns(rng);
-
-		_apply_movement(data, (Movement)m, t);
-
-		if (t == 2)
-			m |= Halfturn;
-		else if (t == 3)
-			m |= Reversed;
-		std::cout << (Movement)m;
-	}
-	std::cout << std::endl;
-	_apply_data(data);
-}
-
-inline State::State(const State &parent, State::Movement m, const Data &data)
-    : State() {
-	_movement = m;
-	_distance = parent._distance + 1;
-	_apply_data(data);
-}
-
-inline State::State(const State &parent, State::Movement m) : State() {
-	_movement = m;
-	_distance = parent._distance + 1;
-
-	Data data = data_from_id(parent._id);
-	_apply_movement(data, m, _get_turns(m));
-	_apply_data(data);
-}
-
-constexpr int State::_get_turns(Movement m) {
-	switch (m & ~Mask) {
-	case Reversed:
-		return 3;
-	case Halfturn:
-		return 2;
-	default:
-		return 1;
-	}
-}
-
-inline State::State(const State &clone) { *this = clone; }
-
-inline State &State::operator=(const State &ra) {
+constexpr State &State::operator=(const State &ra) {
 	_id = ra._id;
 	_weight = ra._weight;
 	_movement = ra._movement;
@@ -160,52 +42,64 @@ inline State &State::operator=(const State &ra) {
 	return *this;
 }
 
-constexpr bool is_move_duplicate(State::Movement a, State::Movement b) {
-	if (a == State::Down && b == State::Up)
-		return true;
-	if (a == State::Back && b == State::Front)
-		return true;
-	if (a == State::Left && b == State::Right)
-		return true;
-	return false;
+constexpr State State::get_child(Move m) const {
+	State r;
+
+	r._movement = m;
+	r._distance = _distance + 1;
+
+	Data data = data_from_id(_id);
+	_apply_movement(data, m);
+	r._apply_data(data);
+	return r;
 }
 
-constexpr void State::get_candidates(std::vector<State> &candidates) const {
+constexpr State State::get_scrambled(const vector<Move> &moves) const {
+	Data d = data_from_id(_id);
+
+	for (uint i = 0; i < moves.size(); i++) {
+		_apply_movement(d, moves[i]);
+	}
+	return State(d, 0, Move());
+}
+
+constexpr void State::get_candidates(vector<State> &candidates) const {
 	// get cube of current state
-	Data data = data_from_id(_id);
+	Data data_copy = data_from_id(_id);
 	// get movement of current state
-	Movement m = (Movement)(_movement & Mask);
 
 	// foreach possible movement family
-	for (int n = Movement_Start; n < Movement_End; n++) {
+	for (int n = Move::Direction_Start; n <= Move::Direction_End; n++) {
 		// if the movement is in same family as current, skip
-		if (m == n)
+		if (_movement.direction == n)
 			continue;
 		// if the previous movement was opposite to the current, and had
 		// priority, ignore this one
-		if (is_move_duplicate(m, (Movement)n))
+		if (Move::is_commutative(_movement.direction, n))
 			continue;
+		Data data = data_copy;
+		Move move = Move((Move::Direction)n);
 		// rotate 90d, build, then repeat
-		_apply_movement(data, (Movement)n);
-		candidates.push_back(State(*this, (Movement)n, data));
-		_apply_movement(data, (Movement)n);
-		candidates.push_back(State(*this, (Movement)(n | Halfturn), data));
-		_apply_movement(data, (Movement)n);
-		candidates.push_back(State(*this, (Movement)(n | Reversed), data));
-		// reset data, can be changed for stored data copy, or another
-		// data_from_id
-		_apply_movement(data, (Movement)n);
+		_apply_movement(data, move.direction);
+		candidates.push_back(State(data, _distance + 1, move));
+
+		move.halfturn = true;
+		_apply_movement(data, move.direction);
+		candidates.push_back(State(data, _distance + 1, move));
+
+		move.halfturn = false;
+		move.reversed = true;
+		_apply_movement(data, move.direction);
+		candidates.push_back(State(data, _distance + 1, move));
 	}
 }
 
-inline State State::get_parent() const {
+constexpr State State::get_parent() const {
 	// get cube of current state
 	Data data = data_from_id(_id);
 	// get movement of current state
-	Movement m = (Movement)_movement;
-	_apply_movement(data, m, 4 - _get_turns(m));
-	State r = State(*this, None, data);
-	r._distance = _distance - 1;
+	_apply_movement(data, _movement.inverse());
+	State r = State(data, _distance - 1, Move());
 	return r;
 }
 
@@ -267,33 +161,11 @@ constexpr Cube State::get_cube() const { return cube_from_id(_id); }
 
 constexpr uint State::get_weight(void) const { return this->_weight; }
 
-constexpr State::Movement State::get_movement(void) const {
-	return (Movement)_movement;
+constexpr Move State::get_movement(void) const {
+	return _movement;
 }
 
 constexpr uint State::get_distance() const { return _distance; }
-
-inline std::ostream &operator<<(std::ostream &s, const State::Movement c) {
-	bool reversed = c & State::Reversed;
-	bool halfturn = c & State::Halfturn;
-
-	switch (c & State::Mask) {
-	case State::Left:
-		return s << (reversed ? "L'" : (halfturn ? "L2" : "L"));
-	case State::Right:
-		return s << (reversed ? "R'" : (halfturn ? "R2" : "R"));
-	case State::Up:
-		return s << (reversed ? "U'" : (halfturn ? "U2" : "U"));
-	case State::Down:
-		return s << (reversed ? "D'" : (halfturn ? "D2" : "D"));
-	case State::Front:
-		return s << (reversed ? "F'" : (halfturn ? "F2" : "F"));
-	case State::Back:
-		return s << (reversed ? "B'" : (halfturn ? "B2" : "B"));
-	default:
-		return s << " ERROR:" << (int)c << ' ';
-	}
-}
 
 constexpr Score State::get_index() const {
 	return get_weight() + get_distance() * score_multiplier;

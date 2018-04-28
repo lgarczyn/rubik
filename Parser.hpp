@@ -12,7 +12,8 @@
 
 #pragma once
 
-#include "State.hpp"
+#include "Move.hpp"
+#include "Types.hpp"
 #include <cstdlib>
 #include <fstream>
 
@@ -22,14 +23,18 @@ class Parser {
 	class ParseResult {
 	  public:
 		bool is_random;
-		std::string data;
+		string data;
 		int iteration;
 
 		int clean_steps;
 
 		size_t search_step;
 		ParseResult();
+
+		vector<Move> get_data() const;
 	};
+
+	static ParseResult parse_args(unsigned int ac, char **av);
 
 	Parser() {}
 };

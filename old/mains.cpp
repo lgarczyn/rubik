@@ -1,7 +1,6 @@
 #include <iostream>
 
 #include "Database.hpp"
-#include "OptParser.hpp"
 #include "Parser.hpp"
 #include "Solver.hpp"
 #include "Types.hpp"
@@ -41,8 +40,8 @@ int main_create_databases() {
 			}
 			s = State();
 			int len = 0;
-			for (int m : res.movements) {
-				s = State(s, (State::Movement)m);
+			for (Move m : res.movements) {
+				s = s.get_child(m);
 				d.store(s.get_id().corners, len,
 				    (uint)len == res.movements.size() - 1);
 				len++;
@@ -52,8 +51,8 @@ int main_create_databases() {
 			          << "\ntotal saved first : " << Databases::total_saved_first
 			          << "\ntotal overridden first : " << Databases::total_overridden_first
 			          << std::endl;
-			for (int m : res.movements)
-				std::cout << (State::Movement)m << " ";
+			for (Move m : res.movements)
+				std::cout << m << " ";
 			std::cout << std::endl;
 			// std::cout <<  << len << "\n";
 		} else

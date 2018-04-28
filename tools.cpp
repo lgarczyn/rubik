@@ -14,6 +14,7 @@
 #include "Heuristics.hpp"
 #include "State.hpp"
 #include <iomanip>
+#include <unistd.h>
 
 const char *get_color(Color color) {
 	switch (color) {
@@ -34,7 +35,7 @@ const char *get_color(Color color) {
 	}
 }
 
-void display_square(Square sq, int dist, bool correct, Color color) {
+void print_square(Square sq, int dist, bool correct, Color color) {
 	string background;
 	//string foreground;
 	(void)dist;
@@ -68,7 +69,7 @@ void print_line(const Cube &cube, int s, int l) {
 
 		bool correct = State::cube_from_id(ID())[s][l][c] == sq;
 
-		display_square(sq, dist, correct, color);
+		print_square(sq, dist, correct, color);
 	}
 }
 
@@ -96,55 +97,91 @@ void print_map(const Cube &cube) {
 	}
 }
 
-void display_square_diff(bool correct, Color color) {
-	string background;
-	string foreground;
+void print_square_diff(Color color, const char *text) {
+	const char *background;
+	const char *foreground;
 
 	background = get_color(color);
+	foreground = "  ";
 
-	if (correct)
-		foreground = "  ";
-	else
-		foreground = "\e[30m><";
+	if (text)
+		foreground = text;
 
-	std::cout << background << foreground << "\e[0m";
+	std::cout << background << "\e[30m" << foreground << "\e[0m";
 }
 
-void print_line_diff(const Cube &cube, const Cube &old, int s, int l) {
-	for (int c = 0; c < size; c++) {
-		Square sq = cube[s][l][c];
-		Square sq_old = old[s][l][c];
+void print_line_diff(const Cube &cube, int face, int line, const char **text) {
 
-		int uid = sq.get_uid(l, c);
-		int uid_old = sq_old.get_uid(l, c);
+	for (int c = 0; c < size; c++) {
+		Square sq = cube[face][line][c];
+
+		int uid = sq.get_uid(line, c);
 
 		Color color = State::solution_colors[Encoding::coord_from_uid(uid).f];
-		bool correct = uid == uid_old;
 
-		display_square_diff(correct, color);
+		if (text)
+			print_square_diff(color, text[c]);
+		else
+			print_square_diff(color, nullptr);
 	}
 }
 
-void print_diff(const Cube &cube, const Cube &old) {
+int get_face(Move::Direction dir) {
+	switch (dir) {
+	case Move::Up:
+		return Index_U;
+	case Move::Right:
+		return Index_R;
+	case Move::Down:
+		return Index_D;
+	case Move::Left:
+		return Index_L;
+	case Move::Front:
+		return Index_F;
+	case Move::Back:
+		return Index_B;
+	default:
+		return 0;
+	}
+}
+
+const char *arrows[3][3][3] = {
+    {{"↗ ", "-→", " ↘"},
+        {"↑ ", "  ", " ↓"},
+        {"↖ ", "←-", " ↙"}},
+    {{"↗ ", "-→", " ↘"},
+        {"↑ ", "X2", " ↓"},
+        {"↖ ", "←-", " ↙"}},
+    {{"↙ ", "←-", " ↖"},
+        {"↓ ", "  ", " ↑"},
+        {"↘ ", "-→", " ↗"}}};
+
+void print_diff(const Cube &cube, Move m) {
+	int turns = m.get_turns() - 1;
+	int face = get_face(m.direction);
+
 	for (int l = 0; l < size; l++) {
 		std::cout << "  "
 		          << "  "
 		          << "  ";
-		print_line_diff(cube, old, 0, l);
+		const char **arrow = arrows[turns][l];
+		print_line_diff(cube, Index_U, l, face == Index_U ? arrow : NULL);
 		std::cout << std::endl;
 	}
 	for (int l = 0; l < size; l++) {
-		print_line_diff(cube, old, 4, l);
-		print_line_diff(cube, old, 1, l);
-		print_line_diff(cube, old, 2, l);
-		print_line_diff(cube, old, 3, l);
+		const char **arrow = arrows[turns][l];
+		print_line_diff(cube, Index_L, l, face == Index_L ? arrow : NULL);
+		print_line_diff(cube, Index_F, l, face == Index_F ? arrow : NULL);
+		print_line_diff(cube, Index_R, l, face == Index_R ? arrow : NULL);
+		print_line_diff(cube, Index_B, l, face == Index_B ? arrow : NULL);
 		std::cout << std::endl;
 	}
 	for (int l = 0; l < size; l++) {
 		std::cout << "  "
 		          << "  "
 		          << "  ";
-		print_line_diff(cube, old, 5, l);
+		const char **arrow = arrows[turns][l];
+		print_line_diff(cube, Index_D, l, face == Index_D ? arrow : NULL);
 		std::cout << std::endl;
 	}
 }
@@ -201,4 +238,40 @@ void print_dist(Coord pos) {
 		print_line_dist(pos, 5, l);
 		std::cout << std::endl;
 	}
+}
+
+void print_animation(State state, vector<Move> &movements) {
+	Cube cube = state.get_cube();
+
+	for (Move l : movements) {
+		Cube new_cube;
+		state = state.get_child(l);
+		new_cube = state.get_cube();
+
+		clear_screen();
+		print_map(cube);
+		usleep(700000);
+
+		clear_screen();
+		print_diff(cube, l);
+		usleep(700000);
+
+		clear_screen();
+		print_diff(new_cube, l);
+		usleep(700000);
+
+		cube = new_cube;
+	}
+	clear_screen();
+	print_map(cube);
+	usleep(1000000);
+}
+
+void clear_screen() {
+	system("clear");
+}
+
+void print_timediff(const char *prefix, const struct timespec &start, const struct timespec &end) {
+	double milliseconds = (end.tv_nsec - start.tv_nsec) / 1e6 + (end.tv_sec - start.tv_sec) * 1e3;
+	printf("%s: %lf seconds\n", prefix, milliseconds / 1000.0f);
 }

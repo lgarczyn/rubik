@@ -40,7 +40,6 @@ State Solver::get_smallest_state() {
 	auto &list = set_it->second;
 	auto value = list.back();
 	list.pop_back();
-	// std::cout << _openCount << std::endl;
 	_openCount--;
 
 	return value;
@@ -72,12 +71,11 @@ void Solver::setup(State initial, bool forget) {
 
 	_universe.clear();
 #ifdef DENSE_HASH
-	_universe.set_empty_key(State(false));
+	_universe.set_empty_key(State::get_empty_key());
 #endif
 #if defined(DENSE_HASH) || defined(SPARSE_HASH)
-	_universe.set_deleted_key(State(true));
+	_universe.set_deleted_key(State::get_deleted_key());
 #endif
-	//_universe.insert(initial, Movements()));
 
 	_forget = forget;
 	_openCount = 1;
@@ -85,41 +83,12 @@ void Solver::setup(State initial, bool forget) {
 	_timeComplexity = 1;
 }
 
-Movements get_movement_clone(Movements &moves) {
-	uint prev_distance = moves.size();
-	Movements childmoves = {};
-	if (prev_distance)
-		std::copy(moves.begin(), moves.end(), childmoves.begin());
-	return childmoves;
-}
-
-/*
-DO NOT USE
-int Solver::clean_duplicates() {
-	std::cerr << "debug function called" << std::endl;
-	static Universe universe;
-
-	universe.clear();
-	for (auto vec : _opened)
-		for (auto st : vec.second)
-			universe[st] = Movements();
-
-	int prevCount = _openCount;
-	_openCount = universe.size();
-
-	_opened.clear();
-	for (auto k : universe)
-		get_opened_set(k.first).push_back(k.first);
-
-	return prevCount - _openCount;
-}*/
-#include <vector>
-static std::vector<uchar> get_path(Universe &u, State e) {
-	std::vector<uchar> moves;
+static vector<Move> get_path(Universe &u, State e) {
+	vector<Move> moves;
 
 	moves.reserve(e.get_distance());
-	while (e.get_movement() != 0) {
-		moves.push_back((uchar)e.get_movement());
+	while (e.get_movement().direction) {
+		moves.push_back(e.get_movement());
 		e = e.get_parent();
 		e = *u.find(e);
 	}
@@ -150,7 +119,7 @@ Solver::Result Solver::step() {
 	}
 
 	// get children
-	std::vector<State> candidates;
+	vector<State> candidates;
 	e.get_candidates(candidates);
 	// for every children
 	for (State s : candidates) {
@@ -168,11 +137,11 @@ Solver::~Solver() {}
 Solver::Result::Result(int timeComplexity, int sizeComplexity)
     : timeComplexity(timeComplexity),
       sizeComplexity(sizeComplexity),
-      actual_state(false),
+      actual_state(),
       finished(false) {}
 
 Solver::Result::Result()
     : timeComplexity(0),
       sizeComplexity(0),
-      actual_state(false),
+      actual_state(),
       finished(false) {}

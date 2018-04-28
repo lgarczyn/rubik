@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "State.hpp"
+#include "Move.hpp"
 
 namespace Encoding {
 
@@ -403,33 +404,31 @@ namespace Encoding {
 		data[b] = t;
 	}
 
-	void constexpr _apply_movement(Data &data, int m) {
-		if (m & ~State::Mask)
-			throw std::logic_error("apply_movement doesn't handle combined Movement");
+	void constexpr _apply_movement(Data &data, Move::Direction m) {
 		switch (m) {
-		case State::None:
+		case Move::Direction::None:
 			return;
-		case State::Up:
+		case Move::Direction::Up:
 			swap_data_poles(data.corners, 1, 3, 2, 0);
 			swap_data_poles(data.borders, 3, 1, 0, 2);
 			break;
-		case State::Front:
+		case Move::Direction::Front:
 			swap_data(data.corners, 5, 4, 2, 3);
 			swap_data(data.borders, 4, 3, 5, 8);
 			break;
-		case State::Right:
+		case Move::Direction::Right:
 			swap_data(data.corners, 3, 1, 7, 5);
 			swap_data(data.borders, 5, 2, 6, 10);
 			break;
-		case State::Back:
+		case Move::Direction::Back:
 			swap_data(data.corners, 1, 0, 6, 7);
 			swap_data(data.borders, 6, 0, 7, 11);
 			break;
-		case State::Left:
+		case Move::Direction::Left:
 			swap_data(data.corners, 0, 2, 4, 6);
 			swap_data(data.borders, 7, 1, 4, 9);
 			break;
-		case State::Down:
+		case Move::Direction::Down:
 			swap_data_poles(data.corners, 4, 5, 7, 6);
 			swap_data_poles(data.borders, 11, 9, 8, 10);
 			break;
@@ -438,9 +437,9 @@ namespace Encoding {
 		}
 	}
 
-	void constexpr _apply_movement(Data &data, State::Movement m, int turns) {
-		for (int i = 0; i < turns; i++)
-			_apply_movement(data, m & State::Mask);
+	void constexpr _apply_movement(Data &data, Move m) {
+		for (int i = 0; i < m.get_turns(); i++)
+			_apply_movement(data, m.direction);
 	}
 
 	static constexpr inline void move_values_left(uchar *values, uchar pos,
@@ -736,9 +735,9 @@ constexpr Cube State::cube_from_id(const ID id) {
 constexpr ID State::id_from_cube(const Cube &cube) {
 	return Encoding::id_from_cube(cube);
 }
-constexpr void State::_apply_movement(Data &data, Movement m) {
+constexpr void State::_apply_movement(Data &data, Move::Direction m) {
 	Encoding::_apply_movement(data, m);
 }
-constexpr void State::_apply_movement(Data &data, Movement m, int turns) {
-	Encoding::_apply_movement(data, m, turns);
+constexpr void State::_apply_movement(Data &data, Move::Move m) {
+	Encoding::_apply_movement(data, m);
 }

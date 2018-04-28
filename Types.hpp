@@ -18,12 +18,15 @@
 #include <stdint.h>
 #include <string>
 #include <utility>
+#include <vector>
 
 using std::string;
 using std::pair;
+using std::vector;
 typedef uint8_t uchar;
 typedef unsigned int uint;
-typedef int Score;
+typedef uint16_t Score;
+typedef uint8_t Distance;
 
 // DO NOT CHANGE
 static const int size = 3;

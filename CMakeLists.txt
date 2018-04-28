@@ -28,7 +28,7 @@ SET( CMAKE_EXE_LINKER_FLAGS_DEBUG "" )
 SET( CMAKE_EXE_LINKER_FLAGS_RELEASE "${OPTI_LINKER}" )
 
 add_executable( rubik
-      OptParser.cpp
+      Move.cpp
       Database.cpp
       Parser.cpp
       Solver.cpp

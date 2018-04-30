@@ -25,7 +25,7 @@ int main_create_databases() {
 	for (uint i = 0; i < Encoding::corners_max; i++) {
 		if (d.exist(i) == false) {
 			std::cout << "start " << i << "\n";
-			id.corners = i;
+			//id.corners = i;
 			s = State(id);
 			if (s.is_solvable() == false) {
 				std::cout << "end: unsolvable\n";

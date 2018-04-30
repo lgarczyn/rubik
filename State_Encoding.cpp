@@ -534,8 +534,8 @@ namespace Encoding {
 
 	constexpr ID id_from_data(const Data &data) {
 		ID id = ID();
-		id.corners = get_id_corners_pos(data.corners) * pow(3, 8) +
-		             get_id_corners_rot(data.corners);
+		id.corners_pos = get_id_corners_pos(data.corners);
+		id.corners_rot = get_id_corners_rot(data.corners);
 		id.borders_pos = get_id_borders_pos(data.borders);
 		id.borders_rot = get_id_borders_rot(data.borders);
 		return id;
@@ -624,8 +624,8 @@ namespace Encoding {
 
 	constexpr Data data_from_id(const ID id) {
 		Data data = Data();
-		set_data_corners_pos(data.corners, id.corners / pow(3, 8));
-		set_data_corners_rot(data.corners, id.corners % pow(3, 8));
+		set_data_corners_pos(data.corners, id.corners_pos);
+		set_data_corners_rot(data.corners, id.corners_rot);
 		set_data_borders_pos(data.borders, id.borders_pos);
 		set_data_borders_rot(data.borders, id.borders_rot);
 		return data;
@@ -709,8 +709,8 @@ namespace Encoding {
 
 	constexpr ID id_from_cube(const Cube &cube) {
 		ID id = ID();
-		id.corners =
-		    get_id_corners_pos(cube) * pow(3, 8) + get_id_corners_rot(cube);
+		id.corners_pos = get_id_corners_pos(cube);
+		id.corners_rot = get_id_corners_rot(cube);
 		id.borders_pos = get_id_borders_pos(cube);
 		id.borders_rot = get_id_borders_rot(cube);
 		return id;

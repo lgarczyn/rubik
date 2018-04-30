@@ -15,6 +15,7 @@
 
 #include "Move.hpp"
 #include "Types.hpp"
+#include <bitset>
 #include <functional>
 #include <iostream>
 
@@ -73,6 +74,7 @@ class State {
 	Score _weight;
 	Distance _distance;
 	Move _movement;
+	std::bitset<18> _mask;
 
   public:
 	static const Data solution_data;

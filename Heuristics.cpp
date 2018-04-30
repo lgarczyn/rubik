@@ -136,8 +136,8 @@ constexpr int get_dist(const Data &data, int i, SquareType st) {
 	return Heuristics::dist_table[id_sol][id_src];
 }
 
-constexpr Score get_dist_crown(const Data &data) {
-	Score dist = 0;
+constexpr int get_dist_crown(const Data &data) {
+	int dist = 0;
 	dist += get_dist(data, 0, st_corner);
 	dist += get_dist(data, 1, st_corner);
 	dist += get_dist(data, 2, st_corner);
@@ -149,8 +149,8 @@ constexpr Score get_dist_crown(const Data &data) {
 	return dist;
 }
 
-constexpr Score get_dist_belt(const Data &data) {
-	Score dist = 0;
+constexpr int get_dist_belt(const Data &data) {
+	int dist = 0;
 	dist += get_dist(data, 4, st_border);
 	dist += get_dist(data, 5, st_border);
 	dist += get_dist(data, 6, st_border);
@@ -158,8 +158,8 @@ constexpr Score get_dist_belt(const Data &data) {
 	return dist;
 }
 
-constexpr Score get_dist_cross(const Data &data) {
-	Score dist = 0;
+constexpr int get_dist_cross(const Data &data) {
+	int dist = 0;
 	dist += get_dist(data, 8, st_border);
 	dist += get_dist(data, 9, st_border);
 	dist += get_dist(data, 10, st_border);
@@ -167,8 +167,8 @@ constexpr Score get_dist_cross(const Data &data) {
 	return dist;
 }
 
-constexpr Score get_dist_floor(const Data &data) {
-	Score dist = 0;
+constexpr int get_dist_floor(const Data &data) {
+	int dist = 0;
 	dist += get_dist(data, 4, st_corner);
 	dist += get_dist(data, 5, st_corner);
 	dist += get_dist(data, 6, st_corner);
@@ -176,8 +176,8 @@ constexpr Score get_dist_floor(const Data &data) {
 	return dist;
 }
 
-constexpr Score get_dist_borders(const Data &data) {
-	Score dist = 0;
+constexpr int get_dist_borders(const Data &data) {
+	int dist = 0;
 	dist += get_dist(data, 0, st_border);
 	dist += get_dist(data, 1, st_border);
 	dist += get_dist(data, 2, st_border);
@@ -193,8 +193,8 @@ constexpr Score get_dist_borders(const Data &data) {
 	return dist;
 }
 
-constexpr Score get_dist_corners(const Data &data) {
-	Score dist = 0;
+constexpr int get_dist_corners(const Data &data) {
+	int dist = 0;
 	dist += get_dist(data, 0, st_corner);
 	dist += get_dist(data, 1, st_corner);
 	dist += get_dist(data, 2, st_corner);
@@ -208,9 +208,13 @@ constexpr Score get_dist_corners(const Data &data) {
 }
 
 constexpr Score Heuristics::ValidFunction(const Data &data) {
-	Score corners = get_dist_corners(data);
-	Score borders = get_dist_borders(data);
+	int corners = get_dist_corners(data);
+	int borders = get_dist_borders(data);
 	//TODO: figure out WTF I should do with score_multiplier
+	if (corners > 0xFF)
+		throw std::logic_error("WTF1");
+	if (corners > 0xFFFF)
+		throw std::logic_error("WTF2");
 	return std::max(corners, borders);
 }
 
@@ -230,9 +234,10 @@ constexpr Score Heuristics::HeuristicFunction(const Data &data) {
 }
 
 inline Score Heuristics::DatabaseFunction(const ID &id) {
+	(void)id;
 	// if (id.corners < Databases::current_index)
 	// int id_upper = Encoding::floor_index_upper_corners(id.corners);
-	return Databases::corners[id.corners];
+	//return Databases::corners[id.corners];
 	return 0;
 
 	// Score data = std::max(

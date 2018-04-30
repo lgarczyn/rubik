@@ -61,8 +61,8 @@ constexpr bool operator==(const Coord &ca, const Coord &cb) {
 }
 
 constexpr bool operator==(const ID &a, const ID &b) {
-	return (a.corners == b.corners) && (a.borders_pos == b.borders_pos) &&
-	       (a.borders_rot == b.borders_rot);
+	return (a.corners_pos == b.corners_pos) && (a.corners_rot == b.corners_rot) &&
+	       (a.borders_pos == b.borders_pos) && (a.borders_rot == b.borders_rot);
 }
 
 constexpr bool operator!=(const Square &a, const Square &b) {
@@ -76,8 +76,8 @@ constexpr bool operator!=(const Coord &ca, const Coord &cb) {
 }
 
 constexpr bool operator!=(const ID &a, const ID &b) {
-	return (a.corners != b.corners) || (a.borders_pos != b.borders_pos) ||
-	       (a.borders_rot != b.borders_rot);
+	return (a.corners_pos != b.corners_pos) || (a.corners_rot != b.corners_rot) ||
+	       (a.borders_pos != b.borders_pos) || (a.borders_rot != b.borders_rot);
 }
 
 inline std::ostream &operator<<(std::ostream &s, const Coord &c) {

@@ -25,7 +25,7 @@ using std::pair;
 using std::vector;
 typedef uint8_t uchar;
 typedef unsigned int uint;
-typedef uint16_t Score;
+typedef uint8_t Score;
 typedef uint8_t Distance;
 
 // DO NOT CHANGE
@@ -78,9 +78,10 @@ struct Coord {
 };
 
 struct ID {
-	uint borders_pos;
-	uint borders_rot;
-	uint corners;
+	uint32_t borders_pos;
+	uint16_t borders_rot;
+	uint16_t corners_pos;
+	uint16_t corners_rot;
 };
 
 using DataCorners = std::array<Square, 8>;

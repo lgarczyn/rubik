@@ -175,9 +175,7 @@ constexpr bool State::operator==(const State &ra) const noexcept {
 	const ID &lid = this->get_id();
 	const ID &rid = ra.get_id();
 
-	return (lid.corners == rid.corners) &&
-	       (lid.borders_pos == rid.borders_pos) &&
-	       (lid.borders_rot == rid.borders_rot);
+	return lid == rid;
 }
 
 inline bool custom_pred::operator()(const State &la, const State &ra) const noexcept {
@@ -188,8 +186,11 @@ inline bool custom_cmp::operator()(const State &la, const State &ra) const noexc
 	const ID &lid = la.get_id();
 	const ID &rid = ra.get_id();
 
-	if (lid.corners != rid.corners)
-		return lid.corners < rid.corners;
+	//TODO: optimize order
+	if (lid.corners_pos != rid.corners_pos)
+		return lid.corners_pos < rid.corners_pos;
+	if (lid.corners_rot != rid.corners_rot)
+		return lid.corners_rot < rid.corners_rot;
 	if (lid.borders_pos != rid.borders_pos)
 		return lid.borders_pos < rid.borders_pos;
 	return lid.borders_rot < lid.borders_rot;
@@ -200,5 +201,7 @@ inline size_t custom_hash::operator()(const State &l) const noexcept {
 
 	//TODO: check which is better
 	//std::tr1::hash<size_t> hash;
-	return (id.borders_rot ^ id.borders_pos) | ((size_t)id.corners << 32);
+	return (id.borders_rot ^ id.borders_pos) |
+	       ((uint64_t)id.corners_rot << 32) |
+	       ((uint64_t)id.corners_pos << 48);
 }

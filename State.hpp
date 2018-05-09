@@ -10,8 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef STATE_HPP
-#define STATE_HPP
+#pragma once
 
 #include "Move.hpp"
 #include "Types.hpp"
@@ -74,7 +73,6 @@ class State {
 	Score _weight;
 	Distance _distance;
 	Move _movement;
-	std::bitset<18> _mask;
 
   public:
 	static const Data solution_data;
@@ -100,5 +98,3 @@ struct custom_cmp {
 
 #include "State_Encoding.cpp"
 #include "State_Header.cpp"
-
-#endif

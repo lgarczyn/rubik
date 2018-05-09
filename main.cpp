@@ -96,7 +96,7 @@ int main(int ac, char **av) {
 		c = std::getchar();
 		switch (c) {
 		case 'q':
-			exit(0);
+			return (0);
 		case 'd':
 
 			std::cout << "Total number of states ever in open set: "

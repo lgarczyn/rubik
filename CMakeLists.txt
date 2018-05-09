@@ -1,9 +1,3 @@
-SET( CMAKE_C_COMPILER /usr/bin/gcc )
-SET( CMAKE_CXX_COMPILER /usr/bin/g++ )
-SET( AR /usr/bin/ar )
-SET( NM /usr/bin/nm )
-SET( RANLIB /bin/true )
-
 cmake_minimum_required( VERSION 3.5 )
 project( rubik )
 
@@ -15,11 +9,11 @@ SET( OPTI "-Ofast -march=native -funroll-loops")
 SET( OPTI_LINKER
 #      -fwhole-program
 #      -flto
-#      -fprofile-use
-#      -fprofile-generate
+#      -fprofile-use=profile
+#      -fprofile-generate=profile
 )
 
-SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++1z -Wall -Wextra" )
+SET( CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -std=c++2a -Wall -Wextra" )
 SET( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}   -ftrapv -O0" )
 SET( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${OPTI}" )
 

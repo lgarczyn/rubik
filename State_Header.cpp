@@ -193,7 +193,7 @@ inline bool custom_cmp::operator()(const State &la, const State &ra) const noexc
 		return lid.corners_rot < rid.corners_rot;
 	if (lid.borders_pos != rid.borders_pos)
 		return lid.borders_pos < rid.borders_pos;
-	return lid.borders_rot < lid.borders_rot;
+	return lid.borders_rot < rid.borders_rot;
 }
 
 inline size_t custom_hash::operator()(const State &l) const noexcept {

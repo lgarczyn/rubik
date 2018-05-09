@@ -738,6 +738,6 @@ constexpr ID State::id_from_cube(const Cube &cube) {
 constexpr void State::_apply_movement(Data &data, Move::Direction m) {
 	Encoding::_apply_movement(data, m);
 }
-constexpr void State::_apply_movement(Data &data, Move::Move m) {
+constexpr void State::_apply_movement(Data &data, Move m) {
 	Encoding::_apply_movement(data, m);
 }

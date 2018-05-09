@@ -13,7 +13,7 @@
 #include "Heuristics.hpp"
 #include "Database.hpp"
 
-inline int _get_opposite(int a) {
+constexpr int _get_opposite(int a) {
 	switch (a) {
 	case Index_U:
 		return Index_D;

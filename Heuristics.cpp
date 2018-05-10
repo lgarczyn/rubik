@@ -210,7 +210,6 @@ constexpr int get_dist_corners(const Data &data) {
 constexpr Score Heuristics::ValidFunction(const Data &data) {
 	int corners = get_dist_corners(data);
 	int borders = get_dist_borders(data);
-	//TODO: figure out WTF I should do with score_multiplier
 	if (corners > 0xFF)
 		throw std::logic_error("WTF1");
 	if (corners > 0xFFFF)

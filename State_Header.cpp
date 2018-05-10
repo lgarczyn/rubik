@@ -16,29 +16,21 @@
 #include <iomanip>
 #include <limits>
 
-constexpr State::State() : _id(), _weight(0), _distance(0), _movement(Move::None) {}
+constexpr State::State() : _id(), _movement(Move::None) {}
 
-constexpr State::State(const ID &id, Score score, Distance distance, Move move)
-    : _id(id), _weight(score), _distance(distance), _movement(move) {}
+constexpr State::State(const ID &id, Move move)
+    : _id(id), _movement(move) {}
 
-constexpr State::State(const Data &data, Distance distance, Move move) : State() {
-	_distance = distance;
+constexpr State::State(const Data &data, Move move) : State() {
 	_movement = move;
-	_apply_data(data);
-}
-
-constexpr void State::_apply_data(const Data &data) {
 	_id = id_from_data(data);
-	_weight = Heuristics::ValidFunction(data);
 }
 
 constexpr State::State(const State &clone) : State() { *this = clone; }
 
 constexpr State &State::operator=(const State &ra) {
 	_id = ra._id;
-	_weight = ra._weight;
 	_movement = ra._movement;
-	_distance = ra._distance;
 	return *this;
 }
 
@@ -46,11 +38,10 @@ constexpr State State::get_child(Move m) const {
 	State r;
 
 	r._movement = m;
-	r._distance = _distance + 1;
 
 	Data data = data_from_id(_id);
 	_apply_movement(data, m);
-	r._apply_data(data);
+	r._id = id_from_data(data);
 	return r;
 }
 
@@ -60,14 +51,19 @@ inline State State::get_scrambled(const vector<Move> &moves) const {
 	for (uint i = 0; i < moves.size(); i++) {
 		_apply_movement(d, moves[i]);
 	}
-	return State(d, 0, Move());
+	return State(d, Move());
 }
 
-inline void State::get_candidates(vector<State> &candidates) const {
+constexpr Score State::calculate_score() const {
+	return Heuristics::ValidFunction(State::data_from_id(_id));
+}
+
+inline int State::get_candidates(std::array<pair<State, Score>, 18> &candidates) const {
 	// get cube of current state
 	Data data_copy = data_from_id(_id);
 	// get movement of current state
 
+	int count = 0;
 	// foreach possible movement family
 	for (int n = Move::Direction_Start; n <= Move::Direction_End; n++) {
 		// if the movement is in same family as current, skip
@@ -81,17 +77,24 @@ inline void State::get_candidates(vector<State> &candidates) const {
 		Move move = Move((Move::Direction)n);
 		// rotate 90d, build, then repeat
 		_apply_movement(data, move.direction);
-		candidates.push_back(State(data, _distance + 1, move));
+		candidates[count].first = State(data, move);
+		candidates[count].second = Heuristics::ValidFunction(data);
+		count++;
 
 		move.halfturn = true;
 		_apply_movement(data, move.direction);
-		candidates.push_back(State(data, _distance + 1, move));
+		candidates[count].first = State(data, move);
+		candidates[count].second = Heuristics::ValidFunction(data);
+		count++;
 
 		move.halfturn = false;
 		move.reversed = true;
 		_apply_movement(data, move.direction);
-		candidates.push_back(State(data, _distance + 1, move));
+		candidates[count].first = State(data, move);
+		candidates[count].second = Heuristics::ValidFunction(data);
+		count++;
 	}
+	return count;
 }
 
 constexpr State State::get_parent() const {
@@ -99,11 +102,9 @@ constexpr State State::get_parent() const {
 	Data data = data_from_id(_id);
 	// get movement of current state
 	_apply_movement(data, _movement.inverse());
-	State r = State(data, _distance - 1, Move());
+	State r = State(data, Move());
 	return r;
 }
-
-constexpr bool State::is_final() const { return _weight == 0; }
 
 constexpr bool State::is_solvable() const {
 	Data data = data_from_id(_id);
@@ -159,16 +160,8 @@ constexpr Data State::get_data() const { return data_from_id(_id); }
 
 constexpr Cube State::get_cube() const { return cube_from_id(_id); }
 
-constexpr uint State::get_weight(void) const { return this->_weight; }
-
 constexpr Move State::get_movement(void) const {
 	return _movement;
-}
-
-constexpr uint State::get_distance() const { return _distance; }
-
-constexpr Score State::get_index() const {
-	return get_weight() + get_distance() * score_multiplier;
 }
 
 constexpr bool State::operator==(const State &ra) const noexcept {
@@ -186,7 +179,6 @@ inline bool custom_cmp::operator()(const State &la, const State &ra) const noexc
 	const ID &lid = la.get_id();
 	const ID &rid = ra.get_id();
 
-	//TODO: optimize order
 	if (lid.corners_pos != rid.corners_pos)
 		return lid.corners_pos < rid.corners_pos;
 	if (lid.corners_rot != rid.corners_rot)

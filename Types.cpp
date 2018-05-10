@@ -66,8 +66,6 @@ constexpr bool operator==(const ID &a, const ID &b) {
 }
 
 constexpr bool operator!=(const Square &a, const Square &b) {
-	// return a.face_id != b.face_id;//TODO once sure of deflate/inflate,
-	// uncomment
 	return (a.cube_id != b.cube_id) || (a.rot_id != b.rot_id);
 }
 

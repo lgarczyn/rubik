@@ -23,7 +23,7 @@ namespace Encoding {
 				for (int c = 0; c < size; c++) {
 					Coord co = (Coord){s, l, c};
 					int id =
-					    cube[s][l][c].get_uid(l, c); // TODO replace with smart
+					    cube[s][l][c].get_uid(l, c);
 					assert(id < 3 * 3 * 6);
 					finder.at(id) = co;
 				}
@@ -560,7 +560,7 @@ namespace Encoding {
 	}
 
 	static constexpr void set_data_borders_rot(DataBorders &data,
-	    uint id) { // TODO optimize
+	    uint id) {
 		uint s = id;
 
 		data[11].rot_id = s % 2;

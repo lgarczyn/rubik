@@ -17,10 +17,9 @@
 #include <map>
 #include <set>
 #include <string>
-#include <unordered_set>
 
 //using set = std::unordered_set<State, custom_hash>;
-using Set = vector<State>;
+using Set = vector<pair<State, Distance>>;
 using Map = std::map<int, Set>;
 
 //#define DENSE_MAP
@@ -37,7 +36,7 @@ using Universe = google::sparse_hash_set<State, custom_hash>;
 #include "lib/cpp-btree/btree_set.h"
 using Universe = btree::btree_set<State, custom_cmp>;
 #else
-#include <unordered_map>
+#include <unordered_set>
 using Universe = std::unordered_set<State, custom_hash, custom_pred>;
 #endif
 
@@ -48,6 +47,8 @@ class Solver {
 		int timeComplexity;
 		int sizeComplexity;
 		State actual_state;
+		Score actual_weight;
+		Distance actual_distance;
 		vector<Move> movements;
 		bool finished;
 		Result(int timeComplexity, int sizeComplexity);
@@ -59,8 +60,8 @@ class Solver {
 	void setup(State initial, bool forget);
 	Result step();
 	int clean_duplicates();
-	Set &get_opened_set(const State &state);
-	State get_smallest_state();
+	void store_state(const State &state, Distance dist, Score score);
+	pair<State, Distance> get_smallest_state(bool *is_final);
 	int get_real_open_count();
 	void print_mem();
 	~Solver();

@@ -24,8 +24,8 @@ class State {
 	// construct solved state
 	constexpr State();
 	// construct state from members
-	constexpr State(const ID &id, Score score, Distance distance, Move move);
-	constexpr State(const Data &data, Distance distance, Move move);
+	constexpr State(const ID &id, Move move);
+	constexpr State(const Data &data, Move move);
 	// construct state from another state
 	constexpr State(const State &clone);
 	constexpr State &operator=(const State &ra);
@@ -35,18 +35,17 @@ class State {
 
 	// getters
 	constexpr Move get_movement() const;
-	constexpr uint get_distance() const;
-	constexpr uint get_weight() const;
 	constexpr Score get_index() const;
 	constexpr const ID &get_id() const;
 	constexpr bool is_final() const;
 	constexpr bool is_solvable() const;
 
 	// logic wrappers
-	inline void get_candidates(vector<State> &candidates) const;
-	inline State get_scrambled(const vector<Move> &moves) const;
+	constexpr Score calculate_score() const;
+	inline int get_candidates(std::array<pair<State, Score>, 18> &candidates) const;
 	constexpr State get_parent() const;
 	constexpr State get_child(Move m) const;
+	inline State get_scrambled(const vector<Move> &moves) const;
 
 	// ID Cube conversions
 	constexpr Data get_data() const;
@@ -62,16 +61,12 @@ class State {
 
   private:
 	// calculations
-	constexpr void _apply_data(const Data &data);
-
 	constexpr static void _apply_movement(Data &data, Move m);
 	constexpr static void _apply_movement(Data &data, Move::Direction m);
 	constexpr static Finder _calculate_finder(const Cube &Cube);
 
 	// members, should add up to 128bits :D
 	ID _id;
-	Score _weight;
-	Distance _distance;
 	Move _movement;
 
   public:

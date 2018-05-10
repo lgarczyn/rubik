@@ -105,6 +105,5 @@ using Face = std::array<Column, size>;
 using Cube = std::array<Face, 6>;
 
 using Finder = std::array<Coord, size * size * 6>;
-using weighter = Score (*)(const Cube &data);
 
 #include "Types.cpp"

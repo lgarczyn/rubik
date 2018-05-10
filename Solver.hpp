@@ -19,7 +19,7 @@
 #include <string>
 
 //using set = std::unordered_set<State, custom_hash>;
-using Set = vector<pair<State, Distance>>;
+using Set = vector<StateDistance>;
 using Map = std::map<int, Set>;
 
 //#define DENSE_MAP
@@ -46,9 +46,8 @@ class Solver {
 	  public:
 		int timeComplexity;
 		int sizeComplexity;
-		State actual_state;
-		Score actual_weight;
-		Distance actual_distance;
+		State state;
+		Score weight;
 		vector<Move> movements;
 		bool finished;
 		Result(int timeComplexity, int sizeComplexity);
@@ -56,12 +55,12 @@ class Solver {
 	};
 
 	Solver();
-	Solver(State initial, bool forget);
-	void setup(State initial, bool forget);
+	Solver(State initial);
+	void setup(State initial);
 	Result step();
 	int clean_duplicates();
 	void store_state(const State &state, Distance dist, Score score);
-	pair<State, Distance> get_smallest_state(bool *is_final);
+	StateDistance get_smallest_state(bool *is_final);
 	int get_real_open_count();
 	void print_mem();
 	~Solver();
@@ -73,5 +72,4 @@ class Solver {
 	Universe _universe;
 	int _timeComplexity;
 	int _sizeComplexity;
-	bool _forget;
 };

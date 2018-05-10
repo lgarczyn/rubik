@@ -20,44 +20,40 @@
 #include <chrono>
 #include <ctime>
 
-void print_state() {
-}
+void print_state(Solver::Result &solverResult, struct timespec start) {
+	struct timespec end;
 
-Solver::Result solve_loop(State &initial, int clean_steps) {
-	Solver puzzle(initial, clean_steps == 0);
-	Solver::Result solverResult(0, 0);
-	struct timespec start, end;
-
-	clock_gettime(CLOCK_MONOTONIC, &start);
-	while (1) {
-		solverResult = puzzle.step();
-		if (solverResult.finished)
-			break;
-
-		clear_screen();
-		print_map(solverResult.actual_state);
-		std::cout << "Iteration count: " << solverResult.timeComplexity << std::endl;
-		std::cout << "Solution [Score: "
-		          << (int)solverResult.actual_weight
-		          << "] [ Distance: "
-		          << (int)solverResult.actual_distance
-		          << "]"
-		          << std::endl;
-		for (auto &l : solverResult.movements)
-			std::cout << l;
-		std::cout << std::endl
-		          << std::flush;
-		clock_gettime(CLOCK_MONOTONIC, &end);
-		print_timediff("Time elapsed", start, end);
-		//std::cout << "Memory repartition:" << std::endl;
-		//puzzle.print_mem();
-	}
 	clear_screen();
-	print_map(solverResult.actual_state);
+	print_map(solverResult.state);
 	std::cout << "Iteration count: " << solverResult.timeComplexity << std::endl;
-	std::cout << "Move count: " << solverResult.movements.size() << std::endl;
+	std::cout << "Solution [Score: "
+	          << (int)solverResult.weight
+	          << "] [ Distance: "
+	          << (int)solverResult.movements.size()
+	          << "]"
+	          << std::endl;
+	for (auto &l : solverResult.movements)
+		std::cout << l;
+	std::cout << std::endl;
 	clock_gettime(CLOCK_MONOTONIC, &end);
 	print_timediff("Time elapsed", start, end);
+}
+
+#include <iomanip>
+#include <unistd.h>
+
+Solver::Result solve_loop(State &initial) {
+	Solver puzzle(initial);
+	Solver::Result solverResult(0, 0);
+	struct timespec start;
+
+	clock_gettime(CLOCK_MONOTONIC, &start);
+	do {
+		solverResult = puzzle.step();
+		print_state(solverResult, start);
+		//std::cout << "Memory repartition:" << std::endl;
+		//puzzle.print_mem();
+	} while (solverResult.finished == false);
 
 	return solverResult;
 }
@@ -68,6 +64,7 @@ int main(int ac, char **av) {
 
 	clear_screen();
 
+	//Create scrambles cube, from arg data or randomly
 	parseResult = Parser::parse_args(ac, av);
 	vector<Move> scramble = parseResult.get_data();
 	initial = initial.get_scrambled(scramble);
@@ -76,8 +73,10 @@ int main(int ac, char **av) {
 	print_map(initial);
 	std::cout << "ATTEMPTING SOLUTION" << std::endl;
 
-	Solver::Result solverResult = solve_loop(initial, parseResult.clean_steps); //, parseResult);
+	//Solves the cube
+	Solver::Result solverResult = solve_loop(initial);
 
+	//Offer multiple data visualisation options
 	bool displayHelp = true;
 	while (1) {
 		char c;

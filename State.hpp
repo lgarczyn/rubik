@@ -91,5 +91,22 @@ struct custom_cmp {
 	bool operator()(const State &la, const State &ra) const noexcept;
 };
 
+struct StateDistance {
+	State state;
+	Distance distance;
+
+	StateDistance() : state(), distance(){};
+	StateDistance(const StateDistance &s) : StateDistance() {
+		*this = s;
+	}
+	StateDistance(const State &s, Distance d) : state(s), distance(d) {}
+	~StateDistance() {}
+	StateDistance &operator=(const StateDistance &ra) {
+		state = ra.state;
+		distance = ra.distance;
+		return *this;
+	}
+};
+
 #include "State_Encoding.cpp"
 #include "State_Header.cpp"

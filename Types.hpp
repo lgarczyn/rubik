@@ -51,9 +51,9 @@ enum Index {
 };
 
 enum SquareType {
-	st_corner,
-	st_border,
-	st_center,
+	st_corner = 0,
+	st_border = 1,
+	st_center = 2,
 };
 
 static const uchar max_uid_corner = 8 * 3;

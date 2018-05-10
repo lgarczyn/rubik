@@ -54,7 +54,7 @@ constexpr State State::get_child(Move m) const {
 	return r;
 }
 
-constexpr State State::get_scrambled(const vector<Move> &moves) const {
+inline State State::get_scrambled(const vector<Move> &moves) const {
 	Data d = data_from_id(_id);
 
 	for (uint i = 0; i < moves.size(); i++) {
@@ -63,7 +63,7 @@ constexpr State State::get_scrambled(const vector<Move> &moves) const {
 	return State(d, 0, Move());
 }
 
-constexpr void State::get_candidates(vector<State> &candidates) const {
+inline void State::get_candidates(vector<State> &candidates) const {
 	// get cube of current state
 	Data data_copy = data_from_id(_id);
 	// get movement of current state

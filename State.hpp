@@ -43,8 +43,8 @@ class State {
 	constexpr bool is_solvable() const;
 
 	// logic wrappers
-	constexpr void get_candidates(vector<State> &candidates) const;
-	constexpr State get_scrambled(const vector<Move> &moves) const;
+	inline void get_candidates(vector<State> &candidates) const;
+	inline State get_scrambled(const vector<Move> &moves) const;
 	constexpr State get_parent() const;
 	constexpr State get_child(Move m) const;
 

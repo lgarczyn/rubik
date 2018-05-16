@@ -26,6 +26,7 @@ add_executable( rubik
       Database.cpp
       Parser.cpp
       Solver.cpp
+      Tests.cpp
       main.cpp
       tools.cpp
       State_Const.cpp ) 

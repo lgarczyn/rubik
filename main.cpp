@@ -15,6 +15,7 @@
 #include "Database.hpp"
 #include "Parser.hpp"
 #include "Solver.hpp"
+#include "Tests.hpp"
 #include "Types.hpp"
 #include "tools.hpp"
 #include <chrono>
@@ -61,6 +62,8 @@ Solver::Result solve_loop(State &initial) {
 int main(int ac, char **av) {
 	State initial;
 	Parser::ParseResult parseResult;
+
+	Tests::encoding_tests();
 
 	clear_screen();
 

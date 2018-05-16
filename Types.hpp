@@ -20,8 +20,8 @@
 #include <utility>
 #include <vector>
 
-using std::string;
 using std::pair;
+using std::string;
 using std::vector;
 typedef uint8_t uchar;
 typedef unsigned int uint;
@@ -31,12 +31,14 @@ typedef uint8_t Distance;
 // DO NOT CHANGE
 static const int size = 3;
 
-enum Color { White = 0,
+enum Color {
+	White = 0,
 	Red = 1,
 	Blue = 2,
 	Orange = 4,
 	Green = 5,
-	Yellow = 6 };
+	Yellow = 6
+};
 
 enum Index {
 	Index_U = 0,
@@ -55,6 +57,60 @@ enum SquareType {
 	st_border = 1,
 	st_center = 2,
 };
+
+enum Corner {
+	Corner_ULB = 0,
+	Corner_URB = 1,
+	Corner_ULF = 2,
+	Corner_URF = 3,
+	Corner_DLF = 4,
+	Corner_DRF = 5,
+	Corner_DLB = 6,
+	Corner_DRB = 7,
+};
+
+/*enum CornersKociemba {
+	URF,
+	UFL,
+	ULB,
+	UBR,
+	DFR,
+	DLF,
+	DBL,
+	DRB
+};*/
+
+enum Border {
+	Border_UB = 0,
+	Border_UL = 1,
+	Border_UR = 2,
+	Border_UF = 3,
+
+	Border_FL = 4,
+	Border_RF = 5,
+	Border_BR = 6,
+	Border_LB = 7,
+
+	Border_DF = 8,
+	Border_DL = 9,
+	Border_DR = 10,
+	Border_DB = 11,
+};
+
+/*enum EdgeKociemba {
+	UR,
+	UF,
+	UL,
+	UB,
+	DR,
+	DF,
+	DL,
+	DB,
+	FR,
+	FL,
+	BL,
+	BR
+};*/
 
 static const uchar max_uid_corner = 8 * 3;
 static const uchar max_uid_border = 8 * 3 + 12 * 2;

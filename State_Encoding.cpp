@@ -10,8 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "State.hpp"
 #include "Move.hpp"
+#include "State.hpp"
 
 namespace Encoding {
 
@@ -91,44 +91,36 @@ namespace Encoding {
 		}
 	}
 
-	static constexpr void set_cube_corners_rot(Cube &cube,
+	static constexpr void set_cube_corners_rot(Cube &c,
 	    const DataCorners &data) {
-		set_corner_rot(cube[Index_U][0][0].rot_id, cube[Index_L][0][0].rot_id,
-		    cube[Index_B][0][2].rot_id, data[0].rot_id);
-		set_corner_rot(cube[Index_U][0][2].rot_id, cube[Index_B][0][0].rot_id,
-		    cube[Index_R][0][2].rot_id, data[1].rot_id);
-		set_corner_rot(cube[Index_U][2][0].rot_id, cube[Index_F][0][0].rot_id,
-		    cube[Index_L][0][2].rot_id, data[2].rot_id);
-		set_corner_rot(cube[Index_U][2][2].rot_id, cube[Index_R][0][0].rot_id,
-		    cube[Index_F][0][2].rot_id, data[3].rot_id);
-		set_corner_rot(cube[Index_D][0][0].rot_id, cube[Index_L][2][2].rot_id,
-		    cube[Index_F][2][0].rot_id, data[4].rot_id);
-		set_corner_rot(cube[Index_D][0][2].rot_id, cube[Index_F][2][2].rot_id,
-		    cube[Index_R][2][0].rot_id, data[5].rot_id);
-		set_corner_rot(cube[Index_D][2][0].rot_id, cube[Index_B][2][2].rot_id,
-		    cube[Index_L][2][0].rot_id, data[6].rot_id);
-		set_corner_rot(cube[Index_D][2][2].rot_id, cube[Index_R][2][2].rot_id,
-		    cube[Index_B][2][0].rot_id, data[7].rot_id);
+		set_corner_rot(c[Index_U][0][0].rot_id, c[Index_L][0][0].rot_id, c[Index_B][0][2].rot_id,
+		    data[Corner_ULB].rot_id);
+		set_corner_rot(c[Index_U][0][2].rot_id, c[Index_B][0][0].rot_id, c[Index_R][0][2].rot_id,
+		    data[Corner_URB].rot_id);
+		set_corner_rot(c[Index_U][2][0].rot_id, c[Index_F][0][0].rot_id, c[Index_L][0][2].rot_id,
+		    data[Corner_ULF].rot_id);
+		set_corner_rot(c[Index_U][2][2].rot_id, c[Index_R][0][0].rot_id, c[Index_F][0][2].rot_id,
+		    data[Corner_URF].rot_id);
+		set_corner_rot(c[Index_D][0][0].rot_id, c[Index_L][2][2].rot_id, c[Index_F][2][0].rot_id,
+		    data[Corner_DLF].rot_id);
+		set_corner_rot(c[Index_D][0][2].rot_id, c[Index_F][2][2].rot_id, c[Index_R][2][0].rot_id,
+		    data[Corner_DRF].rot_id);
+		set_corner_rot(c[Index_D][2][0].rot_id, c[Index_B][2][2].rot_id, c[Index_L][2][0].rot_id,
+		    data[Corner_DLB].rot_id);
+		set_corner_rot(c[Index_D][2][2].rot_id, c[Index_R][2][2].rot_id, c[Index_B][2][0].rot_id,
+		    data[Corner_DRB].rot_id);
 	}
 
-	static constexpr void set_cube_corners_pos(Cube &cube,
+	static constexpr void set_cube_corners_pos(Cube &c,
 	    const DataCorners &data) {
-		cube[Index_U][0][0].cube_id = cube[Index_L][0][0].cube_id =
-		    cube[Index_B][0][2].cube_id = data[0].cube_id;
-		cube[Index_U][0][2].cube_id = cube[Index_R][0][2].cube_id =
-		    cube[Index_B][0][0].cube_id = data[1].cube_id;
-		cube[Index_U][2][0].cube_id = cube[Index_L][0][2].cube_id =
-		    cube[Index_F][0][0].cube_id = data[2].cube_id;
-		cube[Index_U][2][2].cube_id = cube[Index_R][0][0].cube_id =
-		    cube[Index_F][0][2].cube_id = data[3].cube_id;
-		cube[Index_D][0][0].cube_id = cube[Index_L][2][2].cube_id =
-		    cube[Index_F][2][0].cube_id = data[4].cube_id;
-		cube[Index_D][0][2].cube_id = cube[Index_R][2][0].cube_id =
-		    cube[Index_F][2][2].cube_id = data[5].cube_id;
-		cube[Index_D][2][0].cube_id = cube[Index_L][2][0].cube_id =
-		    cube[Index_B][2][2].cube_id = data[6].cube_id;
-		cube[Index_D][2][2].cube_id = cube[Index_R][2][2].cube_id =
-		    cube[Index_B][2][0].cube_id = data[7].cube_id;
+		c[Index_U][0][0].cube_id = c[Index_L][0][0].cube_id = c[Index_B][0][2].cube_id = data[Corner_ULB].cube_id;
+		c[Index_U][0][2].cube_id = c[Index_R][0][2].cube_id = c[Index_B][0][0].cube_id = data[Corner_URB].cube_id;
+		c[Index_U][2][0].cube_id = c[Index_L][0][2].cube_id = c[Index_F][0][0].cube_id = data[Corner_ULF].cube_id;
+		c[Index_U][2][2].cube_id = c[Index_R][0][0].cube_id = c[Index_F][0][2].cube_id = data[Corner_URF].cube_id;
+		c[Index_D][0][0].cube_id = c[Index_L][2][2].cube_id = c[Index_F][2][0].cube_id = data[Corner_DLF].cube_id;
+		c[Index_D][0][2].cube_id = c[Index_R][2][0].cube_id = c[Index_F][2][2].cube_id = data[Corner_DRF].cube_id;
+		c[Index_D][2][0].cube_id = c[Index_L][2][0].cube_id = c[Index_B][2][2].cube_id = data[Corner_DLB].cube_id;
+		c[Index_D][2][2].cube_id = c[Index_R][2][2].cube_id = c[Index_B][2][0].cube_id = data[Corner_DRB].cube_id;
 	}
 
 	static constexpr void set_cube_center(Cube &cube) {
@@ -149,50 +141,50 @@ namespace Encoding {
 
 	static constexpr void set_cube_borders_rot(Cube &cube,
 	    const DataBorders &data) {
-		cube[Index_U][0][1].rot_id = data[0].rot_id;
-		cube[Index_B][0][1].rot_id = !data[0].rot_id;
-		cube[Index_U][1][0].rot_id = data[1].rot_id;
-		cube[Index_L][0][1].rot_id = !data[1].rot_id;
-		cube[Index_U][1][2].rot_id = data[2].rot_id;
-		cube[Index_R][0][1].rot_id = !data[2].rot_id;
-		cube[Index_U][2][1].rot_id = data[3].rot_id;
-		cube[Index_F][0][1].rot_id = !data[3].rot_id;
+		cube[Index_U][0][1].rot_id = data[Border_UB].rot_id;
+		cube[Index_B][0][1].rot_id = !data[Border_UB].rot_id;
+		cube[Index_U][1][0].rot_id = data[Border_UL].rot_id;
+		cube[Index_L][0][1].rot_id = !data[Border_UL].rot_id;
+		cube[Index_U][1][2].rot_id = data[Border_UR].rot_id;
+		cube[Index_R][0][1].rot_id = !data[Border_UR].rot_id;
+		cube[Index_U][2][1].rot_id = data[Border_UF].rot_id;
+		cube[Index_F][0][1].rot_id = !data[Border_UF].rot_id;
 
-		cube[Index_F][1][0].rot_id = data[4].rot_id;
-		cube[Index_L][1][2].rot_id = !data[4].rot_id;
-		cube[Index_R][1][0].rot_id = data[5].rot_id;
-		cube[Index_F][1][2].rot_id = !data[5].rot_id;
-		cube[Index_B][1][0].rot_id = data[6].rot_id;
-		cube[Index_R][1][2].rot_id = !data[6].rot_id;
-		cube[Index_L][1][0].rot_id = data[7].rot_id;
-		cube[Index_B][1][2].rot_id = !data[7].rot_id;
+		cube[Index_F][1][0].rot_id = data[Border_FL].rot_id;
+		cube[Index_L][1][2].rot_id = !data[Border_FL].rot_id;
+		cube[Index_R][1][0].rot_id = data[Border_RF].rot_id;
+		cube[Index_F][1][2].rot_id = !data[Border_RF].rot_id;
+		cube[Index_B][1][0].rot_id = data[Border_BR].rot_id;
+		cube[Index_R][1][2].rot_id = !data[Border_BR].rot_id;
+		cube[Index_L][1][0].rot_id = data[Border_LB].rot_id;
+		cube[Index_B][1][2].rot_id = !data[Border_LB].rot_id;
 
-		cube[Index_D][0][1].rot_id = data[8].rot_id;
-		cube[Index_F][2][1].rot_id = !data[8].rot_id;
-		cube[Index_D][1][0].rot_id = data[9].rot_id;
-		cube[Index_L][2][1].rot_id = !data[9].rot_id;
-		cube[Index_D][1][2].rot_id = data[10].rot_id;
-		cube[Index_R][2][1].rot_id = !data[10].rot_id;
-		cube[Index_D][2][1].rot_id = data[11].rot_id;
-		cube[Index_B][2][1].rot_id = !data[11].rot_id;
+		cube[Index_D][0][1].rot_id = data[Border_DF].rot_id;
+		cube[Index_F][2][1].rot_id = !data[Border_DF].rot_id;
+		cube[Index_D][1][0].rot_id = data[Border_DL].rot_id;
+		cube[Index_L][2][1].rot_id = !data[Border_DL].rot_id;
+		cube[Index_D][1][2].rot_id = data[Border_DR].rot_id;
+		cube[Index_R][2][1].rot_id = !data[Border_DR].rot_id;
+		cube[Index_D][2][1].rot_id = data[Border_DB].rot_id;
+		cube[Index_B][2][1].rot_id = !data[Border_DB].rot_id;
 	}
 
 	static constexpr void set_cube_borders_pos(Cube &c,
 	    const DataBorders &data) {
-		c[Index_U][0][1].cube_id = c[Index_B][0][1].cube_id = data[0].cube_id;
-		c[Index_U][1][0].cube_id = c[Index_L][0][1].cube_id = data[1].cube_id;
-		c[Index_U][1][2].cube_id = c[Index_R][0][1].cube_id = data[2].cube_id;
-		c[Index_U][2][1].cube_id = c[Index_F][0][1].cube_id = data[3].cube_id;
+		c[Index_U][0][1].cube_id = c[Index_B][0][1].cube_id = data[Border_UB].cube_id;
+		c[Index_U][1][0].cube_id = c[Index_L][0][1].cube_id = data[Border_UL].cube_id;
+		c[Index_U][1][2].cube_id = c[Index_R][0][1].cube_id = data[Border_UR].cube_id;
+		c[Index_U][2][1].cube_id = c[Index_F][0][1].cube_id = data[Border_UF].cube_id;
 
-		c[Index_F][1][0].cube_id = c[Index_L][1][2].cube_id = data[4].cube_id;
-		c[Index_R][1][0].cube_id = c[Index_F][1][2].cube_id = data[5].cube_id;
-		c[Index_B][1][0].cube_id = c[Index_R][1][2].cube_id = data[6].cube_id;
-		c[Index_L][1][0].cube_id = c[Index_B][1][2].cube_id = data[7].cube_id;
+		c[Index_F][1][0].cube_id = c[Index_L][1][2].cube_id = data[Border_FL].cube_id;
+		c[Index_R][1][0].cube_id = c[Index_F][1][2].cube_id = data[Border_RF].cube_id;
+		c[Index_B][1][0].cube_id = c[Index_R][1][2].cube_id = data[Border_BR].cube_id;
+		c[Index_L][1][0].cube_id = c[Index_B][1][2].cube_id = data[Border_LB].cube_id;
 
-		c[Index_D][0][1].cube_id = c[Index_F][2][1].cube_id = data[8].cube_id;
-		c[Index_D][1][0].cube_id = c[Index_L][2][1].cube_id = data[9].cube_id;
-		c[Index_D][1][2].cube_id = c[Index_R][2][1].cube_id = data[10].cube_id;
-		c[Index_D][2][1].cube_id = c[Index_B][2][1].cube_id = data[11].cube_id;
+		c[Index_D][0][1].cube_id = c[Index_F][2][1].cube_id = data[Border_DF].cube_id;
+		c[Index_D][1][0].cube_id = c[Index_L][2][1].cube_id = data[Border_DL].cube_id;
+		c[Index_D][1][2].cube_id = c[Index_R][2][1].cube_id = data[Border_DR].cube_id;
+		c[Index_D][2][1].cube_id = c[Index_B][2][1].cube_id = data[Border_DB].cube_id;
 	}
 
 	static Coord coord_finder[max_uid] = {
@@ -325,31 +317,29 @@ namespace Encoding {
 
 	void constexpr _apply_movement(Data &data, Move::Direction m) {
 		switch (m) {
-		case Move::Direction::None:
-			return;
 		case Move::Direction::Up:
-			swap_data_poles(data.corners, 1, 3, 2, 0);
-			swap_data_poles(data.borders, 3, 1, 0, 2);
+			swap_data_poles(data.corners, Corner_URB, Corner_URF, Corner_ULF, Corner_ULB);
+			swap_data_poles(data.borders, Border_UF, Border_UL, Border_UB, Border_UR);
 			break;
 		case Move::Direction::Front:
-			swap_data(data.corners, 5, 4, 2, 3);
-			swap_data(data.borders, 4, 3, 5, 8);
+			swap_data(data.corners, Corner_DRF, Corner_DLF, Corner_ULF, Corner_URF);
+			swap_data(data.borders, Border_FL, Border_UF, Border_RF, Border_DF);
 			break;
 		case Move::Direction::Right:
-			swap_data(data.corners, 3, 1, 7, 5);
-			swap_data(data.borders, 5, 2, 6, 10);
+			swap_data(data.corners, Corner_URF, Corner_URB, Corner_DRB, Corner_DRF);
+			swap_data(data.borders, Border_RF, Border_UR, Border_BR, Border_DR);
 			break;
 		case Move::Direction::Back:
-			swap_data(data.corners, 1, 0, 6, 7);
-			swap_data(data.borders, 6, 0, 7, 11);
+			swap_data(data.corners, Corner_URB, Corner_ULB, Corner_DLB, Corner_DRB);
+			swap_data(data.borders, Border_BR, Border_UB, Border_LB, Border_DB);
 			break;
 		case Move::Direction::Left:
-			swap_data(data.corners, 0, 2, 4, 6);
-			swap_data(data.borders, 7, 1, 4, 9);
+			swap_data(data.corners, Corner_ULB, Corner_ULF, Corner_DLF, Corner_DLB);
+			swap_data(data.borders, Border_LB, Border_UL, Border_FL, Border_DL);
 			break;
 		case Move::Direction::Down:
-			swap_data_poles(data.corners, 4, 5, 7, 6);
-			swap_data_poles(data.borders, 11, 9, 8, 10);
+			swap_data_poles(data.corners, Corner_DLF, Corner_DRF, Corner_DRB, Corner_DLB);
+			swap_data_poles(data.borders, Border_DB, Border_DL, Border_DF, Border_DR);
 			break;
 		default:
 			break;
@@ -382,15 +372,15 @@ namespace Encoding {
 		uchar values[8] = {0, 1, 2, 3, 4, 5, 6, 7};
 		uint s = 0;
 
-		s = get_fact_value(data[0].cube_id, values, 8);
-		s = get_fact_value(data[1].cube_id, values, 8) + s * 7;
-		s = get_fact_value(data[2].cube_id, values, 8) + s * 6;
-		s = get_fact_value(data[3].cube_id, values, 8) + s * 5;
-		s = get_fact_value(data[4].cube_id, values, 8) + s * 4;
-		s = get_fact_value(data[5].cube_id, values, 8) + s * 3;
-		s = get_fact_value(data[6].cube_id, values, 8) + s * 2;
+		s = get_fact_value(data[Corner_ULB].cube_id, values, 8);
+		s = get_fact_value(data[Corner_URB].cube_id, values, 8) + s * 7;
+		s = get_fact_value(data[Corner_ULF].cube_id, values, 8) + s * 6;
+		s = get_fact_value(data[Corner_URF].cube_id, values, 8) + s * 5;
+		s = get_fact_value(data[Corner_DLF].cube_id, values, 8) + s * 4;
+		s = get_fact_value(data[Corner_DRF].cube_id, values, 8) + s * 3;
+		s = get_fact_value(data[Corner_DLB].cube_id, values, 8) + s * 2;
 		// implied but useless line, since it always returns 0;
-		// s = get_fact_value(data[7], values, 8) + s * 1;
+		// s = get_fact_value(data[Corner_DRB], values, 8) + s * 1;
 		return s;
 	}
 
@@ -398,56 +388,69 @@ namespace Encoding {
 		uchar values[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 		uint s = 0;
 
-		s = get_fact_value(data[0].cube_id, values, 12);
-		s = get_fact_value(data[1].cube_id, values, 12) + s * 11;
-		s = get_fact_value(data[2].cube_id, values, 12) + s * 10;
-		s = get_fact_value(data[3].cube_id, values, 12) + s * 9;
+		s = get_fact_value(data[Border_UB].cube_id, values, 12);
+		s = get_fact_value(data[Border_UL].cube_id, values, 12) + s * 11;
+		s = get_fact_value(data[Border_UR].cube_id, values, 12) + s * 10;
+		s = get_fact_value(data[Border_UF].cube_id, values, 12) + s * 9;
 
-		s = get_fact_value(data[4].cube_id, values, 12) + s * 8;
-		s = get_fact_value(data[5].cube_id, values, 12) + s * 7;
-		s = get_fact_value(data[6].cube_id, values, 12) + s * 6;
-		s = get_fact_value(data[7].cube_id, values, 12) + s * 5;
+		s = get_fact_value(data[Border_FL].cube_id, values, 12) + s * 8;
+		s = get_fact_value(data[Border_RF].cube_id, values, 12) + s * 7;
+		s = get_fact_value(data[Border_BR].cube_id, values, 12) + s * 6;
+		s = get_fact_value(data[Border_LB].cube_id, values, 12) + s * 5;
 
-		s = get_fact_value(data[8].cube_id, values, 12) + s * 4;
-		s = get_fact_value(data[9].cube_id, values, 12) + s * 3;
-		s = get_fact_value(data[10].cube_id, values, 12) + s * 2;
+		s = get_fact_value(data[Border_DF].cube_id, values, 12) + s * 4;
+		s = get_fact_value(data[Border_DL].cube_id, values, 12) + s * 3;
+		s = get_fact_value(data[Border_DR].cube_id, values, 12) + s * 2;
 		// implied but useless line, since it always returns 0;
-		// s = get_fact_value(data[11], values, 12) + s * 1;
+		// s = get_fact_value(data[Border_DB], values, 12) + s * 1;
 		return s;
 	}
 
 	static constexpr uint get_id_borders_rot(const DataBorders &data) {
 		uint s = 0;
 
-		s = s * 2 + data[0].rot_id;
-		s = s * 2 + data[1].rot_id;
-		s = s * 2 + data[2].rot_id;
-		s = s * 2 + data[3].rot_id;
-
-		s = s * 2 + data[4].rot_id;
-		s = s * 2 + data[5].rot_id;
-		s = s * 2 + data[6].rot_id;
-		s = s * 2 + data[7].rot_id;
-
-		s = s * 2 + data[8].rot_id;
-		s = s * 2 + data[9].rot_id;
-		s = s * 2 + data[10].rot_id;
-		s = s * 2 + data[11].rot_id;
+		s = s * 2 + data[Border_UB].rot_id;
+		s = s * 2 + data[Border_UL].rot_id;
+		s = s * 2 + data[Border_UR].rot_id;
+		s = s * 2 + data[Border_UF].rot_id;
+		s = s * 2 + data[Border_FL].rot_id;
+		s = s * 2 + data[Border_RF].rot_id;
+		s = s * 2 + data[Border_BR].rot_id;
+		s = s * 2 + data[Border_LB].rot_id;
+		s = s * 2 + data[Border_DF].rot_id;
+		s = s * 2 + data[Border_DL].rot_id;
+		s = s * 2 + data[Border_DR].rot_id;
+		s = s * 2 + data[Border_DB].rot_id;
 
 		return s;
+		/*
+		return (data[Border_UB].rot_id << Border_UB) |
+		       (data[Border_UL].rot_id << Border_UL) |
+		       (data[Border_UR].rot_id << Border_UR) |
+		       (data[Border_UF].rot_id << Border_UF) |
+
+		       (data[Border_FL].rot_id << Border_FL) |
+		       (data[Border_RF].rot_id << Border_RF) |
+		       (data[Border_BR].rot_id << Border_BR) |
+		       (data[Border_LB].rot_id << Border_LB) |
+
+		       (data[Border_DF].rot_id << Border_DF) |
+		       (data[Border_DL].rot_id << Border_DL) |
+		       (data[Border_DR].rot_id << Border_DR) |
+		       (data[Border_DB].rot_id << Border_DB);*/
 	}
 
 	static constexpr uint get_id_corners_rot(const DataCorners &data) {
 		uint s = 0;
 
-		s = s * 3 + data[0].rot_id;
-		s = s * 3 + data[1].rot_id;
-		s = s * 3 + data[2].rot_id;
-		s = s * 3 + data[3].rot_id;
-		s = s * 3 + data[4].rot_id;
-		s = s * 3 + data[5].rot_id;
-		s = s * 3 + data[6].rot_id;
-		s = s * 3 + data[7].rot_id;
+		s = s * 3 + data[Corner_DRB].rot_id;
+		s = s * 3 + data[Corner_DLB].rot_id;
+		s = s * 3 + data[Corner_DRF].rot_id;
+		s = s * 3 + data[Corner_DLF].rot_id;
+		s = s * 3 + data[Corner_URF].rot_id;
+		s = s * 3 + data[Corner_ULF].rot_id;
+		s = s * 3 + data[Corner_URB].rot_id;
+		s = s * 3 + data[Corner_ULB].rot_id;
 		return s;
 	}
 
@@ -461,84 +464,73 @@ namespace Encoding {
 	}
 
 	static constexpr void set_data_corners_rot(DataCorners &data, uint id) {
-		data[7].rot_id = id % 3;
+		data[Corner_ULB].rot_id = id % 3;
 		id /= 3;
-		data[6].rot_id = id % 3;
+		data[Corner_URB].rot_id = id % 3;
 		id /= 3;
-		data[5].rot_id = id % 3;
+		data[Corner_ULF].rot_id = id % 3;
 		id /= 3;
-		data[4].rot_id = id % 3;
+		data[Corner_URF].rot_id = id % 3;
 		id /= 3;
-		data[3].rot_id = id % 3;
+		data[Corner_DLF].rot_id = id % 3;
 		id /= 3;
-		data[2].rot_id = id % 3;
+		data[Corner_DRF].rot_id = id % 3;
 		id /= 3;
-		data[1].rot_id = id % 3;
+		data[Corner_DLB].rot_id = id % 3;
 		id /= 3;
-		data[0].rot_id = id; // s % 3)); s /= 3;
+		data[Corner_DRB].rot_id = id; // s % 3)); s /= 3;
 	}
 
 	static constexpr void set_data_borders_rot(DataBorders &data,
 	    uint id) {
 		uint s = id;
 
-		data[11].rot_id = s % 2;
-		s /= 2;
-		data[10].rot_id = s % 2;
-		s /= 2;
-		data[9].rot_id = s % 2;
-		s /= 2;
-		data[8].rot_id = s % 2;
-		s /= 2;
+		data[Border_UB].rot_id = (s >> 11);
+		data[Border_UL].rot_id = (s >> 10) % 2;
+		data[Border_UR].rot_id = (s >> 9) % 2;
+		data[Border_UF].rot_id = (s >> 8) % 2;
 
-		data[7].rot_id = s % 2;
-		s /= 2;
-		data[6].rot_id = s % 2;
-		s /= 2;
-		data[5].rot_id = s % 2;
-		s /= 2;
-		data[4].rot_id = s % 2;
-		s /= 2;
+		data[Border_FL].rot_id = (s >> 7) % 2;
+		data[Border_RF].rot_id = (s >> 6) % 2;
+		data[Border_BR].rot_id = (s >> 5) % 2;
+		data[Border_LB].rot_id = (s >> 4) % 2;
 
-		data[3].rot_id = s % 2;
-		s /= 2;
-		data[2].rot_id = s % 2;
-		s /= 2;
-		data[1].rot_id = s % 2;
-		s /= 2;
-		data[0].rot_id = s; // s % 2)); s /= 2;
+		data[Border_DF].rot_id = (s >> 3) % 2;
+		data[Border_DL].rot_id = (s >> 2) % 2;
+		data[Border_DR].rot_id = (s >> 1) % 2;
+		data[Border_DB].rot_id = (s >> 0) % 2;
 	}
 
 	static constexpr void set_data_corners_pos(DataCorners &data, uint id) {
 		uchar values[8] = {0, 1, 2, 3, 4, 5, 6, 7};
 
-		data[0].cube_id = get_value_fact(id, values, 8, 8);
-		data[1].cube_id = get_value_fact(id, values, 7, 8);
-		data[2].cube_id = get_value_fact(id, values, 6, 8);
-		data[3].cube_id = get_value_fact(id, values, 5, 8);
-		data[4].cube_id = get_value_fact(id, values, 4, 8);
-		data[5].cube_id = get_value_fact(id, values, 3, 8);
-		data[6].cube_id = get_value_fact(id, values, 2, 8);
-		data[7].cube_id = get_value_fact(id, values, 1, 8);
+		data[Corner_ULB].cube_id = get_value_fact(id, values, 8, 8);
+		data[Corner_URB].cube_id = get_value_fact(id, values, 7, 8);
+		data[Corner_ULF].cube_id = get_value_fact(id, values, 6, 8);
+		data[Corner_URF].cube_id = get_value_fact(id, values, 5, 8);
+		data[Corner_DLF].cube_id = get_value_fact(id, values, 4, 8);
+		data[Corner_DRF].cube_id = get_value_fact(id, values, 3, 8);
+		data[Corner_DLB].cube_id = get_value_fact(id, values, 2, 8);
+		data[Corner_DRB].cube_id = get_value_fact(id, values, 1, 8);
 	}
 
 	static constexpr void set_data_borders_pos(DataBorders &data, uint id) {
 		uchar values[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
 
-		data[0].cube_id = get_value_fact(id, values, 12, 12);
-		data[1].cube_id = get_value_fact(id, values, 11, 12);
-		data[2].cube_id = get_value_fact(id, values, 10, 12);
-		data[3].cube_id = get_value_fact(id, values, 9, 12);
+		data[Border_UB].cube_id = get_value_fact(id, values, 12, 12);
+		data[Border_UL].cube_id = get_value_fact(id, values, 11, 12);
+		data[Border_UR].cube_id = get_value_fact(id, values, 10, 12);
+		data[Border_UF].cube_id = get_value_fact(id, values, 9, 12);
 
-		data[4].cube_id = get_value_fact(id, values, 8, 12);
-		data[5].cube_id = get_value_fact(id, values, 7, 12);
-		data[6].cube_id = get_value_fact(id, values, 6, 12);
-		data[7].cube_id = get_value_fact(id, values, 5, 12);
+		data[Border_FL].cube_id = get_value_fact(id, values, 8, 12);
+		data[Border_RF].cube_id = get_value_fact(id, values, 7, 12);
+		data[Border_BR].cube_id = get_value_fact(id, values, 6, 12);
+		data[Border_LB].cube_id = get_value_fact(id, values, 5, 12);
 
-		data[8].cube_id = get_value_fact(id, values, 4, 12);
-		data[9].cube_id = get_value_fact(id, values, 3, 12);
-		data[10].cube_id = get_value_fact(id, values, 2, 12);
-		data[11].cube_id = get_value_fact(id, values, 1, 12);
+		data[Border_DF].cube_id = get_value_fact(id, values, 4, 12);
+		data[Border_DL].cube_id = get_value_fact(id, values, 3, 12);
+		data[Border_DR].cube_id = get_value_fact(id, values, 2, 12);
+		data[Border_DB].cube_id = get_value_fact(id, values, 1, 12);
 	}
 
 	constexpr Data data_from_id(const ID id) {
@@ -555,86 +547,7 @@ namespace Encoding {
 		return cube_from_data(d);
 	}
 
-	static constexpr uint get_id_corners_pos(const Cube &cube) {
-		uchar values[8] = {0, 1, 2, 3, 4, 5, 6, 7};
-		uint s = 0;
-
-		s = get_fact_value(cube[Index_U][0][0].cube_id, values, 8);
-		s = get_fact_value(cube[Index_U][0][2].cube_id, values, 8) + s * 7;
-		s = get_fact_value(cube[Index_U][2][0].cube_id, values, 8) + s * 6;
-		s = get_fact_value(cube[Index_U][2][2].cube_id, values, 8) + s * 5;
-		s = get_fact_value(cube[Index_D][0][0].cube_id, values, 8) + s * 4;
-		s = get_fact_value(cube[Index_D][0][2].cube_id, values, 8) + s * 3;
-		s = get_fact_value(cube[Index_D][2][0].cube_id, values, 8) + s * 2;
-		// s = get_fact_value(cube[Index_D][2][2].cube_id, values, 8) + s * 1;
-		return s;
-	}
-
-	static constexpr uint get_id_borders_pos(const Cube &cube) {
-		uchar values[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
-		uint s = 0;
-
-		s = get_fact_value(cube[Index_U][0][1].cube_id, values, 12);
-		s = get_fact_value(cube[Index_U][1][0].cube_id, values, 12) + s * 11;
-		s = get_fact_value(cube[Index_U][1][2].cube_id, values, 12) + s * 10;
-		s = get_fact_value(cube[Index_U][2][1].cube_id, values, 12) + s * 9;
-
-		s = get_fact_value(cube[Index_F][1][0].cube_id, values, 12) + s * 8;
-		s = get_fact_value(cube[Index_R][1][0].cube_id, values, 12) + s * 7;
-		s = get_fact_value(cube[Index_B][1][0].cube_id, values, 12) + s * 6;
-		s = get_fact_value(cube[Index_L][1][0].cube_id, values, 12) + s * 5;
-
-		s = get_fact_value(cube[Index_D][0][1].cube_id, values, 12) + s * 4;
-		s = get_fact_value(cube[Index_D][1][0].cube_id, values, 12) + s * 3;
-		s = get_fact_value(cube[Index_D][1][2].cube_id, values, 12) + s * 2;
-		// s = get_fact_value(cube[Index_D][2][1].cube_id, values, 12) + s * 1;
-		return s;
-	}
-
-	static constexpr uint get_id_corners_rot(const Cube &cube) {
-		uint s = 0;
-
-		s = cube[Index_U][0][0].rot_id;
-		s = s * 3 + cube[Index_U][0][2].rot_id;
-		s = s * 3 + cube[Index_U][2][0].rot_id;
-		s = s * 3 + cube[Index_U][2][2].rot_id;
-		s = s * 3 + cube[Index_D][0][0].rot_id;
-		s = s * 3 + cube[Index_D][0][2].rot_id;
-		s = s * 3 + cube[Index_D][2][0].rot_id;
-		s = s * 3 + cube[Index_D][2][2].rot_id;
-		return s;
-	}
-
-	static constexpr uint get_id_borders_rot(const Cube &cube) {
-		uint s = 0;
-
-		s = cube[Index_U][0][1].rot_id;
-		s = s * 2 + cube[Index_U][1][0].rot_id;
-		s = s * 2 + cube[Index_U][1][2].rot_id;
-		s = s * 2 + cube[Index_U][2][1].rot_id;
-
-		s = s * 2 + cube[Index_F][1][0].rot_id;
-		s = s * 2 + cube[Index_R][1][0].rot_id;
-		s = s * 2 + cube[Index_B][1][0].rot_id;
-		s = s * 2 + cube[Index_L][1][0].rot_id;
-
-		s = s * 2 + cube[Index_D][0][1].rot_id;
-		s = s * 2 + cube[Index_D][1][0].rot_id;
-		s = s * 2 + cube[Index_D][1][2].rot_id;
-		s = s * 2 + cube[Index_D][2][1].rot_id;
-
-		return s;
-	}
-
-	constexpr ID id_from_cube(const Cube &cube) {
-		ID id = ID();
-		id.corners_pos = get_id_corners_pos(cube);
-		id.corners_rot = get_id_corners_rot(cube);
-		id.borders_pos = get_id_borders_pos(cube);
-		id.borders_rot = get_id_borders_rot(cube);
-		return id;
-	}
-}
+} // namespace Encoding
 
 constexpr Finder State::_calculate_finder(const Cube &cube) {
 	return Encoding::_calculate_finder(cube);
@@ -650,9 +563,6 @@ constexpr Data State::data_from_id(const ID id) {
 }
 constexpr Cube State::cube_from_id(const ID id) {
 	return Encoding::cube_from_id(id);
-}
-constexpr ID State::id_from_cube(const Cube &cube) {
-	return Encoding::id_from_cube(cube);
 }
 constexpr void State::_apply_movement(Data &data, Move::Direction m) {
 	Encoding::_apply_movement(data, m);

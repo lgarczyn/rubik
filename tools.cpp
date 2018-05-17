@@ -65,7 +65,7 @@ void print_line(const Cube &cube, int s, int l) {
 		int dist = Heuristics::SquareDistance(
 		    State::solution_cube[s][l][c].get_uid(c, l),
 		    uid);
-		Color color = State::solution_colors[Encoding::coord_from_uid(uid).f];
+		Color color = State::solution_colors[Encoding::solution_finder[uid].f];
 
 		bool correct = State::cube_from_id(ID())[s][l][c] == sq;
 
@@ -117,7 +117,7 @@ void print_line_diff(const Cube &cube, int face, int line, const char **text) {
 
 		int uid = sq.get_uid(line, c);
 
-		Color color = State::solution_colors[Encoding::coord_from_uid(uid).f];
+		Color color = State::solution_colors[Encoding::solution_finder[uid].f];
 
 		if (text)
 			print_square_diff(color, text[c]);
@@ -192,8 +192,8 @@ void print_map(const State &state) {
 	print_map(cube);
 }
 
-void print_line_dist(Coord pos, int s, int l) {
-	for (int c = 0; c < size; c++) {
+void print_line_dist(Coord pos, uchar s, uchar l) {
+	for (uchar c = 0; c < size; c++) {
 		Coord p = (Coord){s, l, c};
 		int dist = Heuristics::SquareDistance(pos, p);
 		int rdist = Heuristics::SquareDistance(p, pos);

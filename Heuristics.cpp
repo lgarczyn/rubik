@@ -32,8 +32,8 @@ constexpr int _get_opposite(int a) {
 }
 
 constexpr int Heuristics::SquareDistance(int uid_a, int uid_b) {
-	Coord a = Encoding::coord_from_uid(uid_a);
-	Coord b = Encoding::coord_from_uid(uid_b);
+	Coord a = Encoding::solution_finder[uid_a];
+	Coord b = Encoding::solution_finder[uid_b];
 	return SquareDistance(a, b);
 }
 

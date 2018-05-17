@@ -10,17 +10,17 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Move.hpp"
 #include "State.hpp"
+#include "Move.hpp"
 
 namespace Encoding {
 
 	constexpr Finder _calculate_finder(const Cube &cube) {
 		Finder finder = Finder();
 
-		for (int s = Index_Start; s < Index_End; s++)
-			for (int l = 0; l < size; l++)
-				for (int c = 0; c < size; c++) {
+		for (uchar s = Index_Start; s < Index_End; s++)
+			for (uchar l = 0; l < size; l++)
+				for (uchar c = 0; c < size; c++) {
 					Coord co = (Coord){s, l, c};
 					int id =
 					    cube[s][l][c].get_uid(l, c);
@@ -110,19 +110,12 @@ namespace Encoding {
 	}
 
 	static constexpr void set_cube_center(Cube &cube) {
-		cube[Index_U][1][1].cube_id = 0;
-		cube[Index_F][1][1].cube_id = 1;
-		cube[Index_R][1][1].cube_id = 2;
-		cube[Index_B][1][1].cube_id = 3;
-		cube[Index_L][1][1].cube_id = 4;
-		cube[Index_D][1][1].cube_id = 5;
-
-		cube[Index_U][1][1].rot_id = 0;
-		cube[Index_F][1][1].rot_id = 0;
-		cube[Index_R][1][1].rot_id = 0;
-		cube[Index_B][1][1].rot_id = 0;
-		cube[Index_L][1][1].rot_id = 0;
-		cube[Index_D][1][1].rot_id = 0;
+		cube[Index_U][1][1] = Square(0, 0);
+		cube[Index_F][1][1] = Square(1, 0);
+		cube[Index_R][1][1] = Square(2, 0);
+		cube[Index_B][1][1] = Square(3, 0);
+		cube[Index_L][1][1] = Square(4, 0);
+		cube[Index_D][1][1] = Square(5, 0);
 	}
 
 	static constexpr void set_cube_borders_rot(Cube &cube,
@@ -171,70 +164,6 @@ namespace Encoding {
 		c[Index_D][1][0].cube_id = c[Index_L][2][1].cube_id = data[Border_DL].cube_id;
 		c[Index_D][1][2].cube_id = c[Index_R][2][1].cube_id = data[Border_DR].cube_id;
 		c[Index_D][2][1].cube_id = c[Index_B][2][1].cube_id = data[Border_DB].cube_id;
-	}
-
-	static Coord coord_finder[max_uid] = {
-	    {Index_U, 0, 0}, //corner 0, rot 0
-	    {Index_L, 0, 0}, //corner 0, rot 1
-	    {Index_B, 0, 2}, //corner 0, rot 2
-	    {Index_U, 0, 2}, //corner 1, rot 0
-	    {Index_B, 0, 0}, //corner 1, rot 1
-	    {Index_R, 0, 2}, //corner 1, rot 2
-	    {Index_U, 2, 0}, //corner 2, rot 0
-	    {Index_F, 0, 0}, //corner 2, rot 1
-	    {Index_L, 0, 2}, //corner 2, rot 2
-	    {Index_U, 2, 2}, //corner 3, rot 0
-	    {Index_R, 0, 0}, //corner 3, rot 1
-	    {Index_F, 0, 2}, //corner 3, rot 2
-	    {Index_D, 0, 0}, //corner 4, rot 0
-	    {Index_L, 2, 2}, //corner 4, rot 1
-	    {Index_F, 2, 0}, //corner 4, rot 2
-	    {Index_D, 0, 2}, //corner 5, rot 0
-	    {Index_F, 2, 2}, //corner 5, rot 1
-	    {Index_R, 2, 0}, //corner 5, rot 2
-	    {Index_D, 2, 0}, //corner 6, rot 0
-	    {Index_B, 2, 2}, //corner 6, rot 1
-	    {Index_L, 2, 0}, //corner 6, rot 2
-	    {Index_D, 2, 2}, //corner 7, rot 0
-	    {Index_R, 2, 2}, //corner 7, rot 1
-	    {Index_B, 2, 0}, //corner 7, rot 2
-
-	    {Index_U, 0, 1}, //border 0, rot 0
-	    {Index_B, 0, 1}, //border 0, rot 1
-	    {Index_U, 1, 0}, //border 1, rot 0
-	    {Index_L, 0, 1}, //border 1, rot 1
-	    {Index_U, 1, 2}, //border 2, rot 0
-	    {Index_R, 0, 1}, //border 2, rot 1
-	    {Index_U, 2, 1}, //border 3, rot 0
-	    {Index_F, 0, 1}, //border 3, rot 1
-	    {Index_F, 1, 0}, //border 4, rot 0
-	    {Index_L, 1, 2}, //border 4, rot 1
-	    {Index_R, 1, 0}, //border 5, rot 0
-	    {Index_F, 1, 2}, //border 5, rot 1
-	    {Index_B, 1, 0}, //border 6, rot 0
-	    {Index_R, 1, 2}, //border 6, rot 1
-	    {Index_L, 1, 0}, //border 7, rot 0
-	    {Index_B, 1, 2}, //border 7, rot 1
-	    {Index_D, 0, 1}, //border 8, rot 0
-	    {Index_F, 2, 1}, //border 8, rot 1
-	    {Index_D, 1, 0}, //border 9, rot 0
-	    {Index_L, 2, 1}, //border 9, rot 1
-	    {Index_D, 1, 2}, //border 10, rot 0
-	    {Index_R, 2, 1}, //border 10, rot 1
-	    {Index_D, 2, 1}, //border 11, rot 0
-	    {Index_B, 2, 1}, //border 11, rot 1
-
-	    {Index_U, 1, 1}, //center 0
-	    {Index_F, 1, 1}, //center 1
-	    {Index_R, 1, 1}, //center 2
-	    {Index_B, 1, 1}, //center 3
-	    {Index_L, 1, 1}, //center 4
-	    {Index_D, 1, 1}, //center 5
-	};
-
-	static constexpr Coord coord_from_uid(int uid) {
-		Coord b = coord_finder[uid];
-		return b;
 	}
 
 	constexpr Cube cube_from_data(const Data &data) {
@@ -526,11 +455,9 @@ namespace Encoding {
 		return cube_from_data(d);
 	}
 
+	const Finder solution_finder = _calculate_finder(cube_from_id(ID()));
 } // namespace Encoding
 
-constexpr Finder State::_calculate_finder(const Cube &cube) {
-	return Encoding::_calculate_finder(cube);
-}
 constexpr Cube State::cube_from_data(const Data &data) {
 	return Encoding::cube_from_data(data);
 }

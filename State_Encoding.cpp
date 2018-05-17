@@ -60,20 +60,6 @@ namespace Encoding {
 		return pos_upper * Encoding::corners_max_rot + rot_upper;
 	}
 
-	static constexpr inline void move_values_down(uchar *values, uchar pos,
-	    int len) {
-		for (uchar i = pos + 1; i < len; i++) {
-			values[i]--;
-		}
-	}
-
-	static constexpr inline uint get_fact_value(uchar cube_id, uchar *values,
-	    int len) {
-		uchar r = values[cube_id];
-		move_values_down(values, cube_id, len);
-		return r;
-	}
-
 	static constexpr inline void set_corner_rot(uchar &up, uchar &fb, uchar &rl,
 	    uchar i) {
 		if (i == 0) {
@@ -351,25 +337,18 @@ namespace Encoding {
 			_apply_movement(data, m.direction);
 	}
 
-	static constexpr inline void move_values_left(uchar *values, uchar pos,
-	    int len) {
-		for (uchar i = pos; i < len - 1; i++) {
-			values[i] = values[i + 1];
-		}
-	}
+	static constexpr inline uint get_fact_value(uchar cube_id, uint &values, uint max) {
+		uint r = 0;
 
-	static constexpr inline uchar get_value_fact(uint s, uchar *values,
-	    uchar pos, uchar len) {
-		if (pos == 1)
-			return values[0];
-		uchar c = (s / fact(pos - 1)) % pos;
-		uchar r = values[c];
-		move_values_left(values, c, len);
+		r = __builtin_popcount(values >> (max - cube_id));
+
+		values ^= 1 << (max - cube_id - 1);
+
 		return r;
 	}
 
 	static constexpr uint get_id_corners_pos(const DataCorners &data) {
-		uchar values[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+		uint values = 0b11111111;
 		uint s = 0;
 
 		s = get_fact_value(data[Corner_ULB].cube_id, values, 8);
@@ -385,7 +364,7 @@ namespace Encoding {
 	}
 
 	static constexpr uint get_id_borders_pos(const DataBorders &data) {
-		uchar values[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+		uint values = 0b111111111111;
 		uint s = 0;
 
 		s = get_fact_value(data[Border_UB].cube_id, values, 12);
@@ -423,21 +402,6 @@ namespace Encoding {
 		s = s * 2 + data[Border_DB].rot_id;
 
 		return s;
-		/*
-		return (data[Border_UB].rot_id << Border_UB) |
-		       (data[Border_UL].rot_id << Border_UL) |
-		       (data[Border_UR].rot_id << Border_UR) |
-		       (data[Border_UF].rot_id << Border_UF) |
-
-		       (data[Border_FL].rot_id << Border_FL) |
-		       (data[Border_RF].rot_id << Border_RF) |
-		       (data[Border_BR].rot_id << Border_BR) |
-		       (data[Border_LB].rot_id << Border_LB) |
-
-		       (data[Border_DF].rot_id << Border_DF) |
-		       (data[Border_DL].rot_id << Border_DL) |
-		       (data[Border_DR].rot_id << Border_DR) |
-		       (data[Border_DB].rot_id << Border_DB);*/
 	}
 
 	static constexpr uint get_id_corners_rot(const DataCorners &data) {
@@ -501,36 +465,51 @@ namespace Encoding {
 		data[Border_DB].rot_id = (s >> 0) % 2;
 	}
 
-	static constexpr void set_data_corners_pos(DataCorners &data, uint id) {
-		uchar values[8] = {0, 1, 2, 3, 4, 5, 6, 7};
+	static constexpr inline uchar get_value_fact(uchar c, bool *values) {
+		int i = 0;
 
-		data[Corner_ULB].cube_id = get_value_fact(id, values, 8, 8);
-		data[Corner_URB].cube_id = get_value_fact(id, values, 7, 8);
-		data[Corner_ULF].cube_id = get_value_fact(id, values, 6, 8);
-		data[Corner_URF].cube_id = get_value_fact(id, values, 5, 8);
-		data[Corner_DLF].cube_id = get_value_fact(id, values, 4, 8);
-		data[Corner_DRF].cube_id = get_value_fact(id, values, 3, 8);
-		data[Corner_DLB].cube_id = get_value_fact(id, values, 2, 8);
-		data[Corner_DRB].cube_id = get_value_fact(id, values, 1, 8);
+		while (1) {
+			while (values[i])
+				i++;
+			if (c == 0)
+				break;
+			c--;
+			i++;
+		}
+		values[i] = true;
+		return i;
+	}
+
+	static constexpr void set_data_corners_pos(DataCorners &data, uint id) {
+		bool values[8] = {};
+
+		data[Corner_ULB].cube_id = get_value_fact(id / fact(7) % 8, values);
+		data[Corner_URB].cube_id = get_value_fact(id / fact(6) % 7, values);
+		data[Corner_ULF].cube_id = get_value_fact(id / fact(5) % 6, values);
+		data[Corner_URF].cube_id = get_value_fact(id / fact(4) % 5, values);
+		data[Corner_DLF].cube_id = get_value_fact(id / fact(3) % 4, values);
+		data[Corner_DRF].cube_id = get_value_fact(id / fact(2) % 3, values);
+		data[Corner_DLB].cube_id = get_value_fact(id / fact(1) % 2, values);
+		data[Corner_DRB].cube_id = get_value_fact(id / fact(0) % 1, values);
 	}
 
 	static constexpr void set_data_borders_pos(DataBorders &data, uint id) {
-		uchar values[12] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11};
+		bool values[12] = {};
 
-		data[Border_UB].cube_id = get_value_fact(id, values, 12, 12);
-		data[Border_UL].cube_id = get_value_fact(id, values, 11, 12);
-		data[Border_UR].cube_id = get_value_fact(id, values, 10, 12);
-		data[Border_UF].cube_id = get_value_fact(id, values, 9, 12);
+		data[Border_UB].cube_id = get_value_fact(id / fact(11) % 12, values);
+		data[Border_UL].cube_id = get_value_fact(id / fact(10) % 11, values);
+		data[Border_UR].cube_id = get_value_fact(id / fact(9) % 10, values);
+		data[Border_UF].cube_id = get_value_fact(id / fact(8) % 9, values);
 
-		data[Border_FL].cube_id = get_value_fact(id, values, 8, 12);
-		data[Border_RF].cube_id = get_value_fact(id, values, 7, 12);
-		data[Border_BR].cube_id = get_value_fact(id, values, 6, 12);
-		data[Border_LB].cube_id = get_value_fact(id, values, 5, 12);
+		data[Border_FL].cube_id = get_value_fact(id / fact(7) % 8, values);
+		data[Border_RF].cube_id = get_value_fact(id / fact(6) % 7, values);
+		data[Border_BR].cube_id = get_value_fact(id / fact(5) % 6, values);
+		data[Border_LB].cube_id = get_value_fact(id / fact(4) % 5, values);
 
-		data[Border_DF].cube_id = get_value_fact(id, values, 4, 12);
-		data[Border_DL].cube_id = get_value_fact(id, values, 3, 12);
-		data[Border_DR].cube_id = get_value_fact(id, values, 2, 12);
-		data[Border_DB].cube_id = get_value_fact(id, values, 1, 12);
+		data[Border_DF].cube_id = get_value_fact(id / fact(3) % 4, values);
+		data[Border_DL].cube_id = get_value_fact(id / fact(2) % 3, values);
+		data[Border_DR].cube_id = get_value_fact(id / fact(1) % 2, values);
+		data[Border_DB].cube_id = get_value_fact(id / fact(0) % 1, values);
 	}
 
 	constexpr Data data_from_id(const ID id) {

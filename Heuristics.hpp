@@ -23,9 +23,7 @@ static const int score_multiplier = 4;
 using Buffer = std::array<std::array<uchar, max_uid>, max_uid>;
 
 namespace Heuristics {
-	constexpr Score HeuristicFunction(const Data &data);
 	constexpr Score ValidFunction(const Data &data);
-	constexpr Score InvalidFunction(const Data &data);
 	constexpr Score CornerFunction(const Data &data);
 	constexpr Score BorderFunction(const Data &data);
 	Score DatabaseFunction(const ID &);

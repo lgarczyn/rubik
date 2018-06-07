@@ -136,46 +136,6 @@ constexpr int get_dist(const Data &data, int i, SquareType st) {
 	return Heuristics::dist_table[id_sol][id_src];
 }
 
-constexpr int get_dist_crown(const Data &data) {
-	int dist = 0;
-	dist += get_dist(data, 0, st_corner);
-	dist += get_dist(data, 1, st_corner);
-	dist += get_dist(data, 2, st_corner);
-	dist += get_dist(data, 3, st_corner);
-	dist += get_dist(data, 0, st_border);
-	dist += get_dist(data, 1, st_border);
-	dist += get_dist(data, 2, st_border);
-	dist += get_dist(data, 3, st_border);
-	return dist;
-}
-
-constexpr int get_dist_belt(const Data &data) {
-	int dist = 0;
-	dist += get_dist(data, 4, st_border);
-	dist += get_dist(data, 5, st_border);
-	dist += get_dist(data, 6, st_border);
-	dist += get_dist(data, 7, st_border);
-	return dist;
-}
-
-constexpr int get_dist_cross(const Data &data) {
-	int dist = 0;
-	dist += get_dist(data, 8, st_border);
-	dist += get_dist(data, 9, st_border);
-	dist += get_dist(data, 10, st_border);
-	dist += get_dist(data, 11, st_border);
-	return dist;
-}
-
-constexpr int get_dist_floor(const Data &data) {
-	int dist = 0;
-	dist += get_dist(data, 4, st_corner);
-	dist += get_dist(data, 5, st_corner);
-	dist += get_dist(data, 6, st_corner);
-	dist += get_dist(data, 7, st_corner);
-	return dist;
-}
-
 constexpr int get_dist_borders(const Data &data) {
 	int dist = 0;
 	dist += get_dist(data, 0, st_border);
@@ -250,11 +210,3 @@ inline Score Heuristics::DatabaseFunction(const ID &id) {
 	// return std::max(corners, borders);;
 }
 
-constexpr Score Heuristics::InvalidFunction(const Data &data) {
-	Score dist = 0;
-	dist += get_dist_crown(data) * 1000000;
-	dist += get_dist_belt(data) * 10000;
-	dist += get_dist_cross(data) * 100;
-	dist += get_dist_floor(data);
-	return dist;
-}

@@ -64,6 +64,7 @@ int main(int ac, char **av) {
 	Parser::ParseResult parseResult;
 
 	Tests::encoding_tests();
+	Tests::heuristic_tests();
 
 	clear_screen();
 

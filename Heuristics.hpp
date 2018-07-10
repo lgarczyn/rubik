@@ -17,9 +17,6 @@
 #include <algorithm>
 #include <string>
 
-#define MAX_SOLUTION_LENGTH ((int)10000)
-static const int score_multiplier = 4;
-
 using Buffer = std::array<std::array<uchar, max_uid>, max_uid>;
 
 namespace Heuristics {
@@ -27,11 +24,11 @@ namespace Heuristics {
 	constexpr Score CornerFunction(const Data &data);
 	constexpr Score BorderFunction(const Data &data);
 	Score DatabaseFunction(const ID &);
+	Score DatabaseFunction(const IDG1 &);
+	Score DatabaseFunction(const IDG2 &);
 
 	constexpr int SquareDistance(int uid_a, int uid_b);
 	constexpr int SquareDistance(Coord a, Coord b);
 	constexpr Buffer get_dist_table();
 	const Buffer dist_table = get_dist_table();
 };
-
-#include "Heuristics.cpp"

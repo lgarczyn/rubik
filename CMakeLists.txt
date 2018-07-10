@@ -21,12 +21,4 @@ SET( CMAKE_EXE_LINKER_FLAGS "" )
 SET( CMAKE_EXE_LINKER_FLAGS_DEBUG "" )
 SET( CMAKE_EXE_LINKER_FLAGS_RELEASE "${OPTI_LINKER}" )
 
-add_executable( rubik
-      Move.cpp
-      Database.cpp
-      Parser.cpp
-      Solver.cpp
-      Tests.cpp
-      main.cpp
-      tools.cpp
-      State_Const.cpp ) 
+add_executable( rubik main.cpp )

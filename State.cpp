@@ -16,26 +16,32 @@
 #include <iomanip>
 #include <limits>
 
-constexpr State::State() : _id(), _movement(Move::None) {}
+template <class ID>
+constexpr State<ID>::State() : _id(), _movement(Move::None) {}
 
-constexpr State::State(const ID &id, Move move)
+template <class ID>
+constexpr State<ID>::State(const ID &id, Move move)
     : _id(id), _movement(move) {}
 
-constexpr State::State(const Data &data, Move move) : State() {
+template <class ID>
+constexpr State<ID>::State(const Data &data, Move move) : State() {
 	_movement = move;
 	_id = id_from_data(data);
 }
 
-constexpr State::State(const State &clone) : State() { *this = clone; }
+template <class ID>
+constexpr State<ID>::State(const State &clone) : State() { *this = clone; }
 
-constexpr State &State::operator=(const State &ra) {
+template <class ID>
+constexpr State<ID> &State<ID>::operator=(const State &ra) {
 	_id = ra._id;
 	_movement = ra._movement;
 	return *this;
 }
 
-constexpr State State::get_child(Move m) const {
-	State r;
+template <class ID>
+constexpr State<ID> State<ID>::get_child(Move m) const {
+	State<ID> r;
 
 	r._movement = m;
 
@@ -45,20 +51,23 @@ constexpr State State::get_child(Move m) const {
 	return r;
 }
 
-inline State State::get_scrambled(const vector<Move> &moves) const {
+template <class ID>
+inline State<ID> State<ID>::get_scrambled(const vector<Move> &moves) const {
 	Data d = data_from_id(_id);
 
 	for (uint i = 0; i < moves.size(); i++) {
 		_apply_movement(d, moves[i]);
 	}
-	return State(d, Move());
+	return State<ID>(d, Move());
 }
 
-constexpr Score State::calculate_score() const {
-	return Heuristics::ValidFunction(State::data_from_id(_id));
+template <class ID>
+constexpr Score State<ID>::calculate_score() const {
+	return Heuristics::ValidFunction(State<ID>::data_from_id(_id));
 }
 
-inline int State::get_candidates(std::array<pair<State, Score>, 18> &candidates) const {
+template <class ID>
+inline int State<ID>::get_candidates(std::array<pair<State<ID>, Score>, 18> &candidates) const {
 	// get cube of current state
 	Data data_copy = data_from_id(_id);
 	// get movement of current state
@@ -77,36 +86,38 @@ inline int State::get_candidates(std::array<pair<State, Score>, 18> &candidates)
 		Move move = Move((Move::Direction)n);
 		// rotate 90d, build, then repeat
 		_apply_movement(data, move.direction);
-		candidates[count].first = State(data, move);
+		candidates[count].first = State<ID>(data, move);
 		candidates[count].second = Heuristics::ValidFunction(data);
 		count++;
 
 		move.halfturn = true;
 		_apply_movement(data, move.direction);
-		candidates[count].first = State(data, move);
+		candidates[count].first = State<ID>(data, move);
 		candidates[count].second = Heuristics::ValidFunction(data);
 		count++;
 
 		move.halfturn = false;
 		move.reversed = true;
 		_apply_movement(data, move.direction);
-		candidates[count].first = State(data, move);
+		candidates[count].first = State<ID>(data, move);
 		candidates[count].second = Heuristics::ValidFunction(data);
 		count++;
 	}
 	return count;
 }
 
-constexpr State State::get_parent() const {
+template <class ID>
+constexpr State<ID> State<ID>::get_parent() const {
 	// get cube of current state
 	Data data = data_from_id(_id);
 	// get movement of current state
 	_apply_movement(data, _movement.inverse());
-	State r = State(data, Move());
+	State<ID> r = State<ID>(data, Move());
 	return r;
 }
 
-constexpr bool State::is_solvable() const {
+template <class ID>
+constexpr bool State<ID>::is_solvable() const {
 	Data data = data_from_id(_id);
 
 	// corner check
@@ -154,28 +165,35 @@ constexpr bool State::is_solvable() const {
 	return true;
 }
 
-constexpr const ID &State::get_id(void) const { return _id; }
+template <class ID>
+constexpr const ID &State<ID>::get_id(void) const { return _id; }
 
-constexpr Data State::get_data() const { return data_from_id(_id); }
+template <class ID>
+constexpr Data State<ID>::get_data() const { return data_from_id(_id); }
 
-constexpr Cube State::get_cube() const { return cube_from_id(_id); }
+template <class ID>
+constexpr Cube State<ID>::get_cube() const { return cube_from_id(_id); }
 
-constexpr Move State::get_movement(void) const {
+template <class ID>
+constexpr Move State<ID>::get_movement(void) const {
 	return _movement;
 }
 
-constexpr bool State::operator==(const State &ra) const noexcept {
+template <class ID>
+constexpr bool State<ID>::operator==(const State<ID> &ra) const noexcept {
 	const ID &lid = this->get_id();
 	const ID &rid = ra.get_id();
 
 	return lid == rid;
 }
 
-inline bool custom_pred::operator()(const State &la, const State &ra) const noexcept {
+template <class ID>
+inline bool custom_pred<ID>::operator()(const State<ID> &la, const State<ID> &ra) const noexcept {
 	return (la == ra);
 }
 
-inline bool custom_cmp::operator()(const State &la, const State &ra) const noexcept {
+template <class ID>
+inline bool custom_cmp<ID>::operator()(const State<ID> &la, const State<ID> &ra) const noexcept {
 	const ID &lid = la.get_id();
 	const ID &rid = ra.get_id();
 
@@ -188,7 +206,8 @@ inline bool custom_cmp::operator()(const State &la, const State &ra) const noexc
 	return lid.borders_rot < rid.borders_rot;
 }
 
-inline size_t custom_hash::operator()(const State &l) const noexcept {
+template <class ID>
+inline size_t custom_hash<ID>::operator()(const State<ID> &l) const noexcept {
 	const ID &id = l.get_id();
 
 	//TODO: check which is better
@@ -196,4 +215,31 @@ inline size_t custom_hash::operator()(const State &l) const noexcept {
 	return (id.borders_rot ^ id.borders_pos) |
 	       ((uint64_t)id.corners_rot << 32) |
 	       ((uint64_t)id.corners_pos << 48);
+}
+
+template <class ID>
+constexpr Cube State<ID>::cube_from_data(const Data &data) {
+	return Encoding::cube_from_data(data);
+}
+template <class ID>
+constexpr ID State<ID>::id_from_data(const Data &data) {
+	return Encoding::id_from_data(data);
+}
+template <class ID>
+constexpr Data State<ID>::data_from_id(const ID id) {
+	return Encoding::data_from_id(id);
+}
+template <class ID>
+constexpr Cube State<ID>::cube_from_id(const ID id) {
+	return Encoding::cube_from_id(id);
+}
+
+template <class ID>
+constexpr void State<ID>::_apply_movement(Data &data, Move::Direction m) {
+	Encoding::_apply_movement(data, m);
+}
+
+template <class ID>
+constexpr void State<ID>::_apply_movement(Data &data, Move m) {
+	Encoding::_apply_movement(data, m);
 }

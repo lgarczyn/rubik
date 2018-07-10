@@ -33,11 +33,11 @@ static const int size = 3;
 
 enum Color {
 	White = 0,
-	Red = 1,
-	Blue = 2,
+	Green = 1,
+	Red = 2,
+	Blue = 3,
 	Orange = 4,
-	Green = 5,
-	Yellow = 6
+	Yellow = 5
 };
 
 enum Index {
@@ -114,6 +114,18 @@ struct ID {
 	uint16_t corners_rot;
 };
 
+struct IDG1 {
+	uint16_t corners_rot : 12;
+	uint16_t borders_rot : 11;
+	uint16_t ud_slice_g1 : 9;
+};
+
+struct IDG2 {
+	uint16_t corners_pos;
+	uint16_t borders_pos_g2;
+	uint16_t ud_slice_g2 : 5;
+};
+
 using DataCorners = std::array<Square, 8>;
 using DataBorders = std::array<Square, 12>;
 
@@ -123,9 +135,13 @@ struct Data {
 };
 
 constexpr bool operator==(const ID &a, const ID &b);
+constexpr bool operator==(const IDG1 &a, const IDG1 &b);
+constexpr bool operator==(const IDG2 &a, const IDG2 &b);
 constexpr bool operator==(const Square &sa, const Square &sb);
 constexpr bool operator==(const Coord &ca, const Coord &cb);
 constexpr bool operator!=(const ID &a, const ID &b);
+constexpr bool operator!=(const IDG1 &a, const IDG1 &b);
+constexpr bool operator!=(const IDG2 &a, const IDG2 &b);
 constexpr bool operator!=(const Square &sa, const Square &sb);
 constexpr bool operator!=(const Coord &ca, const Coord &cb);
 inline std::ostream &operator<<(std::ostream &s, const Coord &cb);
@@ -136,4 +152,7 @@ using Cube = std::array<Face, 6>;
 
 using Finder = std::array<Coord, size * size * 6>;
 
-#include "Types.cpp"
+//the cost of a movement, compared to moving one block
+//since score is max(corner_score, border_score),
+//you can only increase it by 4 at a time
+static const int score_multiplier = 4;

@@ -18,7 +18,14 @@
 #include <functional>
 #include <iostream>
 
-class State {
+class IState {
+  public:
+	virtual Cube get_cube() const = 0;
+	virtual Move get_movement() const = 0;
+};
+
+template <class ID = ID>
+class State : public IState {
   public:
 	// constructors
 	// construct solved state
@@ -35,7 +42,6 @@ class State {
 
 	// getters
 	constexpr Move get_movement() const;
-	constexpr Score get_index() const;
 	constexpr const ID &get_id() const;
 	constexpr bool is_final() const;
 	constexpr bool is_solvable() const;
@@ -68,38 +74,36 @@ class State {
 	// members, should add up to 128bits :D
 	ID _id;
 	Move _movement;
-
-  public:
-	static const Data solution_data;
-	static const Cube solution_cube;
-	static const Finder solution_finder;
-	static const Color solution_colors[];
 };
 
+template <class ID>
 struct custom_hash {
   public:
-	size_t operator()(const State &l) const noexcept;
+	size_t operator()(const State<ID> &l) const noexcept;
 };
 
+template <class ID>
 struct custom_pred {
   public:
-	bool operator()(const State &la, const State &ra) const noexcept;
+	bool operator()(const State<ID> &la, const State<ID> &ra) const noexcept;
 };
 
+template <class ID>
 struct custom_cmp {
   public:
-	bool operator()(const State &la, const State &ra) const noexcept;
+	bool operator()(const State<ID> &la, const State<ID> &ra) const noexcept;
 };
 
+template <class ID>
 struct StateDistance {
-	State state;
+	State<ID> state;
 	Distance distance;
 
 	StateDistance() : state(), distance(){};
 	StateDistance(const StateDistance &s) : StateDistance() {
 		*this = s;
 	}
-	StateDistance(const State &s, Distance d) : state(s), distance(d) {}
+	StateDistance(const State<ID> &s, Distance d) : state(s), distance(d) {}
 	~StateDistance() {}
 	StateDistance &operator=(const StateDistance &ra) {
 		state = ra.state;
@@ -107,6 +111,3 @@ struct StateDistance {
 		return *this;
 	}
 };
-
-#include "State_Encoding.cpp"
-#include "State_Header.cpp"

@@ -21,7 +21,7 @@
 #include <chrono>
 #include <ctime>
 
-void print_state(Solver::Result &solverResult, struct timespec start) {
+void print_state(Solver<ID>::Result &solverResult, struct timespec start) {
 	struct timespec end;
 
 	clear_screen();
@@ -40,12 +40,9 @@ void print_state(Solver::Result &solverResult, struct timespec start) {
 	print_timediff("Time elapsed", start, end);
 }
 
-#include <iomanip>
-#include <unistd.h>
-
-Solver::Result solve_loop(State &initial) {
-	Solver puzzle(initial);
-	Solver::Result solverResult(0, 0);
+Solver<ID>::Result solve_loop(State<> &initial) {
+	Solver<ID> puzzle(initial);
+	Solver<ID>::Result solverResult(0, 0);
 	struct timespec start;
 
 	clock_gettime(CLOCK_MONOTONIC, &start);
@@ -60,10 +57,12 @@ Solver::Result solve_loop(State &initial) {
 }
 
 int main(int ac, char **av) {
-	State initial;
+	State<> initial;
 	Parser::ParseResult parseResult;
 
-	Tests::encoding_tests();
+	Tests::encoding_tests<ID>();
+	//Tests::encoding_tests<IDG1>();
+	//Tests::encoding_tests<IDG2>();
 	Tests::heuristic_tests();
 
 	clear_screen();
@@ -78,7 +77,7 @@ int main(int ac, char **av) {
 	std::cout << "ATTEMPTING SOLUTION" << std::endl;
 
 	//Solves the cube
-	Solver::Result solverResult = solve_loop(initial);
+	Solver<ID>::Result solverResult = solve_loop(initial);
 
 	//Offer multiple data visualisation options
 	bool displayHelp = true;
@@ -126,3 +125,11 @@ int main(int ac, char **av) {
 		}
 	}
 }
+
+#include "Move.cpp"
+#include "Database.cpp"
+#include "Parser.cpp"
+#include "Heuristics.cpp"
+#include "State.cpp"
+#include "Types.cpp"
+#include "tools.cpp"

@@ -12,6 +12,7 @@
 
 #include "Heuristics.hpp"
 #include "Database.hpp"
+#include "Encoding.hpp"
 
 constexpr int _get_opposite(int a) {
 	switch (a) {
@@ -187,9 +188,13 @@ constexpr Score Heuristics::BorderFunction(const Data &data) {
 	return borders;
 }
 
-constexpr Score Heuristics::HeuristicFunction(const Data &data) {
-	Score score = ValidFunction(data);
-	return score;
+inline Score Heuristics::DatabaseFunction(const IDG1 &id) {
+	(void)id;
+	return 0;
+}
+inline Score Heuristics::DatabaseFunction(const IDG2 &id) {
+	(void)id;
+	return 0;
 }
 
 inline Score Heuristics::DatabaseFunction(const ID &id) {

@@ -10,10 +10,15 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "State.hpp"
+#pragma once
+
 #include "Move.hpp"
+#include "State.hpp"
+#include <cassert>
 
 namespace Encoding {
+
+	using ID = ID; 
 
 	constexpr Finder _calculate_finder(const Cube &cube) {
 		Finder finder = Finder();
@@ -456,23 +461,6 @@ namespace Encoding {
 	}
 
 	const Finder solution_finder = _calculate_finder(cube_from_id(ID()));
+	const Data solution_data = data_from_id(ID());
+	const Cube solution_cube = cube_from_id(ID());
 } // namespace Encoding
-
-constexpr Cube State::cube_from_data(const Data &data) {
-	return Encoding::cube_from_data(data);
-}
-constexpr ID State::id_from_data(const Data &data) {
-	return Encoding::id_from_data(data);
-}
-constexpr Data State::data_from_id(const ID id) {
-	return Encoding::data_from_id(id);
-}
-constexpr Cube State::cube_from_id(const ID id) {
-	return Encoding::cube_from_id(id);
-}
-constexpr void State::_apply_movement(Data &data, Move::Direction m) {
-	Encoding::_apply_movement(data, m);
-}
-constexpr void State::_apply_movement(Data &data, Move m) {
-	Encoding::_apply_movement(data, m);
-}

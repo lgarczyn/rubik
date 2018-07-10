@@ -13,8 +13,10 @@
 #include "tools.hpp"
 #include "Heuristics.hpp"
 #include "State.hpp"
+#include "Encoding.hpp"
 #include <iomanip>
 #include <unistd.h>
+#include <cstdlib>
 
 const char *get_color(Color color) {
 	switch (color) {
@@ -63,11 +65,12 @@ void print_line(const Cube &cube, int s, int l) {
 		Square sq = cube[s][l][c];
 		int uid = sq.get_uid(l, c);
 		int dist = Heuristics::SquareDistance(
-		    State::solution_cube[s][l][c].get_uid(c, l),
+		    Encoding::solution_cube[s][l][c].get_uid(c, l),
 		    uid);
-		Color color = State::solution_colors[Encoding::solution_finder[uid].f];
 
-		bool correct = State::cube_from_id(ID())[s][l][c] == sq;
+		Color color = (Color)Encoding::solution_finder[uid].f;
+
+		bool correct = Encoding::solution_cube[s][l][c] == sq;
 
 		print_square(sq, dist, correct, color);
 	}
@@ -117,7 +120,7 @@ void print_line_diff(const Cube &cube, int face, int line, const char **text) {
 
 		int uid = sq.get_uid(line, c);
 
-		Color color = State::solution_colors[Encoding::solution_finder[uid].f];
+		Color color = (Color)Encoding::solution_finder[uid].f;
 
 		if (text)
 			print_square_diff(color, text[c]);
@@ -186,7 +189,7 @@ void print_diff(const Cube &cube, Move m) {
 	}
 }
 
-void print_map(const State &state) {
+void print_map(const IState &state) {
 	Cube cube = state.get_cube();
 
 	print_map(cube);
@@ -238,33 +241,6 @@ void print_dist(Coord pos) {
 		print_line_dist(pos, 5, l);
 		std::cout << std::endl;
 	}
-}
-
-void print_animation(State state, vector<Move> &movements) {
-	Cube cube = state.get_cube();
-
-	for (Move l : movements) {
-		Cube new_cube;
-		state = state.get_child(l);
-		new_cube = state.get_cube();
-
-		clear_screen();
-		print_map(cube);
-		usleep(700000);
-
-		clear_screen();
-		print_diff(cube, l);
-		usleep(700000);
-
-		clear_screen();
-		print_diff(new_cube, l);
-		usleep(700000);
-
-		cube = new_cube;
-	}
-	clear_screen();
-	print_map(cube);
-	usleep(1000000);
 }
 
 void clear_screen() {

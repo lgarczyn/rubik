@@ -1,22 +1,8 @@
 database http://www.cs.princeton.edu/courses/archive/fall06/cos402/papers/korfrubik.pdf
 
-cleanup
-	too many constructors
-		SCRAMBLE
-		RANDOM
-		apply_scramble
-		should probably all be
-			applyscramble
-	movement should be own class
-		output
-		conversion
-		inversion
 
 optimizing
 	multithreading
-		clean_duplicates
-		custom solution
-	fix Solver setup
 	check cache misses
 		cachegrind
 heuristic
@@ -57,3 +43,14 @@ is it getcube id ?
 	{Index_D, 0, 2} {Index_F, 2, 2} {Index_R, 2, 0} 5
 	{Index_D, 2, 0} {Index_B, 2, 2} {Index_L, 2, 0} 6
 	{Index_D, 2, 2} {Index_R, 2, 2} {Index_B, 2, 0} 7
+
+Data -> Cubie
+Cube -> Faces
+ID -> IdG0
+IDG1 -> IdG1
+IDG2 -> IdG2
+ID -> Id
+
+Conversion IDG1 and G2 to Cubieverse
+Two-Phase
+Two-Phase advanced

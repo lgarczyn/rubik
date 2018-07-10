@@ -31,15 +31,6 @@ typedef uint8_t Distance;
 // DO NOT CHANGE
 static const int size = 3;
 
-enum Color {
-	White = 0,
-	Green = 1,
-	Red = 2,
-	Blue = 3,
-	Orange = 4,
-	Yellow = 5
-};
-
 enum Index {
 	Index_U = 0,
 	Index_F = 1,
@@ -50,6 +41,15 @@ enum Index {
 
 	Index_Start = 0,
 	Index_End = 6,
+};
+
+enum Color {
+	White = Index_U,
+	Green = Index_F,
+	Red = Index_R,
+	Blue = Index_B,
+	Orange = Index_L,
+	Yellow = Index_D
 };
 
 enum SquareType {
@@ -89,6 +89,7 @@ enum Border {
 static const uchar max_uid_corner = 8 * 3;
 static const uchar max_uid_border = 8 * 3 + 12 * 2;
 static const uchar max_uid = 8 * 3 + 12 * 2 + 6;
+
 struct Square {
 	uchar cube_id;
 	uchar rot_id;

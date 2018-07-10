@@ -17,15 +17,15 @@
 #include "Solver.hpp"
 #include "Tests.hpp"
 #include "Types.hpp"
-#include "tools.hpp"
+#include "Display.hpp"
 #include <chrono>
 #include <ctime>
 
-void print_state(Solver<ID>::Result &solverResult, struct timespec start) {
+void print_update(Solver<ID>::Result &solverResult, struct timespec start) {
 	struct timespec end;
 
-	clear_screen();
-	print_map(solverResult.state);
+	Display::clear_screen();
+	Display::print_map(solverResult.state);
 	std::cout << "Iteration count: " << solverResult.timeComplexity << std::endl;
 	std::cout << "Solution [Score: "
 	          << (int)solverResult.weight
@@ -37,7 +37,7 @@ void print_state(Solver<ID>::Result &solverResult, struct timespec start) {
 		std::cout << l;
 	std::cout << std::endl;
 	clock_gettime(CLOCK_MONOTONIC, &end);
-	print_timediff("Time elapsed", start, end);
+	Display::print_timediff("Time elapsed", start, end);
 }
 
 Solver<ID>::Result solve_loop(State<> &initial) {
@@ -48,7 +48,7 @@ Solver<ID>::Result solve_loop(State<> &initial) {
 	clock_gettime(CLOCK_MONOTONIC, &start);
 	do {
 		solverResult = puzzle.step();
-		print_state(solverResult, start);
+		print_update(solverResult, start);
 		//std::cout << "Memory repartition:" << std::endl;
 		//puzzle.print_mem();
 	} while (solverResult.finished == false);
@@ -65,7 +65,7 @@ int main(int ac, char **av) {
 	//Tests::encoding_tests<IDG2>();
 	Tests::heuristic_tests();
 
-	clear_screen();
+	Display::clear_screen();
 
 	//Create scrambles cube, from arg data or randomly
 	parseResult = Parser::parse_args(ac, av);
@@ -73,7 +73,7 @@ int main(int ac, char **av) {
 	initial = initial.get_scrambled(scramble);
 
 	std::cout << "GENERATED CUBE" << std::endl;
-	print_map(initial);
+	Display::print_map(initial);
 	std::cout << "ATTEMPTING SOLUTION" << std::endl;
 
 	//Solves the cube
@@ -109,14 +109,14 @@ int main(int ac, char **av) {
 			          << std::flush;
 			break;
 		case 's':
-			clear_screen();
+			Display::clear_screen();
 			for (auto &l : solverResult.movements)
 				std::cout << l << std::endl;
 			std::cout << std::endl
 			          << std::flush;
 			break;
 		case 'a': {
-			print_animation(initial, solverResult.movements);
+			Display::print_animation(initial, solverResult.movements);
 			break;
 		}
 		default:
@@ -132,4 +132,4 @@ int main(int ac, char **av) {
 #include "Heuristics.cpp"
 #include "State.cpp"
 #include "Types.cpp"
-#include "tools.cpp"
+#include "Display.cpp"

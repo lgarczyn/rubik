@@ -10,7 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "tools.hpp"
+#include "Display.hpp"
 #include "Heuristics.hpp"
 #include "State.hpp"
 #include "Encoding.hpp"
@@ -76,7 +76,7 @@ void print_line(const Cube &cube, int s, int l) {
 	}
 }
 
-void print_map(const Cube &cube) {
+void Display::print_map(const Cube &cube) {
 	for (int l = 0; l < size; l++) {
 		std::cout << "  "
 		          << "  "
@@ -159,7 +159,7 @@ const char *arrows[3][3][3] = {
         {"↓ ", "  ", " ↑"},
         {"↘ ", "-→", " ↗"}}};
 
-void print_diff(const Cube &cube, Move m) {
+void Display::print_diff(const Cube &cube, Move m) {
 	int turns = m.get_turns() - 1;
 	int face = get_face(m.direction);
 
@@ -189,7 +189,7 @@ void print_diff(const Cube &cube, Move m) {
 	}
 }
 
-void print_map(const IState &state) {
+void Display::print_map(const IState &state) {
 	Cube cube = state.get_cube();
 
 	print_map(cube);
@@ -243,11 +243,14 @@ void print_dist(Coord pos) {
 	}
 }
 
-void clear_screen() {
+void Display::clear_screen() {
 	system("clear");
 }
 
-void print_timediff(const char *prefix, const struct timespec &start, const struct timespec &end) {
+void Display::print_timediff(
+	const char *prefix,
+	const struct timespec &start, 
+	const struct timespec &end) {
 	double milliseconds = (end.tv_nsec - start.tv_nsec) / 1e6 + (end.tv_sec - start.tv_sec) * 1e3;
 	printf("%s: %lf seconds\n", prefix, milliseconds / 1000.0f);
 }

@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "Heuristics.hpp"
-#include "tools.hpp"
 #include <algorithm>
 #include <iomanip>
 #include <limits>

@@ -46,4 +46,4 @@ namespace Databases {
 	extern int total_overridden;
 	extern int total_saved_first;
 	extern int total_overridden_first;
-}
+} // namespace Databases

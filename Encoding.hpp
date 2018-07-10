@@ -16,7 +16,7 @@
 #include "State.hpp"
 #include <cassert>
 
-namespace Encoding { 
+namespace Encoding {
 
 	constexpr Finder _calculate_finder(const Cube &cube) {
 		Finder finder = Finder();

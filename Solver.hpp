@@ -67,15 +67,15 @@ class Solver {
 		bool finished;
 
 		Result()
-			: timeComplexity(0),
-			sizeComplexity(0),
-			state(),
-			weight(),
-			movements(),
-			finished(false) {}
+		    : timeComplexity(0),
+		      sizeComplexity(0),
+		      state(),
+		      weight(),
+		      movements(),
+		      finished(false) {}
 
 		Result(int tc, int sc)
-			: Result() {
+		    : Result() {
 			timeComplexity = tc;
 			sizeComplexity = sc;
 		}
@@ -96,7 +96,7 @@ class Solver {
 		// if iterator has reached end, shout
 		if (set_it == _opened.end())
 			throw std::logic_error("No opened state, scount is " +
-								std::to_string(_openCount));
+			                       std::to_string(_openCount));
 
 		// Return and pop last element
 		auto &list = set_it->second;
@@ -138,12 +138,12 @@ class Solver {
 		store_state(initial, 0, initial.calculate_score());
 
 		_universe.clear();
-	#ifdef DENSE_HASH
+#ifdef DENSE_HASH
 		_universe.set_empty_key(State::get_empty_key());
-	#endif
-	#if defined(DENSE_HASH) || defined(SPARSE_HASH)
+#endif
+#if defined(DENSE_HASH) || defined(SPARSE_HASH)
 		_universe.set_deleted_key(State::get_deleted_key());
-	#endif
+#endif
 
 		_openCount = 1;
 		_sizeComplexity = 1;
@@ -174,7 +174,7 @@ class Solver {
 		for (int i = 0; i < 100000; i++) {
 			if (_openCount <= 0)
 				throw std::logic_error("A No opened state, scount is " +
-									std::to_string(_openCount));
+				                       std::to_string(_openCount));
 			// pop best state
 			e = get_smallest_state(&is_final);
 			state = e.state;
@@ -216,5 +216,3 @@ class Solver {
 
 	~Solver() {}
 };
-
-

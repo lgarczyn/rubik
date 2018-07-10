@@ -214,4 +214,3 @@ inline Score Heuristics::DatabaseFunction(const ID &id) {
 
 	// return std::max(corners, borders);;
 }
-

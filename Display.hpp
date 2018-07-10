@@ -23,7 +23,6 @@ namespace Display {
 
 	void print_timediff(const char *prefix, const struct timespec &start, const struct timespec &end);
 
-
 	template <class ID>
 	void print_animation(State<ID> state, vector<Move> &movements) {
 		Cube cube = state.get_cube();

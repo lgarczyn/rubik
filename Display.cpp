@@ -11,12 +11,12 @@
 /* ************************************************************************** */
 
 #include "Display.hpp"
+#include "Encoding.hpp"
 #include "Heuristics.hpp"
 #include "State.hpp"
-#include "Encoding.hpp"
+#include <cstdlib>
 #include <iomanip>
 #include <unistd.h>
-#include <cstdlib>
 
 const char *get_color(Color color) {
 	switch (color) {
@@ -248,9 +248,9 @@ void Display::clear_screen() {
 }
 
 void Display::print_timediff(
-	const char *prefix,
-	const struct timespec &start, 
-	const struct timespec &end) {
+    const char *prefix,
+    const struct timespec &start,
+    const struct timespec &end) {
 	double milliseconds = (end.tv_nsec - start.tv_nsec) / 1e6 + (end.tv_sec - start.tv_sec) * 1e3;
 	printf("%s: %lf seconds\n", prefix, milliseconds / 1000.0f);
 }

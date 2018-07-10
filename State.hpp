@@ -69,7 +69,6 @@ class State : public IState {
 	// calculations
 	constexpr static void _apply_movement(Data &data, Move m);
 	constexpr static void _apply_movement(Data &data, Move::Direction m);
-	constexpr static Finder _calculate_finder(const Cube &Cube);
 
 	// members, should add up to 128bits :D
 	ID _id;

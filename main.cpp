@@ -13,11 +13,11 @@
 #include <iostream>
 
 #include "Database.hpp"
+#include "Display.hpp"
 #include "Parser.hpp"
 #include "Solver.hpp"
 #include "Tests.hpp"
 #include "Types.hpp"
-#include "Display.hpp"
 #include <chrono>
 #include <ctime>
 
@@ -126,10 +126,10 @@ int main(int ac, char **av) {
 	}
 }
 
-#include "Move.cpp"
 #include "Database.cpp"
-#include "Parser.cpp"
+#include "Display.cpp"
 #include "Heuristics.cpp"
+#include "Move.cpp"
+#include "Parser.cpp"
 #include "State.cpp"
 #include "Types.cpp"
-#include "Display.cpp"

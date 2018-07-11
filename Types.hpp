@@ -86,6 +86,7 @@ enum Border {
 	Border_BR = 11,
 	Border_Start = 0,
 	Border_End = 12,
+	Border_UD_Start = 8,
 };
 
 static const uchar max_uid_corner = 8 * 3;

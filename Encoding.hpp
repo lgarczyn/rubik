@@ -403,7 +403,7 @@ namespace Encoding {
 		int n = 11;
 		while (k >= 0) {
 			//if the border at this position is FL LB BR or RF
-			if (borders[n].cube_id > Border_DB)
+			if (borders[n].cube_id > Border_UD_Start)
 				k--;
 			else
 				s = s + cnk(n, k);
@@ -428,7 +428,7 @@ namespace Encoding {
 			n--;
 		}
 
-		int udslice_border = Border_RF;
+		int udslice_border = Border_UD_Start;
 		int crown_border = Border_Start;
 
 		for (int i = Border_Start; i < Border_End; i++)

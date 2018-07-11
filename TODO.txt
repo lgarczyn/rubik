@@ -44,7 +44,8 @@ is it getcube id ?
 	{Index_D, 2, 0} {Index_B, 2, 2} {Index_L, 2, 0} 6
 	{Index_D, 2, 2} {Index_R, 2, 2} {Index_B, 2, 0} 7
 
-Data -> Cubie
+Square -> Cubie/Facelet
+Data -> Cubies
 Cube -> Faces
 ID -> IdG0
 IDG1 -> IdG1

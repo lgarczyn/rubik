@@ -317,6 +317,35 @@ namespace Encoding {
 		return s;
 	}
 
+	static constexpr uint get_id_borders_crown_pos(const DataBorders &data) {
+		uint values = 0b11111111;
+		uint s = 0;
+
+		s = get_fact_value(data[Border_UR].cube_id, values, 8);
+		s = get_fact_value(data[Border_UF].cube_id, values, 8) + s * 7;
+		s = get_fact_value(data[Border_UL].cube_id, values, 8) + s * 6;
+		s = get_fact_value(data[Border_UB].cube_id, values, 8) + s * 5;
+
+		s = get_fact_value(data[Border_DR].cube_id, values, 8) + s * 4;
+		s = get_fact_value(data[Border_DF].cube_id, values, 8) + s * 3;
+		s = get_fact_value(data[Border_DL].cube_id, values, 8) + s * 2;
+		// implied but useless line, since it always returns 0;
+		// s = get_fact_value(data[Border_DB].cube_id, values, 8) + s * 1;
+		return s;
+	}
+
+	static constexpr uint get_id_borders_ud_pos(const DataBorders &data) {
+		uint values = 0b1111;
+		uint s = 0;
+
+		s = get_fact_value(data[Border_RF].cube_id - Border_RF, values, 4) + s * 4;
+		s = get_fact_value(data[Border_FL].cube_id - Border_RF, values, 4) + s * 3;
+		s = get_fact_value(data[Border_LB].cube_id - Border_RF, values, 4) + s * 2;
+		// implied but useless line, since it always returns 0;
+		// s = get_fact_value(data[Border_BR], values, 4) + s * 1;
+		return s;
+	}
+
 	static constexpr uint get_id_borders_rot(const DataBorders &data) {
 		uint s = 0;
 
@@ -350,12 +379,96 @@ namespace Encoding {
 		return s;
 	}
 
+	static constexpr int cnk(int n, int k) {
+		if (n < k)
+			return 0;
+
+		if (k > n / 2)
+			k = n - k;
+		int s = 1;
+		int j = 1;
+		for (int i = 0; i < k; i++) {
+			s = (s * n) / j;
+			j += 1;
+		}
+		return s;
+	}
+
+	static constexpr uint16_t get_id_udslice(const DataBorders &borders) {
+		//kociemba magic to generate the ud coordinates ID
+		//http://kociemba.org/math/twophase.htm
+		//TODO understand and optimize
+		int s = 0;
+		int k = 3;
+		int n = 11;
+		while (k >= 0) {
+			//if the border at this position is FL LB BR or RF
+			if (borders[n].cube_id > Border_DB)
+				k--;
+			else
+				s = s + cnk(n, k);
+			n--;
+		}
+		return s;
+	}
+
+	static constexpr void set_data_udslice(DataBorders &borders, uint16_t id) {
+		bool occupied[12] = {};
+		int n = 11;
+		int k = 3;
+
+		while (k >= 0) {
+			int v = cnk(n, k);
+			if (id < v) {
+				k--;
+				occupied[n] = true;
+			} else {
+				id = id - v;
+			}
+			n--;
+		}
+
+		int udslice_border = Border_RF;
+		int crown_border = Border_Start;
+
+		for (int i = Border_Start; i < Border_End; i++)
+			if (occupied[i])
+				borders[i].cube_id = udslice_border++;
+			else
+				borders[i].cube_id = crown_border++;
+	}
+
+	template <class ID>
 	constexpr ID id_from_data(const Data &data) {
+		(void)data;
+		return -1;
+	}
+
+	template <>
+	constexpr ID id_from_data<ID>(const Data &data) {
 		ID id = ID();
 		id.corners_pos = get_id_corners_pos(data.corners);
 		id.corners_rot = get_id_corners_rot(data.corners);
 		id.borders_pos = get_id_borders_pos(data.borders);
 		id.borders_rot = get_id_borders_rot(data.borders);
+		return id;
+	}
+
+	template <>
+	constexpr IDG1 id_from_data<IDG1>(const Data &data) {
+		IDG1 id = IDG1();
+		id.corners_rot = get_id_corners_rot(data.corners);
+		id.borders_rot = get_id_borders_rot(data.borders);
+		id.ud_slice = get_id_udslice(data.borders);
+		return id;
+	}
+
+	template <>
+	constexpr IDG2 id_from_data<IDG2>(const Data &data) {
+		IDG2 id = IDG2();
+		id.corners_pos = get_id_corners_pos(data.corners);
+		id.borders_crown_pos = get_id_borders_crown_pos(data.borders);
+		id.borders_ud_pos = get_id_borders_ud_pos(data.borders);
 		return id;
 	}
 
@@ -444,6 +557,29 @@ namespace Encoding {
 		data[Border_BR].cube_id = get_value_fact(id / fact(0) % 1, values);
 	}
 
+	static constexpr void set_data_borders_crown_pos(DataBorders &data, uint id) {
+		bool values[8] = {};
+
+		data[Border_UR].cube_id = get_value_fact(id / fact(7) % 8, values);
+		data[Border_UF].cube_id = get_value_fact(id / fact(6) % 7, values);
+		data[Border_UL].cube_id = get_value_fact(id / fact(5) % 6, values);
+		data[Border_UB].cube_id = get_value_fact(id / fact(4) % 5, values);
+
+		data[Border_DR].cube_id = get_value_fact(id / fact(3) % 4, values);
+		data[Border_DF].cube_id = get_value_fact(id / fact(2) % 3, values);
+		data[Border_DL].cube_id = get_value_fact(id / fact(1) % 2, values);
+		data[Border_DB].cube_id = get_value_fact(id / fact(0) % 1, values);
+	}
+
+	static constexpr void set_data_borders_ud_pos(DataBorders &data, uint id) {
+		bool values[4] = {};
+
+		data[Border_RF].cube_id = Border_RF + get_value_fact(id / fact(3) % 4, values);
+		data[Border_FL].cube_id = Border_RF + get_value_fact(id / fact(2) % 3, values);
+		data[Border_LB].cube_id = Border_RF + get_value_fact(id / fact(1) % 2, values);
+		data[Border_BR].cube_id = Border_RF + get_value_fact(id / fact(0) % 1, values);
+	}
+
 	constexpr Data data_from_id(const ID id) {
 		Data data = Data();
 		set_data_corners_pos(data.corners, id.corners_pos);
@@ -453,6 +589,24 @@ namespace Encoding {
 		return data;
 	}
 
+	constexpr Data data_from_id(const IDG1 id) {
+		Data data = Data();
+		set_data_corners_rot(data.corners, id.corners_rot);
+		set_data_borders_rot(data.borders, id.borders_rot);
+		set_data_udslice(data.borders, id.ud_slice);
+		set_data_corners_pos(data.corners, 0);
+		return data;
+	}
+
+	constexpr Data data_from_id(const IDG2 id) {
+		Data data = Data();
+		set_data_corners_pos(data.corners, id.corners_pos);
+		set_data_borders_crown_pos(data.borders, id.borders_crown_pos);
+		set_data_borders_ud_pos(data.borders, id.borders_ud_pos);
+		return data;
+	}
+
+	template <class ID>
 	constexpr Cube cube_from_id(const ID id) {
 		Data d = data_from_id(id);
 		return cube_from_data(d);

@@ -9,21 +9,21 @@ namespace Tests {
 		ID id;
 
 		id = ID();
-		if (id != Encoding::id_from_data(Encoding::data_from_id(id)))
+		if (id != Encoding::id_from_data<ID>(Encoding::data_from_id(id)))
 			throw std::logic_error("id conversion non reciprocical");
 		State<ID> s = State<ID>();
-		s = s.get_child(Move::Right);
-		s = s.get_child(Move::Down);
+		s = s.get_child(Move::Up);
+		s = s.get_child(Move(Move::Right, 2));
 
-		ID id_2 = Encoding::id_from_data(Encoding::data_from_id(s.get_id()));
+		ID id_2 = Encoding::id_from_data<ID>(Encoding::data_from_id(s.get_id()));
 
 		if (s.get_id() != id_2)
 			throw std::logic_error("id conversion non reciprocical");
 
-		s = s.get_child(Move(Move::Down, 3));
-		s = s.get_child(Move(Move::Right, 3));
+		s = s.get_child(Move(Move::Right, 2));
+		s = s.get_child(Move(Move::Up, 3));
 
-		if (id != Encoding::id_from_data(Encoding::data_from_id(s.get_id())))
+		if (id != Encoding::id_from_data<ID>(Encoding::data_from_id(s.get_id())))
 			throw std::logic_error("id conversion non reciprocical");
 
 		if (Encoding::cube_from_id(id) != Encoding::solution_cube)

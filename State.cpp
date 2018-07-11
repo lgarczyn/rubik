@@ -222,7 +222,7 @@ constexpr Cube State<ID>::cube_from_data(const Data &data) {
 }
 template <class ID>
 constexpr ID State<ID>::id_from_data(const Data &data) {
-	return Encoding::id_from_data(data);
+	return Encoding::id_from_data<ID>(data);
 }
 template <class ID>
 constexpr Data State<ID>::data_from_id(const ID id) {

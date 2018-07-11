@@ -68,13 +68,13 @@ constexpr bool operator==(const ID &a, const ID &b) {
 constexpr bool operator==(const IDG1 &a, const IDG1 &b) {
 	return (a.corners_rot == b.corners_rot) &&
 	       (a.borders_rot == b.borders_rot) &&
-	       (a.ud_slice_g1 == b.ud_slice_g1);
+	       (a.ud_slice == b.ud_slice);
 }
 
 constexpr bool operator==(const IDG2 &a, const IDG2 &b) {
 	return (a.corners_pos == b.corners_pos) &&
-	       (a.borders_pos_g2 == b.borders_pos_g2) &&
-	       (a.ud_slice_g2 == b.ud_slice_g2);
+	       (a.borders_crown_pos == b.borders_crown_pos) &&
+	       (a.borders_ud_pos == b.borders_ud_pos);
 }
 
 constexpr bool operator!=(const Square &a, const Square &b) {
@@ -93,13 +93,13 @@ constexpr bool operator!=(const ID &a, const ID &b) {
 constexpr bool operator!=(const IDG1 &a, const IDG1 &b) {
 	return (a.corners_rot != b.corners_rot) ||
 	       (a.borders_rot != b.borders_rot) ||
-	       (a.ud_slice_g1 != b.ud_slice_g1);
+	       (a.ud_slice != b.ud_slice);
 }
 
 constexpr bool operator!=(const IDG2 &a, const IDG2 &b) {
 	return (a.corners_pos != b.corners_pos) ||
-	       (a.borders_pos_g2 != b.borders_pos_g2) ||
-	       (a.ud_slice_g2 != b.ud_slice_g2);
+	       (a.borders_crown_pos != b.borders_crown_pos) ||
+	       (a.borders_ud_pos != b.borders_ud_pos);
 }
 
 inline std::ostream &operator<<(std::ostream &s, const Coord &c) {

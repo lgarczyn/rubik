@@ -61,8 +61,8 @@ int main(int ac, char **av) {
 	Parser::ParseResult parseResult;
 
 	Tests::encoding_tests<ID>();
-	//Tests::encoding_tests<IDG1>();
-	//Tests::encoding_tests<IDG2>();
+	Tests::encoding_tests<IDG1>();
+	Tests::encoding_tests<IDG2>();
 	Tests::heuristic_tests();
 
 	Display::clear_screen();

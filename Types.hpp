@@ -84,6 +84,8 @@ enum Border {
 	Border_FL = 9,
 	Border_LB = 10,
 	Border_BR = 11,
+	Border_Start = 0,
+	Border_End = 12,
 };
 
 static const uchar max_uid_corner = 8 * 3;
@@ -116,15 +118,15 @@ struct ID {
 };
 
 struct IDG1 {
-	uint16_t corners_rot : 12;
-	uint16_t borders_rot : 11;
-	uint16_t ud_slice_g1 : 9;
+	uint16_t corners_rot; // : 12;
+	uint16_t borders_rot; // : 11;
+	uint16_t ud_slice : 9;
 };
 
 struct IDG2 {
 	uint16_t corners_pos;
-	uint16_t borders_pos_g2;
-	uint16_t ud_slice_g2 : 5;
+	uint16_t borders_crown_pos;
+	uint16_t borders_ud_pos : 5;
 };
 
 using DataCorners = std::array<Square, 8>;

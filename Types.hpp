@@ -119,8 +119,8 @@ struct ID {
 };
 
 struct IDG1 {
-	uint16_t corners_rot; // : 12;
-	uint16_t borders_rot; // : 11;
+	uint16_t corners_rot : 11;
+	uint16_t borders_rot : 12;
 	uint16_t ud_slice : 9;
 };
 

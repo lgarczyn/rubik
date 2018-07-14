@@ -10,8 +10,6 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <iostream>
-
 #include "Database.hpp"
 #include "Display.hpp"
 #include "Parser.hpp"

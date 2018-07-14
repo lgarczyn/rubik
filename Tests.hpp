@@ -6,10 +6,11 @@
 namespace Tests {
 	template <class ID>
 	void encoding_tests() {
-		ID id;
+		ID id, id_cmp;
 
 		id = ID();
-		if (id != Encoding::id_from_data<ID>(Encoding::data_from_id(id)))
+		id_cmp = Encoding::id_from_data<ID>(Encoding::data_from_id(id));
+		if (id != id_cmp)
 			throw std::logic_error("id conversion non reciprocical");
 		State<ID> s = State<ID>();
 		s = s.get_child(Move::Up);
@@ -23,7 +24,8 @@ namespace Tests {
 		s = s.get_child(Move(Move::Right, 2));
 		s = s.get_child(Move(Move::Up, 3));
 
-		if (id != Encoding::id_from_data<ID>(Encoding::data_from_id(s.get_id())))
+		id_cmp = Encoding::id_from_data<ID>(Encoding::data_from_id(s.get_id()));
+		if (id != id_cmp)
 			throw std::logic_error("id conversion non reciprocical");
 
 		if (Encoding::cube_from_id(id) != Encoding::solution_cube)

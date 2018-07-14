@@ -349,7 +349,8 @@ namespace Encoding {
 	static constexpr uint get_id_borders_rot(const DataBorders &data) {
 		uint s = 0;
 
-		s = s * 2 + data[Border_UR].rot_id;
+		//UR is deduced from rotation parity
+		//s = s * 2 + data[Border_UR].rot_id;
 		s = s * 2 + data[Border_UF].rot_id;
 		s = s * 2 + data[Border_UL].rot_id;
 		s = s * 2 + data[Border_UB].rot_id;
@@ -368,7 +369,8 @@ namespace Encoding {
 	static constexpr uint get_id_corners_rot(const DataCorners &data) {
 		uint s = 0;
 
-		s = s * 3 + data[Corner_DRB].rot_id;
+		// last rotation is deduced from the rest
+		// s = s * 3 + data[Corner_DRB].rot_id;
 		s = s * 3 + data[Corner_DLB].rot_id;
 		s = s * 3 + data[Corner_DLF].rot_id;
 		s = s * 3 + data[Corner_DRF].rot_id;
@@ -403,7 +405,7 @@ namespace Encoding {
 		int n = 11;
 		while (k >= 0) {
 			//if the border at this position is FL LB BR or RF
-			if (borders[n].cube_id > Border_UD_Start)
+			if (borders[n].cube_id >= Border_UD_Start)
 				k--;
 			else
 				s = s + cnk(n, k);
@@ -473,41 +475,47 @@ namespace Encoding {
 	}
 
 	static constexpr void set_data_corners_rot(DataCorners &data, uint id) {
-		data[Corner_URF].rot_id = id % 3;
+		uint c = 0;
+		char rot[] = {0, 2, 1};
+
+		c += data[Corner_URF].rot_id = id % 3;
 		id /= 3;
-		data[Corner_ULF].rot_id = id % 3;
+		c += data[Corner_ULF].rot_id = id % 3;
 		id /= 3;
-		data[Corner_ULB].rot_id = id % 3;
+		c += data[Corner_ULB].rot_id = id % 3;
 		id /= 3;
-		data[Corner_URB].rot_id = id % 3;
+		c += data[Corner_URB].rot_id = id % 3;
 		id /= 3;
-		data[Corner_DRF].rot_id = id % 3;
+		c += data[Corner_DRF].rot_id = id % 3;
 		id /= 3;
-		data[Corner_DLF].rot_id = id % 3;
+		c += data[Corner_DLF].rot_id = id % 3;
 		id /= 3;
-		data[Corner_DLB].rot_id = id % 3;
-		id /= 3;
-		data[Corner_DRB].rot_id = id; // s % 3)); s /= 3;
+		c += data[Corner_DLB].rot_id = id; // % 3;
+		//id /= 3;
+		//data[Corner_DRB].rot_id = id; // s % 3));
+		data[Corner_DRB].rot_id = rot[c % 3];
 	}
 
-	static constexpr void set_data_borders_rot(DataBorders &data,
-	    uint id) {
-		uint s = id;
+	static constexpr void set_data_borders_rot(DataBorders &data, uint id) {
+		uint c = 0;
 
-		data[Border_UR].rot_id = (s >> 11);
-		data[Border_UF].rot_id = (s >> 10) % 2;
-		data[Border_UL].rot_id = (s >> 9) % 2;
-		data[Border_UB].rot_id = (s >> 8) % 2;
+		//deduced from rotation parity
+		//c += data[Border_UR].rot_id = (id >> 11);
+		c += data[Border_UF].rot_id = (id >> 10) % 2;
+		c += data[Border_UL].rot_id = (id >> 9) % 2;
+		c += data[Border_UB].rot_id = (id >> 8) % 2;
 
-		data[Border_DR].rot_id = (s >> 7) % 2;
-		data[Border_DF].rot_id = (s >> 6) % 2;
-		data[Border_DL].rot_id = (s >> 5) % 2;
-		data[Border_DB].rot_id = (s >> 4) % 2;
+		c += data[Border_DR].rot_id = (id >> 7) % 2;
+		c += data[Border_DF].rot_id = (id >> 6) % 2;
+		c += data[Border_DL].rot_id = (id >> 5) % 2;
+		c += data[Border_DB].rot_id = (id >> 4) % 2;
 
-		data[Border_RF].rot_id = (s >> 3) % 2;
-		data[Border_FL].rot_id = (s >> 2) % 2;
-		data[Border_LB].rot_id = (s >> 1) % 2;
-		data[Border_BR].rot_id = (s >> 0) % 2;
+		c += data[Border_RF].rot_id = (id >> 3) % 2;
+		c += data[Border_FL].rot_id = (id >> 2) % 2;
+		c += data[Border_LB].rot_id = (id >> 1) % 2;
+		c += data[Border_BR].rot_id = (id >> 0) % 2;
+
+		data[Border_UR].rot_id = c % 2;
 	}
 
 	static constexpr inline uchar get_value_fact(uchar c, bool *values) {

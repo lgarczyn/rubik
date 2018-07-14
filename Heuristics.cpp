@@ -123,6 +123,8 @@ constexpr Buffer Heuristics::get_dist_table() {
 	return buff;
 }
 
+//TODO: seperate tables for corners and borders yikes
+//burn uid too, not like it's useful
 constexpr int get_dist(const Data &data, int i, SquareType st) {
 	int id_sol = 0; // ID of destination
 	if (st == st_border)

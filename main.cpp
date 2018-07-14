@@ -18,12 +18,13 @@
 #include "Types.hpp"
 #include <chrono>
 #include <ctime>
+#include <iostream>
 
-void print_update(Solver<ID>::Result &solverResult, struct timespec start) {
+void print_update(Result &solverResult, struct timespec start) {
 	struct timespec end;
 
 	Display::clear_screen();
-	Display::print_map(solverResult.state);
+	Display::print_map(solverResult.cube);
 	std::cout << "Iteration count: " << solverResult.timeComplexity << std::endl;
 	std::cout << "Solution [Score: "
 	          << (int)solverResult.weight
@@ -38,12 +39,13 @@ void print_update(Solver<ID>::Result &solverResult, struct timespec start) {
 	Display::print_timediff("Time elapsed", start, end);
 }
 
-Solver<ID>::Result solve_loop(State<> &initial) {
-	Solver<ID> puzzle(initial);
-	Solver<ID>::Result solverResult(0, 0);
+Result solve_loop(State<> &initial) {
 	struct timespec start;
-
 	clock_gettime(CLOCK_MONOTONIC, &start);
+
+	Solver<ID> puzzle(initial);
+	Result solverResult;
+
 	do {
 		solverResult = puzzle.step();
 		print_update(solverResult, start);
@@ -52,6 +54,40 @@ Solver<ID>::Result solve_loop(State<> &initial) {
 	} while (solverResult.finished == false);
 
 	return solverResult;
+}
+
+Result solve_loop_kociemba(State<> &initial) {
+	struct timespec start;
+	clock_gettime(CLOCK_MONOTONIC, &start);
+
+	Result resultG1;
+	{
+		Solver<IDG1> puzzle(State<IDG1>(Encoding::id_from_data<IDG1>(initial.get_data()), Move()));
+
+		do {
+			resultG1 = puzzle.step();
+			print_update(resultG1, start);
+			//std::cout << "Memory repartition:" << std::endl;
+			//puzzle.print_mem();
+		} while (resultG1.finished == false);
+	}
+
+	//TODO: check state is otherwise reset
+	initial = initial.get_scrambled(resultG1.movements);
+	Result resultG2;
+	{
+		Solver<IDG2> puzzle(State<IDG2>(Encoding::id_from_data<IDG2>(initial.get_data()), Move()));
+		do {
+			resultG2 = puzzle.step();
+			print_update(resultG2, start);
+			//std::cout << "Memory repartition:" << std::endl;
+			//puzzle.print_mem();
+		} while (resultG2.finished == false);
+	}
+
+	Result result = Result(resultG1, resultG2);
+	result.cube = initial.get_scrambled(resultG2.movements).get_cube();
+	return result;
 }
 
 int main(int ac, char **av) {
@@ -75,7 +111,8 @@ int main(int ac, char **av) {
 	std::cout << "ATTEMPTING SOLUTION" << std::endl;
 
 	//Solves the cube
-	Solver<ID>::Result solverResult = solve_loop(initial);
+	//Result solverResult = solve_loop(initial);
+	Result solverResult = solve_loop_kociemba(initial);
 
 	//Offer multiple data visualisation options
 	bool displayHelp = true;

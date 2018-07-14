@@ -102,6 +102,51 @@ constexpr bool operator!=(const IDG2 &a, const IDG2 &b) {
 	       (a.borders_ud_pos != b.borders_ud_pos);
 }
 
+constexpr bool operator<(const ID &la, const ID &ra) {
+	if (la.corners_pos != ra.corners_pos)
+		return la.corners_pos < ra.corners_pos;
+	if (la.corners_rot != ra.corners_rot)
+		return la.corners_rot < ra.corners_rot;
+	if (la.borders_pos != ra.borders_pos)
+		return la.borders_pos < ra.borders_pos;
+	return la.borders_rot < ra.borders_rot;
+}
+
+constexpr bool operator<(const IDG1 &la, const IDG1 &ra) {
+	if (la.corners_rot != ra.corners_rot)
+		return la.corners_rot < ra.corners_rot;
+	if (la.borders_rot != ra.borders_rot)
+		return la.borders_rot < ra.borders_rot;
+	return la.ud_slice < ra.ud_slice;
+}
+
+constexpr bool operator<(const IDG2 &la, const IDG2 &ra) {
+	if (la.corners_pos != ra.corners_pos)
+		return la.corners_pos < ra.corners_pos;
+	if (la.borders_crown_pos != ra.borders_crown_pos)
+		return la.borders_crown_pos < ra.borders_crown_pos;
+	return la.borders_ud_pos < ra.borders_ud_pos;
+}
+
+constexpr size_t id_hash(const ID &id) noexcept {
+	return (id.borders_rot ^ id.borders_pos) |
+	       ((uint64_t)id.corners_rot << 32) |
+	       ((uint64_t)id.corners_pos << 48);
+}
+
+constexpr size_t id_hash(const IDG1 &id) noexcept {
+	//TODO: check if it translates to a reinterpret_cast
+	return ((uint)id.corners_rot |
+	        ((uint)id.borders_rot << 11) |
+	        (uint)id.ud_slice << (11 + 12));
+};
+
+constexpr size_t id_hash(const IDG2 &id) noexcept {
+	return (id.corners_pos |
+	        ((uint)id.borders_crown_pos << 16) |
+	        ((size_t)id.borders_ud_pos << 32));
+};
+
 inline std::ostream &operator<<(std::ostream &s, const Coord &c) {
 	s << '{' << c.f << ',' << c.l << ',' << c.c << '}';
 	return s;

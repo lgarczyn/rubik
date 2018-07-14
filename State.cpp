@@ -66,7 +66,7 @@ constexpr Score State<ID>::calculate_score() const {
 }
 
 template <class ID>
-inline int State<ID>::get_candidates(std::array<pair<State<ID>, Score>, 18> &candidates) const {
+constexpr int State<ID>::get_candidates(std::array<pair<State<ID>, Score>, 18> &candidates) const {
 	// get cube of current state
 	Data data_copy = data_from_id(_id);
 	// get movement of current state
@@ -81,26 +81,62 @@ inline int State<ID>::get_candidates(std::array<pair<State<ID>, Score>, 18> &can
 		// priority, ignore this one
 		if (Move::is_commutative(_movement.direction, n))
 			continue;
+
+		// reset data to parent data
 		Data data = data_copy;
-		Move move = Move((Move::Direction)n);
-		// rotate 90d, build, then repeat
-		_apply_movement(data, move.direction);
-		candidates[count].first = State<ID>(data, move);
-		candidates[count].second = Heuristics::ValidFunction(data);
-		count++;
 
-		move.halfturn = true;
-		_apply_movement(data, move.direction);
-		candidates[count].first = State<ID>(data, move);
-		candidates[count].second = Heuristics::ValidFunction(data);
-		count++;
+		for (int i = 1; i <= 3; i++) {
+			// rotate 90d, build, then repeat
+			_apply_movement(data, (Move::Direction)n);
 
-		move.halfturn = false;
-		move.reversed = true;
-		_apply_movement(data, move.direction);
-		candidates[count].first = State<ID>(data, move);
-		candidates[count].second = Heuristics::ValidFunction(data);
-		count++;
+			Move move = Move((Move::Direction)n, i);
+			candidates[count].first = State<ID>(data, move);
+			candidates[count].second = Heuristics::ValidFunction(data);
+			count++;
+		}
+	}
+	return count;
+}
+
+//TODO burn this mess
+template <>
+constexpr int State<IDG2>::get_candidates(std::array<pair<State<IDG2>, Score>, 18> &candidates) const {
+	// get cube of current state
+	Data data_copy = data_from_id(_id);
+	// get movement of current state
+
+	int count = 0;
+	// foreach possible movement family
+	for (int n = Move::Direction_Start; n <= Move::Direction_End; n++) {
+		// if the movement is in same family as current, skip
+		if (_movement.direction == n)
+			continue;
+		// if the previous movement was opposite to the current, and had
+		// priority, ignore this one
+		if (Move::is_commutative(_movement.direction, n))
+			continue;
+
+		// reset data to parent data
+		Data data = data_copy;
+
+		//TODO cleanup
+		if (n != Move::Up && n != Move::Down) {
+			_apply_movement(data, (Move::Direction)n);
+			_apply_movement(data, (Move::Direction)n);
+			Move move = Move((Move::Direction)n, 2);
+			candidates[count].first = State<IDG2>(data, move);
+			candidates[count].second = Heuristics::ValidFunction(data);
+			count++;
+		} else
+			for (int i = 1; i <= 3; i++) {
+				// rotate 90d, build, then repeat
+				_apply_movement(data, (Move::Direction)n);
+
+				Move move = Move((Move::Direction)n, i);
+				candidates[count].first = State<IDG2>(data, move);
+				candidates[count].second = Heuristics::ValidFunction(data);
+				count++;
+			}
 	}
 	return count;
 }
@@ -115,7 +151,7 @@ constexpr State<ID> State<ID>::get_parent() const {
 	return r;
 }
 
-template <class ID>
+template <>
 constexpr bool State<ID>::is_solvable() const {
 	Data data = data_from_id(_id);
 
@@ -196,24 +232,14 @@ inline bool custom_cmp<ID>::operator()(const State<ID> &la, const State<ID> &ra)
 	const ID &lid = la.get_id();
 	const ID &rid = ra.get_id();
 
-	if (lid.corners_pos != rid.corners_pos)
-		return lid.corners_pos < rid.corners_pos;
-	if (lid.corners_rot != rid.corners_rot)
-		return lid.corners_rot < rid.corners_rot;
-	if (lid.borders_pos != rid.borders_pos)
-		return lid.borders_pos < rid.borders_pos;
-	return lid.borders_rot < rid.borders_rot;
+	return (lid < rid);
 }
 
 template <class ID>
 inline size_t custom_hash<ID>::operator()(const State<ID> &l) const noexcept {
 	const ID &id = l.get_id();
 
-	//TODO: check which is better
-	//std::tr1::hash<size_t> hash;
-	return (id.borders_rot ^ id.borders_pos) |
-	       ((uint64_t)id.corners_rot << 32) |
-	       ((uint64_t)id.corners_pos << 48);
+	return id_hash(id);
 }
 
 template <class ID>

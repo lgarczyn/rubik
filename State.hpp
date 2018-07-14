@@ -48,7 +48,7 @@ class State : public IState {
 
 	// logic wrappers
 	constexpr Score calculate_score() const;
-	inline int get_candidates(std::array<pair<State, Score>, 18> &candidates) const;
+	constexpr int get_candidates(std::array<pair<State, Score>, 18> &candidates) const;
 	constexpr State get_parent() const;
 	constexpr State get_child(Move m) const;
 	inline State get_scrambled(const vector<Move> &moves) const;

@@ -51,7 +51,12 @@ ID -> IdG0
 IDG1 -> IdG1
 IDG2 -> IdG2
 ID -> Id
+State (only 18, is it worth the unique identifier ?) -> StateId
 
-Conversion IDG1 and G2 to Cubieverse
-Two-Phase
-Two-Phase advanced
+Two-Phase fix
+Two-Phase optimal
+optimize encoding for two phase
+optimize heuristic for two phase
+generate databases for two phase
+optimize candidates for two phase
+cube input

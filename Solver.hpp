@@ -12,6 +12,7 @@
 
 #pragma once
 
+#include "Result.hpp"
 #include "State.hpp"
 
 #include <list>
@@ -57,30 +58,6 @@ class Solver {
 	int _sizeComplexity;
 
   public:
-	class Result {
-	  public:
-		int timeComplexity;
-		int sizeComplexity;
-		State state;
-		Score weight;
-		vector<Move> movements;
-		bool finished;
-
-		Result()
-		    : timeComplexity(0),
-		      sizeComplexity(0),
-		      state(),
-		      weight(),
-		      movements(),
-		      finished(false) {}
-
-		Result(int tc, int sc)
-		    : Result() {
-			timeComplexity = tc;
-			sizeComplexity = sc;
-		}
-	};
-
 	void store_state(const State &state, Distance dist, Score score) {
 		int index = dist * score_multiplier + score;
 
@@ -209,7 +186,7 @@ class Solver {
 			}
 		}
 		result.movements = get_path(state, dist);
-		result.state = state;
+		result.cube = state.get_cube();
 		result.weight = state.calculate_score();
 		return result;
 	}

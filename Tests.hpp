@@ -1,4 +1,5 @@
 #pragma once
+#include "Display.hpp"
 #include "Encoding.hpp"
 #include "Heuristics.hpp"
 #include "State.hpp"
@@ -34,25 +35,30 @@ namespace Tests {
 
 	void heuristic_tests() {
 		ID id;
+		int score_cmp;
 
 		id = ID();
-		if (Heuristics::ValidFunction(State<>::data_from_id(id)) != 0)
+		score_cmp = Heuristics::ValidFunction(State<>::data_from_id(id));
+		if (score_cmp != 0)
 			throw std::logic_error("solution score is not 0");
 
 		State<> s = State<>();
 		s = s.get_child(Move::Right);
 
-		if (Heuristics::ValidFunction(State<>::data_from_id(s.get_id())) != score_multiplier)
+		score_cmp = Heuristics::ValidFunction(State<>::data_from_id(s.get_id()));
+		if (score_cmp != score_multiplier)
 			throw std::logic_error("single move should result in a score of score_multiplier");
 
 		s = s.get_child(Move::Right);
 
-		if (Heuristics::ValidFunction(State<>::data_from_id(s.get_id())) != score_multiplier)
+		score_cmp = Heuristics::ValidFunction(State<>::data_from_id(s.get_id()));
+		if (score_cmp != score_multiplier)
 			throw std::logic_error("single half-turn should result in a score of score_multiplier");
 
 		s = s.get_child(Move::Left);
 
-		if (Heuristics::ValidFunction(State<>::data_from_id(s.get_id())) != 2 * score_multiplier)
+		score_cmp = Heuristics::ValidFunction(State<>::data_from_id(s.get_id()));
+		if (score_cmp != 2 * score_multiplier)
 			throw std::logic_error("atomic turns should affect scores idependantly");
 	}
 } // namespace Tests

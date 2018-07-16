@@ -23,7 +23,6 @@
 void print_update(Result &solverResult, struct timespec start) {
 	struct timespec end;
 
-	Display::clear_screen();
 	Display::print_map(solverResult.cube);
 	std::cout << "Iteration count: " << solverResult.timeComplexity << std::endl;
 	std::cout << "Solution [Score: "
@@ -48,6 +47,7 @@ Result solve_loop(State<> &initial) {
 
 	do {
 		solverResult = puzzle.step();
+		Display::clear_screen();
 		print_update(solverResult, start);
 		//std::cout << "Memory repartition:" << std::endl;
 		//puzzle.print_mem();
@@ -60,12 +60,15 @@ Result solve_loop_kociemba(State<> &initial) {
 	struct timespec start;
 	clock_gettime(CLOCK_MONOTONIC, &start);
 
+	//TODO: fix heuristic
 	Result resultG1;
 	{
 		Solver<IDG1> puzzle(State<IDG1>(Encoding::id_from_data<IDG1>(initial.get_data()), Move()));
 
 		do {
 			resultG1 = puzzle.step();
+			Display::clear_screen();
+			std::cout << "Phase 1:" << std::endl;
 			print_update(resultG1, start);
 			//std::cout << "Memory repartition:" << std::endl;
 			//puzzle.print_mem();
@@ -73,12 +76,15 @@ Result solve_loop_kociemba(State<> &initial) {
 	}
 
 	//TODO: check state is otherwise reset
+	//TODO: check that we don't get problem with non-0 weight at end
 	initial = initial.get_scrambled(resultG1.movements);
 	Result resultG2;
 	{
 		Solver<IDG2> puzzle(State<IDG2>(Encoding::id_from_data<IDG2>(initial.get_data()), Move()));
 		do {
 			resultG2 = puzzle.step();
+			Display::clear_screen();
+			std::cout << "Phase 2:" << std::endl;
 			print_update(resultG2, start);
 			//std::cout << "Memory repartition:" << std::endl;
 			//puzzle.print_mem();

@@ -381,34 +381,53 @@ namespace Encoding {
 		return s;
 	}
 
-	static constexpr int cnk(int n, int k) {
-		if (n < k)
-			return 0;
+	// Returns value of Binomial Coefficient C(n, k)
+	static constexpr uint binomial_coeff(uint n, uint k) {
+		uint res = 1;
 
-		if (k > n / 2)
+		// Since C(n, k) = C(n, n-k)
+		if (k > n - k)
 			k = n - k;
-		int s = 1;
-		int j = 1;
-		for (int i = 0; i < k; i++) {
-			s = (s * n) / j;
-			j += 1;
+
+		// Calculate value of [n * (n-1) *---* (n-k+1)] / [k * (k-1) *----* 1]
+		for (uint i = 0; i < k; ++i) {
+			res *= (n - i);
+			res /= (i + 1);
 		}
-		return s;
+
+		return res;
+	}
+
+	static constexpr std::array<std::array<uint16_t, 4>, 12> get_cnk_table() {
+		std::array<std::array<uint16_t, 4>, 12> table = {{}};
+
+		for (int n = 0; n < 12; n++)
+			for (int k = 0; k < 4; k++)
+				table[n][k] = binomial_coeff(n, k);
+
+		return table;
+	}
+
+	static constexpr uint cnk(uint n, uint k) {
+		const std::array<std::array<uint16_t, 4>, 12> table = get_cnk_table();
+
+		assert(n < 12 && k < 4);
+		return table[n][k];
 	}
 
 	static constexpr uint16_t get_id_udslice(const DataBorders &borders) {
 		//kociemba magic to generate the ud coordinates ID
 		//http://kociemba.org/math/twophase.htm
 		//TODO understand and optimize
-		int s = 0;
+		uint s = 0;
 		int k = 3;
-		int n = 11;
+		uint n = 11;
 		while (k >= 0) {
 			//if the border at this position is FL LB BR or RF
 			if (borders[n].cube_id >= Border_UD_Start)
 				k--;
 			else
-				s = s + cnk(n, k);
+				s += cnk(n, (uint)k);
 			n--;
 		}
 		return s;
@@ -416,11 +435,12 @@ namespace Encoding {
 
 	static constexpr void set_data_udslice(DataBorders &borders, uint16_t id) {
 		bool occupied[12] = {};
-		int n = 11;
+
+		uint n = 11;
 		int k = 3;
 
 		while (k >= 0) {
-			int v = cnk(n, k);
+			uint v = cnk(n, (uint)k);
 			if (id < v) {
 				k--;
 				occupied[n] = true;
@@ -624,3 +644,56 @@ namespace Encoding {
 	const Data solution_data = data_from_id(ID());
 	const Cube solution_cube = cube_from_id(ID());
 } // namespace Encoding
+
+/*
+previous project to convert to UD_slice coordinates
+it worked, but either only one way, or with a range of ((8*9+8)*9+8)*9+8
+
+static constexpr uint16_t get_id_udslice(const DataBorders &borders) {
+
+	char pos[4] = {};
+	char choices[4] = {};
+	int k = 0;
+	int lp = 0;
+
+	for (int n = 0; n < 12; n++)
+		if (borders[n].cube_id >= Border_UD_Start) {
+			choices[0] = 9 - lp;
+			int p = n - k;
+			pos[k] = p - lp;
+			lp = p;
+			k++;
+		}
+
+	pos[3] -= pos[2];
+	pos[2] -= pos[1];
+	pos[1] -= pos[0];
+
+	return (((pos[3] * choices[2] + pos[2]) * choices[1] + pos[1]) * choices[0] + pos[0]);
+}
+
+static constexpr void set_data_udslice(DataBorders &borders, uint16_t id) {
+	bool occupied[12] = {};
+
+	int ch = 9;
+	int lp = 0;
+
+	for (int i = 0; i < 4; i++) {
+		int p = ch - 1 - id % ch;
+		id /= ch;
+		ch -= p;
+		p += lp;
+		occupied[p + i] = true;
+		lp = p;
+	}
+
+	int udslice_border = Border_UD_Start;
+	int crown_border = Border_Start;
+
+	for (int i = Border_Start; i < Border_End; i++)
+		if (occupied[i])
+			borders[i].cube_id = udslice_border++;
+		else
+			borders[i].cube_id = crown_border++;
+}
+*/

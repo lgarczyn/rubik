@@ -134,7 +134,12 @@ class Solver {
 		while (e.get_movement().direction) {
 			moves.push_back(e.get_movement());
 			e = e.get_parent();
-			e = *_universe.find(e);
+			auto it = _universe.find(e);
+			if (it == _universe.end()) {
+				std::cout << "could not recreate path" << std::endl;
+				break;
+			}
+			e = *it;
 		}
 		std::reverse(moves.begin(), moves.end());
 		return moves;

@@ -119,24 +119,21 @@ constexpr int State<IDG2>::get_candidates(std::array<pair<State<IDG2>, Score>, 1
 		// reset data to parent data
 		Data data = data_copy;
 
-		//TODO cleanup
-		if (n != Move::Up && n != Move::Down) {
+		for (int i = 1; i <= 3; i++) {
+			if (n != Move::Up && n != Move::Down && i == 3)
+				break;
+
+			// rotate 90d, build, then repeat
 			_apply_movement(data, (Move::Direction)n);
-			_apply_movement(data, (Move::Direction)n);
-			Move move = Move((Move::Direction)n, 2);
+
+			if (n != Move::Up && n != Move::Down && i == 1)
+				continue;
+
+			Move move = Move((Move::Direction)n, i);
 			candidates[count].first = State<IDG2>(data, move);
 			candidates[count].second = Heuristics::ValidFunction(data);
 			count++;
-		} else
-			for (int i = 1; i <= 3; i++) {
-				// rotate 90d, build, then repeat
-				_apply_movement(data, (Move::Direction)n);
-
-				Move move = Move((Move::Direction)n, i);
-				candidates[count].first = State<IDG2>(data, move);
-				candidates[count].second = Heuristics::ValidFunction(data);
-				count++;
-			}
+		}
 	}
 	return count;
 }

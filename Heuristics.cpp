@@ -38,6 +38,9 @@ constexpr int Heuristics::SquareDistance(int uid_a, int uid_b) {
 	return SquareDistance(a, b);
 }
 
+// the basic function for heuristics, gives the minimal amount of moves
+// to move a facelet from one position to another
+// avoid running at runtime due to very poor performances
 constexpr int Heuristics::SquareDistance(Coord a, Coord b) {
 	bool isborder_a = (a.c == 1 || a.l == 1);
 	bool isborder_b = (b.c == 1 || b.l == 1);
@@ -114,69 +117,66 @@ constexpr int Heuristics::SquareDistance(Coord a, Coord b) {
 		return 2;
 }
 
-constexpr Buffer Heuristics::get_dist_table() {
-	Buffer buff = Buffer();
+constexpr BufferCorner Heuristics::get_dist_table_corners() {
+	BufferCorner buff = BufferCorner();
 
-	for (int uid_a = 0; uid_a < max_uid; uid_a++)
-		for (int uid_b = 0; uid_b < max_uid; uid_b++)
-			buff[uid_a][uid_b] = SquareDistance(uid_a, uid_b);
+	for (int pos = 0; pos < 8; pos++)
+		for (int id = 0; id < 8; id++)
+			for (int rot = 0; rot < 3; rot++) {
+				int src = Square(id, rot).get_uid(st_corner);
+				int dst = Square(pos, 0).get_uid(st_corner);
+				buff[pos][id][rot] = SquareDistance(src, dst);
+			}
 	return buff;
 }
 
-//TODO: seperate tables for corners and borders yikes
-//burn uid too, not like it's useful
+constexpr BufferBorder Heuristics::get_dist_table_borders() {
+	BufferBorder buff = BufferBorder();
+
+	for (int pos = 0; pos < 12; pos++)
+		for (int id = 0; id < 12; id++)
+			for (int rot = 0; rot < 2; rot++) {
+				int src = Square(id, rot).get_uid(st_border);
+				int dst = Square(pos, 0).get_uid(st_border);
+				buff[pos][id][rot] = SquareDistance(src, dst);
+			}
+	return buff;
+}
+
 constexpr int get_dist(const Data &data, int i, SquareType st) {
-	int id_sol = 0; // ID of destination
+
+	// returns the buffered minimal distance between
+	// a rotated cubie and its unrotated destination
+	// tables takes the id where the cube was found,
+	// this id of the cube (and therefore destination)
+	// and its rotation
+	// this order is necessary to avoid cache misses
+
 	if (st == st_border)
-		id_sol = data.borders[i].get_uid(st);
+		return Heuristics::dist_table_borders[i][data.borders[i].cube_id][data.borders[i].rot_id];
 	else if (st == st_corner)
-		id_sol = data.corners[i].get_uid(st);
+		return Heuristics::dist_table_corners[i][data.corners[i].cube_id][data.corners[i].rot_id];
 	else
 		throw std::logic_error("Can't get dist for centers");
-
-	int id_src = Square::get_uid(i, 0, st); // ID of where the square was found
-
-	return Heuristics::dist_table[id_sol][id_src];
 }
 
 constexpr int get_dist_borders(const Data &data) {
 	int dist = 0;
-	dist += get_dist(data, 0, st_border);
-	dist += get_dist(data, 1, st_border);
-	dist += get_dist(data, 2, st_border);
-	dist += get_dist(data, 3, st_border);
-	dist += get_dist(data, 4, st_border);
-	dist += get_dist(data, 5, st_border);
-	dist += get_dist(data, 6, st_border);
-	dist += get_dist(data, 7, st_border);
-	dist += get_dist(data, 8, st_border);
-	dist += get_dist(data, 9, st_border);
-	dist += get_dist(data, 10, st_border);
-	dist += get_dist(data, 11, st_border);
+	for (int i = 0; i < 12; i++)
+		dist += get_dist(data, i, st_border);
 	return dist;
 }
 
 constexpr int get_dist_corners(const Data &data) {
 	int dist = 0;
-	dist += get_dist(data, 0, st_corner);
-	dist += get_dist(data, 1, st_corner);
-	dist += get_dist(data, 2, st_corner);
-	dist += get_dist(data, 3, st_corner);
-
-	dist += get_dist(data, 4, st_corner);
-	dist += get_dist(data, 5, st_corner);
-	dist += get_dist(data, 6, st_corner);
-	dist += get_dist(data, 7, st_corner);
+	for (int i = 0; i < 8; i++)
+		dist += get_dist(data, i, st_corner);
 	return dist;
 }
 
 constexpr Score Heuristics::ValidFunction(const Data &data) {
 	int corners = get_dist_corners(data);
 	int borders = get_dist_borders(data);
-	if (corners > 0xFF)
-		throw std::logic_error("WTF1");
-	if (corners > 0xFFFF)
-		throw std::logic_error("WTF2");
 	return std::max(corners, borders);
 }
 

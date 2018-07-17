@@ -17,7 +17,8 @@
 #include <algorithm>
 #include <string>
 
-using Buffer = std::array<std::array<uchar, max_uid>, max_uid>;
+using BufferCorner = std::array<std::array<std::array<uchar, 4>, 8>, 8>;
+using BufferBorder = std::array<std::array<std::array<uchar, 2>, 12>, 12>;
 
 namespace Heuristics {
 	constexpr Score ValidFunction(const Data &data);
@@ -29,6 +30,8 @@ namespace Heuristics {
 
 	constexpr int SquareDistance(int uid_a, int uid_b);
 	constexpr int SquareDistance(Coord a, Coord b);
-	constexpr Buffer get_dist_table();
-	const Buffer dist_table = get_dist_table();
-};
+	constexpr BufferCorner get_dist_table_corners();
+	constexpr BufferBorder get_dist_table_borders();
+	const BufferCorner dist_table_corners = get_dist_table_corners();
+	const BufferBorder dist_table_borders = get_dist_table_borders();
+}; // namespace Heuristics

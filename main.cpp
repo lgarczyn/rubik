@@ -117,8 +117,8 @@ int main(int ac, char **av) {
 	std::cout << "ATTEMPTING SOLUTION" << std::endl;
 
 	//Solves the cube
-	//Result solverResult = solve_loop(initial);
-	Result solverResult = solve_loop_kociemba(initial);
+	Result solverResult = solve_loop(initial);
+	//Result solverResult = solve_loop_kociemba(initial);
 
 	//Offer multiple data visualisation options
 	bool displayHelp = true;

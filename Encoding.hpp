@@ -330,7 +330,10 @@ namespace Encoding {
 		s = get_fact_value(data[Border_DF].cube_id, values, 8) + s * 3;
 		s = get_fact_value(data[Border_DL].cube_id, values, 8) + s * 2;
 		// implied but useless line, since it always returns 0;
-		// s = get_fact_value(data[Border_DB].cube_id, values, 8) + s * 1;
+		//s = get_fact_value(data[Border_DB].cube_id, values, 8) + s * 1;
+
+		if (s >= 40320) // exp(8)
+			throw std::logic_error("data was not in second phase");
 		return s;
 	}
 
@@ -338,11 +341,16 @@ namespace Encoding {
 		uint values = 0b1111;
 		uint s = 0;
 
-		s = get_fact_value(data[Border_RF].cube_id - Border_RF, values, 4) + s * 4;
-		s = get_fact_value(data[Border_FL].cube_id - Border_RF, values, 4) + s * 3;
-		s = get_fact_value(data[Border_LB].cube_id - Border_RF, values, 4) + s * 2;
+		s = get_fact_value(data[Border_RF].cube_id - Border_UD_Start, values, 4) + s * 4;
+		s = get_fact_value(data[Border_FL].cube_id - Border_UD_Start, values, 4) + s * 3;
+		s = get_fact_value(data[Border_LB].cube_id - Border_UD_Start, values, 4) + s * 2;
 		// implied but useless line, since it always returns 0;
-		// s = get_fact_value(data[Border_BR], values, 4) + s * 1;
+		//s = get_fact_value(data[Border_BR].cube_id - Border_UD_Start, values, 4) + s * 1;
+
+		//useful warning, but do not rely on it
+		//bad data at this point could wrap back around into a valid range
+		if (s >= 24) // exp(4)
+			throw std::logic_error("data was not in second phase");
 		return s;
 	}
 
@@ -370,7 +378,7 @@ namespace Encoding {
 		uint s = 0;
 
 		// last rotation is deduced from the rest
-		// s = s * 3 + data[Corner_DRB].rot_id;
+		//s = s * 3 + data[Corner_DRB].rot_id;
 		s = s * 3 + data[Corner_DLB].rot_id;
 		s = s * 3 + data[Corner_DLF].rot_id;
 		s = s * 3 + data[Corner_DRF].rot_id;
@@ -418,7 +426,6 @@ namespace Encoding {
 	static constexpr uint16_t get_id_udslice(const DataBorders &borders) {
 		//kociemba magic to generate the ud coordinates ID
 		//http://kociemba.org/math/twophase.htm
-		//TODO understand and optimize
 		uint s = 0;
 		int k = 3;
 		uint n = 11;
@@ -602,10 +609,10 @@ namespace Encoding {
 	static constexpr void set_data_borders_ud_pos(DataBorders &data, uint id) {
 		bool values[4] = {};
 
-		data[Border_RF].cube_id = Border_RF + get_value_fact(id / fact(3) % 4, values);
-		data[Border_FL].cube_id = Border_RF + get_value_fact(id / fact(2) % 3, values);
-		data[Border_LB].cube_id = Border_RF + get_value_fact(id / fact(1) % 2, values);
-		data[Border_BR].cube_id = Border_RF + get_value_fact(id / fact(0) % 1, values);
+		data[Border_RF].cube_id = Border_UD_Start + get_value_fact(id / fact(3) % 4, values);
+		data[Border_FL].cube_id = Border_UD_Start + get_value_fact(id / fact(2) % 3, values);
+		data[Border_LB].cube_id = Border_UD_Start + get_value_fact(id / fact(1) % 2, values);
+		data[Border_BR].cube_id = Border_UD_Start + get_value_fact(id / fact(0) % 1, values);
 	}
 
 	constexpr Data data_from_id(const ID id) {

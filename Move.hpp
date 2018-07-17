@@ -52,7 +52,7 @@ class Move {
 			reversed = true;
 	};
 	constexpr Move(std::pair<char, char> p) : Move() {
-		reversed = p.second == '\'';
+		reversed = p.second == '\'' || p.second == '3';
 		halfturn = p.second == '2';
 
 		switch (p.first) {

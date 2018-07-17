@@ -33,6 +33,7 @@ class Parser {
 		vector<Move> get_data() const;
 	};
 
+	static vector<Move> get_random_scramble(int scramble_count);
 	static ParseResult parse_args(unsigned int ac, char **av);
 
 	Parser() {}

@@ -24,8 +24,8 @@ vector<Move> parse_data_arg(const std::string &s) {
 	vector<Move> r;
 
 	while (ss) {
-		char c = ss.get();
-		Move m(std::make_pair(c, ss.peek()));
+		//creates a move from the character and the potential modifier following
+		Move m(std::make_pair(ss.get(), ss.peek()));
 
 		if (m.direction)
 			r.push_back(m);
@@ -33,13 +33,11 @@ vector<Move> parse_data_arg(const std::string &s) {
 	return r;
 }
 
-vector<Move> get_random_scramble(int scramble_count) {
+vector<Move> Parser::get_random_scramble(int scramble_count) {
 	std::random_device rd;
 	std::mt19937 rng(rd());
 	std::uniform_int_distribution<int> uni(Move::Direction_Start, Move::Direction_End);
 	std::uniform_int_distribution<int> turns(1, 3);
-
-	std::cout << "GENERATING CUBE WITH PATTERN:" << std::endl;
 
 	vector<Move> moves;
 
@@ -53,17 +51,21 @@ vector<Move> get_random_scramble(int scramble_count) {
 		Move move = Move((Move::Direction)m, t);
 
 		moves.push_back(move);
-
-		std::cout << move;
 	}
-	std::cout << std::endl;
 	return moves;
 }
 
 vector<Move> Parser::ParseResult::get_data() const {
+	vector<Move> moves;
 	if (is_random == false)
-		return parse_data_arg(data);
-	return get_random_scramble(iteration);
+		moves = parse_data_arg(data);
+	else
+		moves = get_random_scramble(iteration);
+	std::cout << "BUILDING CUBE WITH PATTERN:" << std::endl;
+	for (auto m : moves)
+		std::cout << m;
+	std::cout << std::endl;
+	return moves;
 }
 
 int display_help(const char *path = "npuzzle") {

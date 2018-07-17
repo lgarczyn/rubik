@@ -180,6 +180,35 @@ constexpr Score Heuristics::ValidFunction(const Data &data) {
 	return std::max(corners, borders);
 }
 
+constexpr Score Heuristics::ValidFunctionG1(const Data &data) {
+	int dist_borders = 0;
+	for (int i = 0; i < 12; i++)
+		if (data.borders[i].rot_id != 0)
+			dist_borders++;
+
+	int dist_corners = 0;
+	for (int i = 0; i < 8; i++)
+		if (data.corners[i].rot_id != 0)
+			dist_corners++;
+
+	int dist_ud = 0;
+	for (int i = 0; i < Border_UD_Start; i++)
+		if (data.borders[i].cube_id >= Border_UD_Start)
+			dist_ud++;
+
+	for (int i = Border_UD_Start; i < 12; i++)
+		if (data.borders[i].cube_id < Border_UD_Start)
+			dist_ud++;
+
+	return std::max(std::max(dist_borders * 2, dist_corners), dist_ud * 2);
+}
+
+constexpr Score Heuristics::ValidFunctionG2(const Data &data) {
+	int corners = get_dist_corners(data);
+	int borders = get_dist_borders(data);
+	return std::max(corners, borders);
+}
+
 constexpr Score Heuristics::CornerFunction(const Data &data) {
 	Score corners = get_dist_corners(data);
 	return corners;

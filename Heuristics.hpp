@@ -22,6 +22,8 @@ using BufferBorder = std::array<std::array<std::array<uchar, 2>, 12>, 12>;
 
 namespace Heuristics {
 	constexpr Score ValidFunction(const Data &data);
+	constexpr Score ValidFunctionG1(const Data &data);
+	constexpr Score ValidFunctionG2(const Data &data);
 	constexpr Score CornerFunction(const Data &data);
 	constexpr Score BorderFunction(const Data &data);
 	Score DatabaseFunction(const ID &);

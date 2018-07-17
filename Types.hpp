@@ -119,8 +119,8 @@ struct ID {
 };
 
 struct IDG1 {
-	uint16_t corners_rot : 11;
-	uint16_t borders_rot : 12;
+	uint16_t corners_rot : 12;
+	uint16_t borders_rot : 11;
 	uint16_t ud_slice : 9;
 };
 
@@ -132,10 +132,38 @@ struct IDG2 {
 
 using DataCorners = std::array<Square, 8>;
 using DataBorders = std::array<Square, 12>;
+using DataCornersRot = std::array<uchar, 8>;
+using DataBordersRot = std::array<uchar, 12>;
+using DataCornersPos = std::array<uchar, 8>;
+using DataBordersPos = std::array<uchar, 12>;
+using DataUD = std::array<uchar, 4>;
 
 struct Data {
 	DataCorners corners;
 	DataBorders borders;
+};
+
+template <class T>
+struct SpeData {
+};
+
+template <>
+struct SpeData<ID> {
+	DataCorners corners;
+	DataBorders borders;
+};
+
+template <>
+struct SpeData<IDG1> {
+	DataCornersRot corners_rot;
+	DataBordersRot borders_rot;
+	DataUD ud;
+};
+
+template <>
+struct SpeData<IDG2> {
+	DataCornersPos corners_pos;
+	DataBordersPos borders_pos;
 };
 
 constexpr bool operator==(const ID &a, const ID &b);

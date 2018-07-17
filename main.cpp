@@ -60,7 +60,6 @@ Result solve_loop_kociemba(State<> &initial) {
 	struct timespec start;
 	clock_gettime(CLOCK_MONOTONIC, &start);
 
-	//TODO: fix heuristic
 	Result resultG1;
 	{
 		Solver<IDG1> puzzle(State<IDG1>(Encoding::id_from_data<IDG1>(initial.get_data()), Move()));
@@ -75,8 +74,6 @@ Result solve_loop_kociemba(State<> &initial) {
 		} while (resultG1.finished == false);
 	}
 
-	//TODO: check state is otherwise reset
-	//TODO: check that we don't get problem with non-0 weight at end
 	initial = initial.get_scrambled(resultG1.movements);
 	Result resultG2;
 	{
@@ -117,8 +114,8 @@ int main(int ac, char **av) {
 	std::cout << "ATTEMPTING SOLUTION" << std::endl;
 
 	//Solves the cube
-	Result solverResult = solve_loop(initial);
-	//Result solverResult = solve_loop_kociemba(initial);
+	//Result solverResult = solve_loop(initial);
+	Result solverResult = solve_loop_kociemba(initial);
 
 	//Offer multiple data visualisation options
 	bool displayHelp = true;
@@ -153,8 +150,7 @@ int main(int ac, char **av) {
 			Display::clear_screen();
 			for (auto &l : solverResult.movements)
 				std::cout << l << std::endl;
-			std::cout << std::endl
-			          << std::flush;
+			std::cout << std::endl;
 			break;
 		case 'a': {
 			Display::print_animation(initial, solverResult.movements);

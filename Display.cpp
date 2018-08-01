@@ -244,8 +244,8 @@ void print_dist(Coord pos) {
 }
 
 void Display::clear_screen() {
-	int r = system("clear");
-	(void)r;
+	//int r = system("clear");
+	//(void)r;
 }
 
 void Display::print_timediff(

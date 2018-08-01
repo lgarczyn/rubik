@@ -177,7 +177,10 @@ constexpr int get_dist_corners(const Data &data) {
 constexpr Score Heuristics::ValidFunction(const Data &data) {
 	int corners = get_dist_corners(data);
 	int borders = get_dist_borders(data);
-	return std::max(corners, borders);
+	int r = std::max(corners, borders);
+	if (r < 4 && r > 0)
+		r = 5;
+	return r;
 }
 
 constexpr Score Heuristics::ValidFunctionG1(const Data &data) {
@@ -200,13 +203,18 @@ constexpr Score Heuristics::ValidFunctionG1(const Data &data) {
 		if (data.borders[i].cube_id < Border_UD_Start)
 			dist_ud++;
 
+	if (dist_borders == 1)
+		dist_borders = 3;
+	if (dist_corners < 4 && dist_corners > 0)
+		dist_corners = 5;
+	if (dist_ud == 1)
+		dist_ud = 3;
+
 	return std::max(std::max(dist_borders * 2, dist_corners), dist_ud * 2);
 }
 
 constexpr Score Heuristics::ValidFunctionG2(const Data &data) {
-	int corners = get_dist_corners(data);
-	int borders = get_dist_borders(data);
-	return std::max(corners, borders);
+	return Heuristics::ValidFunction(data);
 }
 
 constexpr Score Heuristics::CornerFunction(const Data &data) {

@@ -136,7 +136,7 @@ using DataCornersRot = std::array<uchar, 8>;
 using DataBordersRot = std::array<uchar, 12>;
 using DataCornersPos = std::array<uchar, 8>;
 using DataBordersPos = std::array<uchar, 12>;
-using DataUD = std::array<uchar, 4>;
+using DataUD = std::array<bool, 12>;
 
 struct Data {
 	DataCorners corners;

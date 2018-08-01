@@ -86,85 +86,21 @@ constexpr int State<ID>::get_candidates(std::array<pair<State<ID>, Score>, 18> &
 		Data data = data_copy;
 
 		for (int i = 1; i <= 3; i++) {
-			// rotate 90d, build, then repeat
-			_apply_movement(data, (Move::Direction)n);
-
-			Move move = Move((Move::Direction)n, i);
-			candidates[count].first = State<ID>(data, move);
-			candidates[count].second = Heuristics::ValidFunction(data);
-			count++;
-		}
-	}
-	return count;
-}
-
-template <>
-constexpr int State<IDG1>::get_candidates(std::array<pair<State<IDG1>, Score>, 18> &candidates) const {
-	// get cube of current state
-	Data data_copy = data_from_id(_id);
-	// get movement of current state
-
-	int count = 0;
-	// foreach possible movement family
-	for (int n = Move::Direction_Start; n <= Move::Direction_End; n++) {
-		// if the movement is in same family as current, skip
-		if (_movement.direction == n)
-			continue;
-		// if the previous movement was opposite to the current, and had
-		// priority, ignore this one
-		if (Move::is_commutative(_movement.direction, n))
-			continue;
-
-		// reset data to parent data
-		Data data = data_copy;
-
-		for (int i = 1; i <= 3; i++) {
-			// rotate 90d, build, then repeat
-			_apply_movement(data, (Move::Direction)n);
-
-			Move move = Move((Move::Direction)n, i);
-			candidates[count].first = State<IDG1>(data, move);
-			candidates[count].second = Heuristics::ValidFunctionG1(data);
-			count++;
-		}
-	}
-	return count;
-}
-
-//TODO burn this mess
-template <>
-constexpr int State<IDG2>::get_candidates(std::array<pair<State<IDG2>, Score>, 18> &candidates) const {
-	// get cube of current state
-	Data data_copy = data_from_id(_id);
-	// get movement of current state
-
-	int count = 0;
-	// foreach possible movement family
-	for (int n = Move::Direction_Start; n <= Move::Direction_End; n++) {
-		// if the movement is in same family as current, skip
-		if (_movement.direction == n)
-			continue;
-		// if the previous movement was opposite to the current, and had
-		// priority, ignore this one
-		if (Move::is_commutative(_movement.direction, n))
-			continue;
-
-		// reset data to parent data
-		Data data = data_copy;
-
-		for (int i = 1; i <= 3; i++) {
-			if (n != Move::Up && n != Move::Down && i == 3)
+			//if in phase 2, only U and D are allowed single and reversed move
+			if (std::is_same<ID, IDG2>::value && n != Move::Up && n != Move::Down && i == 3)
 				break;
-
 			// rotate 90d, build, then repeat
 			_apply_movement(data, (Move::Direction)n);
 
-			if (n != Move::Up && n != Move::Down && i == 1)
+			if (std::is_same<ID, IDG2>::value && n != Move::Up && n != Move::Down && i == 1)
 				continue;
 
 			Move move = Move((Move::Direction)n, i);
-			candidates[count].first = State<IDG2>(data, move);
-			candidates[count].second = Heuristics::ValidFunction(data);
+			candidates[count].first = State<ID>(data, move);
+			if (std::is_same<ID, IDG1>::value)
+				candidates[count].second = Heuristics::ValidFunctionG1(data);
+			else
+				candidates[count].second = Heuristics::ValidFunction(data);
 			count++;
 		}
 	}

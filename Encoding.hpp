@@ -313,7 +313,7 @@ namespace Encoding {
 		s = get_fact_value(data[Border_FL].cube_id, values, 12) + s * 3;
 		s = get_fact_value(data[Border_LB].cube_id, values, 12) + s * 2;
 		// implied but useless line, since it always returns 0;
-		// s = get_fact_value(data[Border_BR], values, 12) + s * 1;
+		s = get_fact_value(data[Border_BR].cube_id, values, 12) + s * 1;
 		return s;
 	}
 
@@ -330,7 +330,7 @@ namespace Encoding {
 		s = get_fact_value(data[Border_DF].cube_id, values, 8) + s * 3;
 		s = get_fact_value(data[Border_DL].cube_id, values, 8) + s * 2;
 		// implied but useless line, since it always returns 0;
-		//s = get_fact_value(data[Border_DB].cube_id, values, 8) + s * 1;
+		s = get_fact_value(data[Border_DB].cube_id, values, 8) + s * 1;
 
 		if (s >= 40320) // exp(8)
 			throw std::logic_error("data was not in second phase");
@@ -345,7 +345,7 @@ namespace Encoding {
 		s = get_fact_value(data[Border_FL].cube_id - Border_UD_Start, values, 4) + s * 3;
 		s = get_fact_value(data[Border_LB].cube_id - Border_UD_Start, values, 4) + s * 2;
 		// implied but useless line, since it always returns 0;
-		//s = get_fact_value(data[Border_BR].cube_id - Border_UD_Start, values, 4) + s * 1;
+		s = get_fact_value(data[Border_BR].cube_id - Border_UD_Start, values, 4) + s * 1;
 
 		//useful warning, but do not rely on it
 		//bad data at this point could wrap back around into a valid range
@@ -419,7 +419,6 @@ namespace Encoding {
 	static constexpr uint cnk(uint n, uint k) {
 		const std::array<std::array<uint16_t, 4>, 12> table = get_cnk_table();
 
-		assert(n < 12 && k < 4);
 		return table[n][k];
 	}
 

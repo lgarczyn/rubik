@@ -205,10 +205,10 @@ constexpr Score Heuristics::ValidFunctionG1(const Data &data) {
 
 	if (dist_borders == 1)
 		dist_borders = 3;
-	if (dist_corners < 4 && dist_corners > 0)
-		dist_corners = 5;
-	if (dist_ud == 1)
-		dist_ud = 3;
+	//if (dist_corners == 1)
+	//	dist_corners = ;
+	//if (dist_ud == 1)
+	//	dist_ud = 3;
 
 	return std::max(std::max(dist_borders * 2, dist_corners), dist_ud * 2);
 }

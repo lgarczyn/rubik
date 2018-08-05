@@ -49,7 +49,7 @@ void print_square(Square sq, int dist, bool correct, Color color) {
 	else
 		foreground = "\e[30m"; */
 
-	std::cout << get_color(color) << "  "
+	std::cout << get_color(color) << " " << (char)(sq.rot_id + '0')
 	          << "\e[0m";
 	// std::cout << foreground << background << " " << dist << " " <<
 	// std::setw(2) << id << " \e[0m";
@@ -244,8 +244,8 @@ void print_dist(Coord pos) {
 }
 
 void Display::clear_screen() {
-	//int r = system("clear");
-	//(void)r;
+	// int r = system("clear");
+	// (void)r;
 }
 
 void Display::print_timediff(
@@ -254,4 +254,35 @@ void Display::print_timediff(
     const struct timespec &end) {
 	double milliseconds = (end.tv_nsec - start.tv_nsec) / 1e6 + (end.tv_sec - start.tv_sec) * 1e3;
 	printf("%s: %lf seconds\n", prefix, milliseconds / 1000.0f);
+}
+
+void Display::print_id(const ID id) {
+	std::cout
+	    << "borders_pos: " << (int)id.borders_pos << std::endl
+	    << "borders_rot: " << id.borders_rot << std::endl
+	    << "corners_pos: " << id.corners_pos << std::endl
+	    << "corners_rot: " << id.corners_rot << std::endl;
+}
+
+void Display::print_id(const IDG1 id) {
+	std::cout
+	    << "borders_rot: " << id.borders_rot << std::endl
+	    << "corners_rot: " << id.corners_rot << std::endl
+	    << "ud_slice: " << id.ud_slice << std::endl;
+}
+
+void Display::print_id(const IDG2 id) {
+	std::cout
+	    << "borders_pos_crown: " << id.borders_crown_pos << std::endl
+	    << "borders_pos_ud: " << id.borders_ud_pos << std::endl
+	    << "corners_pos: " << id.corners_pos << std::endl;
+}
+
+void Display::print_data(const Data data) {
+	for (auto b : data.borders)
+		std::cout << "[" << (int)b.cube_id << ":" << (int)b.rot_id << "]";
+	std::cout << std::endl;
+	for (auto b : data.corners)
+		std::cout << "[" << (int)b.cube_id << ":" << (int)b.rot_id << "]";
+	std::cout << std::endl;
 }

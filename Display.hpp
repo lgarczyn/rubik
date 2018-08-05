@@ -15,6 +15,10 @@
 #include <unistd.h>
 
 namespace Display {
+	void print_id(const ID id);
+	void print_id(const IDG1 id);
+	void print_id(const IDG2 id);
+	void print_data(const Data data);
 	void print_map(const IState &state);
 	void print_map(const Cube &state);
 	void print_diff(const Cube &cube, Move m);

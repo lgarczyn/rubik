@@ -147,40 +147,59 @@ namespace Tests {
 		}
 	}
 
-	void rotation_tests() {
-		State<ID> a;
-		State<IDG1> b;
-		State<IDG2> c;
-		char last_c = '\0';
+	template <class ID>
+	Data rotation_tests(Data init) {
+		State<ID> a = State<ID>(Encoding::id_from_data<ID>(init), Move());
+		char last_input = '\0';
 
 		while (1) {
-			char c;
-			std::cin >> c;
+			Display::clear_screen();
+			Display::print_map(a);
+			Display::print_id(a.get_id());
+			Display::print_data(a.get_data());
+			char input;
+			std::cin >> input;
 
 			State<ID> a_old = a;
-			State<IDG1> b_old = b;
-			State<IDG2> c_old = c;
 
-			switch (c) {
-				case 'U': a = a.get_child(Move(std::make_pair(c, last_c))); break;
-				case 'D': a = a.get_child(Move(std::make_pair(c, last_c))); break;
-				case 'L': a = a.get_child(Move(std::make_pair(c, last_c))); break;
-				case 'R': a = a.get_child(Move(std::make_pair(c, last_c))); break;
-				case 'F': a = a.get_child(Move(std::make_pair(c, last_c))); break;
-				case 'B': a = a.get_child(Move(std::make_pair(c, last_c))); break;
+			switch (input) {
+			case 'U':
+				a = a.get_child(Move(std::make_pair(input, last_input)));
+				break;
+			case 'D':
+				a = a.get_child(Move(std::make_pair(input, last_input)));
+				break;
+			case 'L':
+				a = a.get_child(Move(std::make_pair(input, last_input)));
+				break;
+			case 'R':
+				a = a.get_child(Move(std::make_pair(input, last_input)));
+				break;
+			case 'F':
+				a = a.get_child(Move(std::make_pair(input, last_input)));
+				break;
+			case 'B':
+				a = a.get_child(Move(std::make_pair(input, last_input)));
+				break;
+			case 'Q':
+				return (a.get_data());
+			default:
+				last_input = input;
+				continue;
 			}
-			last_c = c;
+			last_input = input;
 
-			clear_screen();
-			print_diff(a_old, a.get_movement());
-			usleep(200000);
+			Display::clear_screen();
+			Display::print_diff(a_old.get_cube(), a.get_movement());
+			Display::print_id(a_old.get_id());
+			Display::print_data(a_old.get_data());
+			usleep(1000000);
 
-			clear_screen();
-			print_diff(a, a.get_movement());
-			usleep(200000);
-			
-			print_map(a);
+			Display::clear_screen();
+			Display::print_diff(a.get_cube(), a.get_movement());
+			Display::print_id(a.get_id());
+			Display::print_data(a.get_data());
+			usleep(1000000);
 		}
-
 	}
 } // namespace Tests

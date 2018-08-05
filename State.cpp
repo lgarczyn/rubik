@@ -82,17 +82,24 @@ constexpr int State<ID>::get_candidates(std::array<pair<State<ID>, Score>, 18> &
 		if (Move::is_commutative(_movement.direction, n))
 			continue;
 
+		bool is_polar = n == Move::Up || n == Move::Down;
+
+		if (std::is_same<ID, IDG1>::value && is_polar)
+			continue;
+
 		// reset data to parent data
 		Data data = data_copy;
 
 		for (int i = 1; i <= 3; i++) {
 			//if in phase 2, only U and D are allowed single and reversed move
-			if (std::is_same<ID, IDG2>::value && n != Move::Up && n != Move::Down && i == 3)
+			if (std::is_same<ID, IDG2>::value && is_polar == false && i == 3)
 				break;
 			// rotate 90d, build, then repeat
 			_apply_movement(data, (Move::Direction)n);
 
-			if (std::is_same<ID, IDG2>::value && n != Move::Up && n != Move::Down && i == 1)
+			if (std::is_same<ID, IDG2>::value && is_polar == false && i == 1)
+				continue;
+			if (std::is_same<ID, IDG1>::value && i == 2)
 				continue;
 
 			Move move = Move((Move::Direction)n, i);

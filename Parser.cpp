@@ -25,7 +25,9 @@ vector<Move> parse_data_arg(const std::string &s) {
 
 	while (ss) {
 		//creates a move from the character and the potential modifier following
-		Move m(std::make_pair(ss.get(), ss.peek()));
+		char c = ss.get();
+		char modifier = ss.peek();
+		Move m(std::make_pair(c, modifier));
 
 		if (m.direction)
 			r.push_back(m);

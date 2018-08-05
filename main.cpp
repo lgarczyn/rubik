@@ -56,7 +56,7 @@ Result solve_loop(State<> &initial) {
 	return solverResult;
 }
 
-Result solve_loop_kociemba(State<> &initial) {
+Result solve_loop_kociemba(State<> initial) {
 	struct timespec start;
 	clock_gettime(CLOCK_MONOTONIC, &start);
 
@@ -75,6 +75,16 @@ Result solve_loop_kociemba(State<> &initial) {
 	}
 
 	initial = initial.get_scrambled(resultG1.movements);
+	if (resultG1.movements.size())
+		initial = State<>(initial.get_id(), *resultG1.movements.rbegin());
+
+	std::cout << "PHASE 1 OVER" << std::endl;
+	for (auto &l : resultG1.movements)
+		std::cout << l;
+	std::cout << std::endl;
+	if (Encoding::id_from_data<IDG1>(initial.get_data()) != IDG1())
+		throw std::logic_error("Phase 1 reconstruction doesn't belong to G1");
+
 	Result resultG2;
 	{
 		Solver<IDG2> puzzle(State<IDG2>(Encoding::id_from_data<IDG2>(initial.get_data()), Move()));
@@ -87,9 +97,18 @@ Result solve_loop_kociemba(State<> &initial) {
 			//puzzle.print_mem();
 		} while (resultG2.finished == false);
 	}
+	initial = initial.get_scrambled(resultG2.movements);
 
 	Result result = Result(resultG1, resultG2);
-	result.cube = initial.get_scrambled(resultG2.movements).get_cube();
+	result.cube = initial.get_cube();
+
+	std::cout << "PHASE 2 OVER" << std::endl;
+	for (auto &l : resultG2.movements)
+		std::cout << l;
+	std::cout << std::endl;
+	if (Encoding::id_from_data<IDG2>(initial.get_data()) != IDG2())
+		throw std::logic_error("Phase 2 reconstruction isn't solved");
+
 	return result;
 }
 
@@ -102,17 +121,30 @@ int main(int ac, char **av) {
 	Tests::encoding_tests<IDG2>();
 	Tests::heuristic_tests();
 	Tests::commutativity_tests();
-	Tests::rotation_tests();
-
-	Display::clear_screen();
 
 	//Create scrambles cube, from arg data or randomly
 	parseResult = Parser::parse_args(ac, av);
 	vector<Move> scramble = parseResult.get_data();
 	initial = initial.get_scrambled(scramble);
 
+	// Tests::rotation_tests<ID>();
+	// Data tmp = initial.get_data();
+	// Tests::rotation_tests<IDG1>(tmp);
+	// tmp = Tests::rotation_tests<ID>(tmp);
+	// tmp = Tests::rotation_tests<IDG2>(tmp);
+	// std::cout << "rot test done: " << std::endl;
+	// Display::print_map(State<>(Encoding::id_from_data<ID>(tmp), Move()));
+	// Display::print_data(tmp);
+
+	// int c;
+	// std::cin >> c;
+
+	Display::clear_screen();
+
 	std::cout << "GENERATED CUBE" << std::endl;
 	Display::print_map(initial);
+	Display::print_data(initial.get_data());
+	Display::print_id(initial.get_id());
 	std::cout << "ATTEMPTING SOLUTION" << std::endl;
 
 	//Solves the cube

@@ -52,6 +52,9 @@ IDG1 -> IdG1
 IDG2 -> IdG2
 ID -> Id
 State (only 18, is it worth the unique identifier ?) -> StateId
+Id vs Coord ?
+Should State handle Data ?
+
 
 Two-Phase fix
 Two-Phase optimal

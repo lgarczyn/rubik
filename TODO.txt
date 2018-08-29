@@ -63,3 +63,12 @@ optimize heuristic for two phase
 generate databases for two phase
 optimize candidates for two phase
 cube input
+
+https://peers.extends42.fr/#/projects/Rubik
+https://stackoverflow.com/questions/14492436/g-optimization-beyond-o3-ofast
+http://kociemba.org/math/CubeDefs.htm#cornmult
+https://github.com/lgarron/CubeExplorerVersion225/blob/master/Symmetries.pas
+http://kociemba.org/math/symcord.htm
+http://kociemba.org/math/symmetries.htm
+http://kociemba.org/math/CubeDefs.htm#cornsym
+http://kociemba.org/math/pruning.htm
